@@ -6,13 +6,11 @@
 #include "pathfinding.h"
 #include "math_basic.h"
 
-struct t_double_linked_list* binary_search_tree_add (struct t_double_linked_list *node,
-                    long integer)
+struct List* binary_search_tree_add (struct List *node, long integer)
 {
     if (node == NULL)
     {
-        node = double_linked_list_new();
-        double_linked_list_zero(node);
+        node = list_new();
         node->data = double_linked_list_data_new(sizeof(long));
         *(long *)node->data = integer;
     }
@@ -28,7 +26,7 @@ struct t_double_linked_list* binary_search_tree_add (struct t_double_linked_list
     return node;
 }
 
-struct t_double_linked_list* binary_search_tree_add_path (struct t_double_linked_list *node,
+struct List* binary_search_tree_add_path (struct List *node,
                     struct t_path_node *pathNode)
 {
     long costStored = 0;
@@ -94,7 +92,7 @@ struct t_double_linked_list* binary_search_tree_add_path (struct t_double_linked
     return node;
 }
 
-struct t_double_linked_list* binary_search_tree_search_lowestCostNode (struct t_double_linked_list *Root)
+struct List* binary_search_tree_search_lowestCostNode (struct List *Root)
 {
     t_double_linked_list *lowestCostNode = NULL;
 
@@ -107,7 +105,7 @@ struct t_double_linked_list* binary_search_tree_search_lowestCostNode (struct t_
     return lowestCostNode;
 }
 
-void binary_search_tree_search_isOpen (struct t_double_linked_list *Root, t_path_node *Node)
+void binary_search_tree_search_isOpen (struct List *Root, t_path_node *Node)
 {
     while (Root != NULL)
     {
@@ -122,7 +120,7 @@ void binary_search_tree_search_isOpen (struct t_double_linked_list *Root, t_path
     }
 }
 
-void binary_search_tree_search_isClose (struct t_double_linked_list *Root, t_path_node *Node)
+void binary_search_tree_search_isClose (struct List *Root, t_path_node *Node)
 {
     while (Root != NULL)
     {
@@ -137,7 +135,7 @@ void binary_search_tree_search_isClose (struct t_double_linked_list *Root, t_pat
     }
 }
 
-void binary_tree_display (struct t_double_linked_list *racine)
+void binary_tree_display (struct List *racine)
 {
     if (racine != NULL)
     {
@@ -147,7 +145,7 @@ void binary_tree_display (struct t_double_linked_list *racine)
     }
 }
 
-void binary_tree_display_right (struct t_double_linked_list *racine)
+void binary_tree_display_right (struct List *racine)
 {
     if (racine != NULL)
     {
@@ -157,7 +155,7 @@ void binary_tree_display_right (struct t_double_linked_list *racine)
     }
 }
 
-void binary_tree_display_path (struct t_double_linked_list *racine)
+void binary_tree_display_path (struct List *racine)
 {
     if (racine != NULL)
     {
@@ -169,7 +167,7 @@ void binary_tree_display_path (struct t_double_linked_list *racine)
 
 // AVL
 
-void binary_search_tree_sort (struct t_double_linked_list *Root, t_path_node *TreeRoot)
+void binary_search_tree_sort (struct List *Root, t_path_node *TreeRoot)
 {
     t_double_linked_list *listTemp = NULL;
 

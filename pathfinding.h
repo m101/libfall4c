@@ -3,15 +3,15 @@
 
 #include <allegro.h>
 
-#include "listes_doubles.h"
+#include "struct Listes_doubles.h"
 #include "structures.h"
 
-typedef struct t_path_node
+struct path_node
 {
-    t_position Position;
+    struct t_position Position;
     // Noeud parent
-    t_position ParentNodePoint;
-    t_double_linked_list *ParentNodeList;
+    struct t_position ParentNodePoint;
+    struct List *ParentNodestruct List;
     long type;
     long poids;
     long direction;
@@ -24,25 +24,25 @@ typedef struct t_path_node
     long costToGoal_heuristic;   // H
     long costNode;
     long isOpen;
-} t_path_node;
+};
 
 /* A Star : Pathfinding
 */
-struct t_double_linked_list* path_find_astar (t_position Depart, t_position Arrivee); //, t_unit Unite);
-long path_calcul_manhattan_heuristic (t_position Depart, t_position Arrivee); //, t_unit Unite);
-t_double_linked_list* path_find_lowestcost (t_double_linked_list *Noeud);
-// Ajouter un noeud a la liste chainee
-t_double_linked_list* path_ajouter_noeud_liste (t_double_linked_list *Liste, t_double_linked_list *AppendedListe);
-// Enlever un noeud a la liste chainee
-t_double_linked_list* path_enlever_noeud_liste (t_double_linked_list *Liste, t_double_linked_list *AppendedListe);
-// "Stocker" un t_path_node dans la liste
-void path_mov_node_to_list (t_double_linked_list *Liste, t_path_node Node);
-// "Stocker" une liste dans un t_path_node
-void path_mov_list_to_node (t_path_node *Node, t_double_linked_list *Liste);
+struct List* path_find_astar (struct t_position Depart, struct t_position Arrivee); //, t_unit Unite);
+long path_calcul_manhattan_heuristic (struct t_position Depart, struct t_position Arrivee); //, t_unit Unite);
+struct List* path_find_lowestcost (struct List *Noeud);
+// Ajouter un noeud a la struct Liste chainee
+struct List* path_ajouter_noeud_struct Liste (struct List *List, struct List *Appendedstruct Liste);
+// Enlever un noeud a la struct Liste chainee
+struct List* path_enlever_noeud_struct Liste (struct List *List, struct List *Appendedstruct Liste);
+// "Stocker" un t_path_node dans la struct Liste
+void path_mov_node_to_struct List (struct List *List, t_path_node Node);
+// "Stocker" une struct Liste dans un t_path_node
+void path_mov_struct List_to_node (t_path_node *Node, struct List *List);
 // Trouve un noeud selon sa position (x, y)
-t_double_linked_list* path_find_noeud (t_double_linked_list *Liste, t_position Position);
-// Tri de la liste par cout
-t_double_linked_list* path_tri_liste (t_double_linked_list *Liste);
+struct List* path_find_noeud (struct List *List, struct t_position Position);
+// Tri de la struct Liste par cout
+struct List* path_tri_struct Liste (struct List *List);
 // Initialisation d'un t_path_node
 void path_node_zero (t_path_node *Node);
 

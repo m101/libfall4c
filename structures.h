@@ -3,11 +3,11 @@
 
 #include "structures.h"
 
-typedef struct t_position t_position;
 struct t_position
 {
     long x;
     long y;
+    long z;
 };
 
 #endif
