@@ -6,23 +6,11 @@
 #include "structures.h"
 #include "collision.h"
 
-long collisionOlimarEnvironment (BITMAP *screenBuffer, t_position positionOlimar)
-{
-    long collisionTest = 1;
-
-    if (getpixel(screenBuffer, positionOlimar.x, positionOlimar.y) == makecol(0, 0, 0))
-        collisionTest = 1;
-    else
-        collisionTest = 0;
-
-    return collisionTest;
-}
-
 /*! @brief                    Detection de collision pour rectangles
 *   @param Objet1             Objet1
 *   @param Objet2             Objet2
 */
-int collision_rect (t_object *Objet1, t_object *Objet2)
+int collision_rect (struct t_object *Objet1, struct t_object *Objet2)
 {
     long booleenCollision = 1;
 
@@ -55,7 +43,7 @@ int collision_rect (t_object *Objet1, t_object *Objet2)
 *   @param Objet1             Objet1
 *   @param Objet2             Objet2
 */
-int collision_rect_box (t_object *Objet1, t_object *Objet2)
+int collision_rect_box (struct t_object *Objet1, struct t_object *Objet2)
 {
     long booleenCollision = 1;
 
@@ -107,7 +95,7 @@ int collision_rect_box (t_object *Objet1, t_object *Objet2)
 *   @param Objet2             Objet2
 *   @param collisionColor     Couleur de collision
 */
-int collision_pixel_perfect (BITMAP *screenBuffer, t_object *Objet1, t_object *Objet2, long collisionColor)
+int collision_pixel_perfect (BITMAP *screenBuffer, struct t_object *Objet1, struct t_object *Objet2, long collisionColor)
 {
 
     int left1, left2, over_left;

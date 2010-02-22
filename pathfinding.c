@@ -80,15 +80,15 @@ Position * AStar_Search(Position Start, Position Goal, Unite Unit)
 }
 */
 
-struct t_double_linked_list* path_find_astar (t_position Depart, t_position Arrivee) //, t_unit Unite)
+struct List* path_find_astar (struct t_position Depart, struct t_position Arrivee) //, t_unit Unite)
 {
-    t_double_linked_list *Arbre = NULL;
-    t_double_linked_list *NodeCostLowestArbre = NULL;
+    struct List *Arbre = NULL;
+    struct List *NodeCostLowestArbre = NULL;
     long tempCostFromStart = 0;
     int astarContinuer = 1;
 
-    t_path_node NodeNew;
-    t_path_node NodeCurrent;
+    struct t_path_node NodeNew;
+    struct t_path_node NodeCurrent;
 
     long i = 0, j = 0;
 
@@ -235,9 +235,9 @@ struct t_double_linked_list* path_find_astar (t_position Depart, t_position Arri
     return Arbre;
 }
 
-long path_calcul_manhattan_heuristic (t_position Depart, t_position Arrivee)// , t_unit Unite)
+long path_calcul_manhattan_heuristic (struct t_position Depart, struct t_position Arrivee)// , t_unit Unite)
 {
-    t_position Manhattan = {0, 0};
+    struct t_position Manhattan = {0, 0};
     long manhattan = 0;
     Manhattan.x = abs(Depart.x - Arrivee.x) * 10;
     Manhattan.y = abs(Depart.y - Arrivee.y) * 10;
@@ -250,27 +250,27 @@ long path_calcul_manhattan_heuristic (t_position Depart, t_position Arrivee)// ,
 /*! @brief Find the lowest cost
 *   @param Noeud Node to check for lowest cost
 */
-t_double_linked_list* path_find_lowestcost (t_double_linked_list *Noeud)
+struct List* path_find_lowestcost (struct List *Noeud)
 {
-    t_double_linked_list *l_lowestCostNode = Noeud;
-    t_double_linked_list *NoeudCurrent = Noeud;
+    struct List *l_lowestCostNode = Noeud;
+    struct List *NoeudCurrent = Noeud;
     long min = 0;
 
     if (Noeud != NULL)
-        min = ((t_path_node *)(Noeud->data))->cost;
+        min = ((struct t_path_node *)(Noeud->data))->cost;
 
     while (NoeudCurrent != NULL)
     {
         printf("Noeud courrant; x : %ld, y : %ld\n",\
-               ((t_path_node *)(NoeudCurrent->data))->Position.x,\
-               ((t_path_node *)(NoeudCurrent->data))->Position.y);
-        printf("G cost : %ld\n", ((t_path_node *)(NoeudCurrent->data))->costFromStart);
-        printf("H cost : %ld\n", ((t_path_node *)(NoeudCurrent->data))->costToGoal_heuristic);
-        printf("F cost : %ld\n\n", ((t_path_node *)(NoeudCurrent->data))->cost);
+               ((struct t_path_node *)(NoeudCurrent->data))->Position.x,\
+               ((struct t_path_node *)(NoeudCurrent->data))->Position.y);
+        printf("G cost : %ld\n", ((struct t_path_node *)(NoeudCurrent->data))->costFromStart);
+        printf("H cost : %ld\n", ((struct t_path_node *)(NoeudCurrent->data))->costToGoal_heuristic);
+        printf("F cost : %ld\n\n", ((struct t_path_node *)(NoeudCurrent->data))->cost);
 
-        if ( ((t_path_node *)(NoeudCurrent->data))->cost < min)
+        if ( ((struct t_path_node *)(NoeudCurrent->data))->cost < min)
         {
-            min = ((t_path_node *)(NoeudCurrent->data))->cost;
+            min = ((struct t_path_node *)(NoeudCurrent->data))->cost;
             l_lowestCostNode = NoeudCurrent;
         }
 
@@ -282,15 +282,15 @@ t_double_linked_list* path_find_lowestcost (t_double_linked_list *Noeud)
     return l_lowestCostNode;
 }
 
-t_double_linked_list* path_find_noeud (t_double_linked_list *Liste, t_position Position)
+struct List* path_find_noeud (struct List *Liste, struct t_position Position)
 {
-    t_double_linked_list *NodeCurrent = Liste;
-    t_double_linked_list *NodeReturned = NULL;
+    struct List *NodeCurrent = Liste;
+    struct List *NodeReturned = NULL;
 
     while (NodeCurrent != NULL)
     {
-        if ( ((t_path_node *)(NodeCurrent->data))->Position.x == Position.x
-                && ((t_path_node *)(NodeCurrent->data))->Position.y == Position.y )
+        if ( ((struct t_path_node *)(NodeCurrent->data))->Position.x == Position.x
+                && ((struct t_path_node *)(NodeCurrent->data))->Position.y == Position.y )
         {
             NodeReturned = NodeCurrent;
             break;
@@ -302,9 +302,9 @@ t_double_linked_list* path_find_noeud (t_double_linked_list *Liste, t_position P
     return NodeReturned;
 }
 
-t_double_linked_list* path_ajouter_noeud_liste (t_double_linked_list *Liste, t_double_linked_list *AppendedListe)
+struct List* path_ajouter_noeud_liste (struct List *Liste, struct List *AppendedListe)
 {
-    t_double_linked_list *ListNode = Liste, *ListLastNode = NULL;
+    struct List *ListNode = Liste, *ListLastNode = NULL;
     /*
     if (Liste != NULL)
         Liste->next = AppendedListe;
@@ -333,10 +333,10 @@ t_double_linked_list* path_ajouter_noeud_liste (t_double_linked_list *Liste, t_d
     return Liste;
 }
 
-t_double_linked_list* path_enlever_noeud_liste (t_double_linked_list *Liste, t_double_linked_list *AppendedListe)
+struct List* path_enlever_noeud_liste (struct List *Liste, struct List *AppendedListe)
 {
-    t_double_linked_list *ListPrev = NULL, *ListNext = NULL;
-    t_double_linked_list *NoeudForward = NULL, *NoeudBackward = Liste;
+    struct List *ListPrev = NULL, *ListNext = NULL;
+    struct List *NoeudForward = NULL, *NoeudBackward = Liste;
 
     if ( (AppendedListe != NULL) )
     {
@@ -380,56 +380,56 @@ t_double_linked_list* path_enlever_noeud_liste (t_double_linked_list *Liste, t_d
     return Liste;
 }
 
-void path_mov_node_to_list (t_double_linked_list *Liste, t_path_node Node)
+void path_mov_node_to_list (struct List *Liste, struct t_path_node Node)
 {
     if (Liste != NULL)
     {
-        ((t_path_node *)(Liste->data))->Position.x = Node.Position.x;
-        ((t_path_node *)(Liste->data))->Position.y = Node.Position.y;
-        ((t_path_node *)(Liste->data))->ParentNodePoint.x = Node.ParentNodePoint.x;
-        ((t_path_node *)(Liste->data))->ParentNodePoint.y = Node.ParentNodePoint.y;
-        ((t_path_node *)(Liste->data))->type = Node.type;
-        ((t_path_node *)(Liste->data))->poids = Node.poids;
-        ((t_path_node *)(Liste->data))->direction = Node.direction;
-        ((t_path_node *)(Liste->data))->cost = Node.cost;
-        ((t_path_node *)(Liste->data))->costFromStart = Node.costFromStart;
-        ((t_path_node *)(Liste->data))->costToGoal_heuristic = Node.costToGoal_heuristic;
-        ((t_path_node *)(Liste->data))->isOpen = Node.isOpen;
+        ((struct t_path_node *)(Liste->data))->Position.x = Node.Position.x;
+        ((struct t_path_node *)(Liste->data))->Position.y = Node.Position.y;
+        ((struct t_path_node *)(Liste->data))->ParentNodePoint.x = Node.ParentNodePoint.x;
+        ((struct t_path_node *)(Liste->data))->ParentNodePoint.y = Node.ParentNodePoint.y;
+        ((struct t_path_node *)(Liste->data))->type = Node.type;
+        ((struct t_path_node *)(Liste->data))->poids = Node.poids;
+        ((struct t_path_node *)(Liste->data))->direction = Node.direction;
+        ((struct t_path_node *)(Liste->data))->cost = Node.cost;
+        ((struct t_path_node *)(Liste->data))->costFromStart = Node.costFromStart;
+        ((struct t_path_node *)(Liste->data))->costToGoal_heuristic = Node.costToGoal_heuristic;
+        ((struct t_path_node *)(Liste->data))->isOpen = Node.isOpen;
     }
 }
 
-void path_mov_list_to_node (t_path_node *Node, t_double_linked_list *Liste)
+void path_mov_list_to_node (struct t_path_node *Node, struct List *Liste)
 {
     if ( (Liste != NULL) && (Node != NULL) )
     {
-        Node->Position.x = ((t_path_node *)(Liste->data))->Position.x;
-        Node->Position.y = ((t_path_node *)(Liste->data))->Position.y;
-        Node->ParentNodePoint.x = ((t_path_node *)(Liste->data))->ParentNodePoint.x;
-        Node->ParentNodePoint.y = ((t_path_node *)(Liste->data))->ParentNodePoint.y;
-        Node->type = ((t_path_node *)(Liste->data))->type;
-        Node->poids = ((t_path_node *)(Liste->data))->poids;
-        Node->direction = ((t_path_node *)(Liste->data))->direction;
-        Node->cost = ((t_path_node *)(Liste->data))->cost;
-        Node->costFromStart = ((t_path_node *)(Liste->data))->costFromStart;
-        Node->costToGoal_heuristic = ((t_path_node *)(Liste->data))->costToGoal_heuristic;
-        Node->isOpen = ((t_path_node *)(Liste->data))->isOpen;
+        Node->Position.x = ((struct t_path_node *)(Liste->data))->Position.x;
+        Node->Position.y = ((struct t_path_node *)(Liste->data))->Position.y;
+        Node->ParentNodePoint.x = ((struct t_path_node *)(Liste->data))->ParentNodePoint.x;
+        Node->ParentNodePoint.y = ((struct t_path_node *)(Liste->data))->ParentNodePoint.y;
+        Node->type = ((struct t_path_node *)(Liste->data))->type;
+        Node->poids = ((struct t_path_node *)(Liste->data))->poids;
+        Node->direction = ((struct t_path_node *)(Liste->data))->direction;
+        Node->cost = ((struct t_path_node *)(Liste->data))->cost;
+        Node->costFromStart = ((struct t_path_node *)(Liste->data))->costFromStart;
+        Node->costToGoal_heuristic = ((struct t_path_node *)(Liste->data))->costToGoal_heuristic;
+        Node->isOpen = ((struct t_path_node *)(Liste->data))->isOpen;
     }
 }
 
-t_double_linked_list* path_tri_liste (t_double_linked_list *Liste)
+struct List* path_tri_liste (struct List *Liste)
 {
-    t_double_linked_list *CurrentNode = NULL;
-    t_double_linked_list *TempNode = NULL;
+    struct List *CurrentNode = NULL;
+    struct List *TempNode = NULL;
     long min = 0;
 
     if (Liste != NULL)
-        min = ((t_path_node *)(Liste->data))->cost;
+        min = ((struct t_path_node *)(Liste->data))->cost;
 
     for (CurrentNode = Liste; CurrentNode != NULL; CurrentNode = CurrentNode->next)
     {
-        if (((t_path_node *)(CurrentNode->data))->cost < min)
+        if (((struct t_path_node *)(CurrentNode->data))->cost < min)
         {
-            min = ((t_path_node *)(CurrentNode->data))->cost;
+            min = ((struct t_path_node *)(CurrentNode->data))->cost;
             TempNode = CurrentNode->next;
             CurrentNode->next = CurrentNode;
             CurrentNode->prev = TempNode;
@@ -439,7 +439,7 @@ t_double_linked_list* path_tri_liste (t_double_linked_list *Liste)
     return Liste;
 }
 
-void path_node_zero (t_path_node *Node)
+void path_node_zero (struct t_path_node *Node)
 {
     if (Node != NULL)
     {
