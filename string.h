@@ -40,6 +40,10 @@ extern "C"
     void read (size_t bufferLength);
     void readNumber (size_t bufferLength);
     long stringLength (char string[]);
+    char *_DEFUN (strtok_r, (s, delim, lasts),
+                	register char *s _AND
+                	register const char *delim _AND
+                	char **lasts);
 
 #ifdef __cplusplus
 }
