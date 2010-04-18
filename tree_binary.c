@@ -11,6 +11,7 @@ struct List* binary_search_tree_add (struct List *node, long integer)
     if (node == NULL)
     {
         node = list_new();
+        double_linked_list_zero(node);
         node->data = double_linked_list_data_new(sizeof(long));
         *(long *)node->data = integer;
     }
@@ -42,6 +43,7 @@ struct List* binary_search_tree_add_path (struct List *node,
     if ( (node == NULL) && (pathNode != NULL) )
     {
         node = list_new();
+        double_linked_list_zero(node);
         node->data = double_linked_list_data_new(sizeof(struct t_path_node));
         path_node_zero(node->data);
         // Les coûts
