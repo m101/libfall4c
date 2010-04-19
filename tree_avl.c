@@ -108,3 +108,57 @@ struct tree_t* binary_tree_equilibrate(t_tree* A)
         return A;
 }
 
+struct tree_t* binary_tree_add (str_cstruct tree_t* root, struct tree_t* Node, int h, int (*f)(void *) )
+{
+    int x = f(root), y = f(Node);
+
+    if (root == NULL)
+    {
+        //creer un nœud root;
+        root = malloc(sizeof(struct tree_t));
+        root->left = NULL;
+        root->right = NULL;
+        root->elt = x;
+        root->balance = 0;
+        root->h = 1;
+        return root;
+    }
+    else if ( x == y )
+    {
+        root->h = 0;
+        return root;
+    }
+    else if ( x > y )
+    {
+        root->right = binary_tree_add(Node, root->right, h, f);
+    }
+    else
+    {
+        root->left = binary_tree_add(Node, root->left, h, f);
+        h = -h;
+    }
+
+    if (h == 0)
+    {
+        root->h = 0;
+        return root;
+    }
+    else
+    {
+        root->balance = root->balance + h;
+        root = binary_tree_equilibrate(root);
+    }
+    if (root->balance == 0)
+    {
+        root->h = 0;
+        return root;
+    }
+    else
+    {
+        root->h = 1;
+        return root;
+    }
+
+    return root;
+}
+
