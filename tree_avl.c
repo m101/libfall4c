@@ -1,6 +1,6 @@
-void binary_search_tree_balance (struct  tree_t *root)
+void avl_tree_balance (struct tree_t *root)
 {
-    struct  tree_t *balanced;
+    struct tree_t *balanced;
     
     // pointer check
     if (!root)
@@ -13,14 +13,14 @@ void binary_search_tree_balance (struct  tree_t *root)
         if (balanced->root)
         {
             if (root->comparator(balanced->root->next->data) > root->comparator(sorted->root->prev->data))
-                binary_tree_rotate_right (balanced);
+                avl_tree_rotate_right (balanced);
             else
-                binary_tree_rotate_left (balanced);
+                avl_tree_rotate_left (balanced);
         }
     }
 }
 
-struct tree_t* binary_tree_rotate_left (t_tree *A)
+struct tree_t* avl_tree_rotate_left (struct tree_t *A)
 {
     struct tree_t *B = NULL;
     int a = 0, b = 0;
@@ -46,7 +46,7 @@ struct tree_t* binary_tree_rotate_left (t_tree *A)
     return B;
 }
 
-struct tree_t* binary_tree_rotate_right (t_tree *A)
+struct tree_t* avl_tree_rotate_right (struct tree_t *A)
 {
     struct tree_t *B = NULL;
     int a = 0, b = 0;
@@ -72,43 +72,43 @@ struct tree_t* binary_tree_rotate_right (t_tree *A)
     return B;
 }
 
-struct tree_t* binary_tree_rotate_left_double (t_tree *A)
+struct tree_t* avl_tree_rotate_left_double (struct tree_t *A)
 {
     if ( A != NULL )
-        A->right = binary_tree_rotate_right (A->right);
+        A->right = avl_tree_rotate_right (A->right);
     else
         fprintf(stderr, "Error: Tree branch is empty\n");
 
-    return binary_tree_rotate_left (A);
+    return avl_tree_rotate_left (A);
 }
 
-struct tree_t* binary_tree_equilibrate(t_tree* A)
+struct tree_t* avl_tree_equilibrate(struct tree_t* A)
 {
     if (A->balance == 2)
     {
         if (A->right->balance >= 0)
-            return binary_tree_rotate_left(A);
+            return avl_tree_rotate_left(A);
         else
         {
-            A->right = binary_tree_rotate_right(A->right);
-            return binary_tree_rotate_left(A);
+            A->right = avl_tree_rotate_right(A->right);
+            return avl_tree_rotate_left(A);
         }
     }
     else if (A->balance == -2)
     {
         if (A->left->balance <= 0)
-            return binary_tree_rotate_right(A);
+            return avl_tree_rotate_right(A);
         else
         {
-            A->left = binary_tree_rotate_left(A->left);
-            return binary_tree_rotate_right(A);
+            A->left = avl_tree_rotate_left(A->left);
+            return avl_tree_rotate_right(A);
         }
     }
     else
         return A;
 }
 
-struct tree_t* binary_tree_add (str_cstruct tree_t* root, struct tree_t* Node, int h, int (*f)(void *) )
+struct tree_t* avl_tree_add (str_cstruct tree_t* root, struct tree_t* Node, int h, int (*f)(void *) )
 {
     int x = f(root), y = f(Node);
 
@@ -130,11 +130,11 @@ struct tree_t* binary_tree_add (str_cstruct tree_t* root, struct tree_t* Node, i
     }
     else if ( x > y )
     {
-        root->right = binary_tree_add(Node, root->right, h, f);
+        root->right = avl_tree_add(Node, root->right, h, f);
     }
     else
     {
-        root->left = binary_tree_add(Node, root->left, h, f);
+        root->left = avl_tree_add(Node, root->left, h, f);
         h = -h;
     }
 
@@ -146,7 +146,7 @@ struct tree_t* binary_tree_add (str_cstruct tree_t* root, struct tree_t* Node, i
     else
     {
         root->balance = root->balance + h;
-        root = binary_tree_equilibrate(root);
+        root = avl_tree_equilibrate(root);
     }
     if (root->balance == 0)
     {
