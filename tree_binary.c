@@ -1,185 +1,66 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "listes_doubles.h"
+#include "tree_tes_doubles.h"
 #include "arbres_binaires.h"
 #include "pathfinding.h"
 #include "math_basic.h"
 
-struct List* binary_search_tree_add (struct List *node, long integer)
+struct tree_t* binary_search_tree_add (struct tree_t *node, void *data)
 {
     if (node == NULL)
     {
-        node = list_new();
-        double_linked_list_zero(node);
-        node->data = double_linked_list_data_new(sizeof(long));
-        *(long *)node->data = integer;
+        node = calloc (1, sizeof(*node));
+        node->data = data;
     }
-    // Si c'est plus petit
-    // Alors ca va a gauche
-    else if (*(long *)node->data < integer)
-        node->prev = binary_search_tree_add (node->prev, integer);
-    // Si c'est plus grand
-    // Alors ca va a droite
-    else if (*(long *)node->data > integer)
-        node->next = binary_search_tree_add (node->next, integer);
+    // if smaller
+    // then we go left
+    else if (node->comparator(node->data, data) <= 0)
+        node->prev = binary_search_tree_add (node->left, data);
+    // if bigger
+    // then we go right
+    else if (node->comparator(node->data, data) > 0)
+        node->next = binary_search_tree_add (node->right, data);
 
     return node;
 }
 
-struct List* binary_search_tree_add_path (struct List *node,
-                    struct t_path_node *pathNode)
+
+void binary_tree_display (struct tree_t *root)
 {
-    long costStored = 0;
-    long costToStore = 0;
-    t_position Position = {0, 0};
-
-    if (pathNode != NULL)
+    if (root != NULL)
     {
-        Position.x = pathNode->Position.x;
-        Position.y = pathNode->Position.y;
-    }
-
-    if ( (node == NULL) && (pathNode != NULL) )
-    {
-        node = list_new();
-        double_linked_list_zero(node);
-        node->data = double_linked_list_data_new(sizeof(struct t_path_node));
-        path_node_zero(node->data);
-        // Les coûts
-        ((struct t_path_node *)(node->data))->cost = pathNode->cost;
-        ((struct t_path_node *)(node->data))->costFromStart = pathNode->costFromStart;
-        ((struct t_path_node *)(node->data))->costToGoal_heuristic = pathNode->costToGoal_heuristic;
-        ((struct t_path_node *)(node->data))->costNode = pathNode->costNode;
-        // Position
-        ((struct t_path_node *)(node->data))->Position.x = Position.x;
-        ((struct t_path_node *)(node->data))->Position.y = Position.y;
-
-#ifdef DEBUG
-        printf("Allocated arbre\n");
-        printf("((struct t_path_node *)(node->data))->cost : %ld\n", ((struct t_path_node *)(node->data))->cost);
-        printf("((struct t_path_node *)(node->data))->costFromStart : %ld\n", ((struct t_path_node *)(node->data))->costFromStart);
-        printf("((struct t_path_node *)(node->data))->costToGoal_heuristic : %ld\n", ((struct t_path_node *)(node->data))->costToGoal_heuristic);
-        printf("((struct t_path_node *)(node->data))->costNode : %ld\n", ((struct t_path_node *)(node->data))->costNode);
-        printf("((struct t_path_node *)(node->data))->Position.x : %ld\n", ((struct t_path_node *)(node->data))->Position.x);
-        printf("((struct t_path_node *)(node->data))->Position.y : %ld\n\n", ((struct t_path_node *)(node->data))->Position.y);
-#endif
-
-    }
-    // Si on a déjà la point dans l'arbre
-    // Alors on regarde si le coût est inférieur
-    else if ( (Position.x == ((struct t_path_node *)(node->data))->Position.x)
-              && (Position.y == ((struct t_path_node *)(node->data))->Position.y) )
-    {
-        if ( pathNode->cost < ((struct t_path_node *)(node->data))->cost )
-        {
-            // Les coûts
-            ((struct t_path_node *)(node->data))->cost = pathNode->cost;
-            ((struct t_path_node *)(node->data))->costFromStart = pathNode->costFromStart;
-            ((struct t_path_node *)(node->data))->costToGoal_heuristic = pathNode->costToGoal_heuristic;
-            ((struct t_path_node *)(node->data))->costNode = pathNode->costNode;
-        }
-    }
-    // Si c'est plus petit
-    // Alors ca va a droite
-    else if ( (costStored = ((struct t_path_node *)(node->data))->cost)
-              < (costToStore = pathNode->cost) )
-        node->next = binary_search_tree_add_path (node->next, pathNode);
-    // Si c'est plus grand
-    // Alors ca va a gauche
-    else if (costStored > costToStore)
-        node->prev = binary_search_tree_add_path (node->prev, pathNode);
-
-    return node;
-}
-
-struct List* binary_search_tree_search_lowestCostNode (struct List *Root)
-{
-    t_double_linked_list *lowestCostNode = NULL;
-
-    while (Root != NULL)
-    {
-        lowestCostNode = Root;
-        Root = Root->prev;
-    }
-
-    return lowestCostNode;
-}
-
-void binary_search_tree_search_isOpen (struct List *Root, struct t_path_node *Node)
-{
-    while (Root != NULL)
-    {
-        if ( ((struct t_path_node *)(Root->data))->Position.x == Node->Position.x
-                && ((struct t_path_node *)(Root->data))->Position.y == Node->Position.y )
-        {
-            Node->isOpen = 1;
-            break;
-        }
-
-        Root = Root->next;
+        binary_tree_display (root->next);
+        printf("%4ld\n", *(long *)root->data);
+        binary_tree_display (root->prev);
     }
 }
 
-void binary_search_tree_search_isClose (struct List *Root, struct t_path_node *Node)
+void binary_tree_display_right (struct tree_t *root)
 {
-    while (Root != NULL)
+    if (root != NULL)
     {
-        if ( ((struct t_path_node *)(Root->data))->Position.x == Node->Position.x
-                && ((struct t_path_node *)(Root->data))->Position.y == Node->Position.y )
-        {
-            Node->isOpen = 0;
-            break;
-        }
-
-        Root = Root->prev;
+        // binary_tree_display_right (root->prev);
+        printf("%4ld\n", *(long *)root->data);
+        binary_tree_display_right (root->prev);
     }
 }
 
-void binary_tree_display (struct List *racine)
-{
-    if (racine != NULL)
-    {
-        binary_tree_display (racine->next);
-        printf("%4ld\n", *(long *)racine->data);
-        binary_tree_display (racine->prev);
-    }
-}
-
-void binary_tree_display_right (struct List *racine)
-{
-    if (racine != NULL)
-    {
-        // binary_tree_display_right (racine->prev);
-        printf("%4ld\n", *(long *)racine->data);
-        binary_tree_display_right (racine->prev);
-    }
-}
-
-void binary_tree_display_path (struct List *racine)
-{
-    if (racine != NULL)
-    {
-        // binary_tree_display_right (racine->prev);
-        printf("x : %3ld, y : %3ld\n", ((struct t_path_node *)(racine->data))->Position.x, ((struct t_path_node *)(racine->data))->Position.y);
-        binary_tree_display_path (racine->prev);
-    }
-}
 
 // AVL
 
-void binary_search_tree_sort (struct List *Root, struct t_path_node *TreeRoot)
+void binary_search_tree_sort (struct tree_t *root, struct t_path_node *Treeroot)
 {
-    t_double_linked_list *listTemp = NULL;
+    t_double_linked_tree_t *tree_tTemp = NULL;
 
-    if ( ((struct t_path_node *)(Root->data))->cost < TreeRoot->cost )
+    if ( ((struct t_path_node *)(root->data))->cost < Treeroot->cost )
     {
-        listTemp = Root->prev;
-        Root->prev = Root;
+        tree_tTemp = root->prev;
+        root->prev = root;
     }
 
-    binary_search_tree_sort (Root->prev, TreeRoot);
-    binary_search_tree_sort (Root->prev, TreeRoot);
+    binary_search_tree_sort (root->prev, Treeroot);
+    binary_search_tree_sort (root->prev, Treeroot);
 }
 
 t_tree* binary_tree_rotate_left (t_tree *A)
@@ -270,58 +151,58 @@ t_tree* binary_tree_equilibrate(t_tree* A)
         return A;
 }
 
-t_tree* binary_tree_add (t_tree* Root, t_tree* Node, int h, int (*f)(void *) )
+t_tree* binary_tree_add (t_tree* root, t_tree* Node, int h, int (*f)(void *) )
 {
-    int x = f(Root), y = f(Node);
+    int x = f(root), y = f(Node);
 
-    if (Root == NULL)
+    if (root == NULL)
     {
-        //creer un nœud Root;
-        Root = malloc(sizeof(t_tree));
-        Root->left = NULL;
-        Root->right = NULL;
-        Root->elt = x;
-        Root->balance = 0;
-        Root->h = 1;
-        return Root;
+        //creer un nœud root;
+        root = malloc(sizeof(t_tree));
+        root->left = NULL;
+        root->right = NULL;
+        root->elt = x;
+        root->balance = 0;
+        root->h = 1;
+        return root;
     }
     else if ( x == y )
     {
-        Root->h = 0;
-        return Root;
+        root->h = 0;
+        return root;
     }
     else if ( x > y )
     {
-        Root->right = binary_tree_add(Node, Root->right, h, f);
+        root->right = binary_tree_add(Node, root->right, h, f);
     }
     else
     {
-        Root->left = binary_tree_add(Node, Root->left, h, f);
+        root->left = binary_tree_add(Node, root->left, h, f);
         h = -h;
     }
 
     if (h == 0)
     {
-        Root->h = 0;
-        return Root;
+        root->h = 0;
+        return root;
     }
     else
     {
-        Root->balance = Root->balance + h;
-        Root = binary_tree_equilibrate(Root);
+        root->balance = root->balance + h;
+        root = binary_tree_equilibrate(root);
     }
-    if (Root->balance == 0)
+    if (root->balance == 0)
     {
-        Root->h = 0;
-        return Root;
+        root->h = 0;
+        return root;
     }
     else
     {
-        Root->h = 1;
-        return Root;
+        root->h = 1;
+        return root;
     }
 
-    return Root;
+    return root;
 }
 
 void tree_zero (t_tree *Tree)
@@ -333,7 +214,7 @@ void tree_zero (t_tree *Tree)
     }
 }
 
-void binary_tree_sort (t_double_linked_list *Node)
+void binary_tree_sort (t_double_linked_tree_t *Node)
 {
     t_tree Tree;
 
@@ -349,3 +230,113 @@ void binary_tree_sort (t_double_linked_list *Node)
             binary_tree_rotate_left (&Tree);
     }
 }
+
+struct tree_t* binary_search_tree_add_path (struct tree_t *node,
+                    struct t_path_node *pathNode)
+{
+    long costStored = 0;
+    long costToStore = 0;
+    t_position Position = {0, 0};
+
+    if (pathNode != NULL)
+    {
+        Position.x = pathNode->Position.x;
+        Position.y = pathNode->Position.y;
+    }
+
+    if ( (node == NULL) && (pathNode != NULL) )
+    {
+        node = tree_t_new();
+        double_linked_tree_t_zero(node);
+        node->data = double_linked_tree_t_data_new(sizeof(struct t_path_node));
+        path_node_zero(node->data);
+        // Les coûts
+        ((struct t_path_node *)(node->data))->cost = pathNode->cost;
+        ((struct t_path_node *)(node->data))->costFromStart = pathNode->costFromStart;
+        ((struct t_path_node *)(node->data))->costToGoal_heuristic = pathNode->costToGoal_heuristic;
+        ((struct t_path_node *)(node->data))->costNode = pathNode->costNode;
+        // Position
+        ((struct t_path_node *)(node->data))->Position.x = Position.x;
+        ((struct t_path_node *)(node->data))->Position.y = Position.y;
+
+#ifdef DEBUG
+        printf("Allocated arbre\n");
+        printf("((struct t_path_node *)(node->data))->cost : %ld\n", ((struct t_path_node *)(node->data))->cost);
+        printf("((struct t_path_node *)(node->data))->costFromStart : %ld\n", ((struct t_path_node *)(node->data))->costFromStart);
+        printf("((struct t_path_node *)(node->data))->costToGoal_heuristic : %ld\n", ((struct t_path_node *)(node->data))->costToGoal_heuristic);
+        printf("((struct t_path_node *)(node->data))->costNode : %ld\n", ((struct t_path_node *)(node->data))->costNode);
+        printf("((struct t_path_node *)(node->data))->Position.x : %ld\n", ((struct t_path_node *)(node->data))->Position.x);
+        printf("((struct t_path_node *)(node->data))->Position.y : %ld\n\n", ((struct t_path_node *)(node->data))->Position.y);
+#endif
+
+    }
+    // Si on a déjà la point dans l'arbre
+    // Alors on regarde si le coût est inférieur
+    else if ( (Position.x == ((struct t_path_node *)(node->data))->Position.x)
+              && (Position.y == ((struct t_path_node *)(node->data))->Position.y) )
+    {
+        if ( pathNode->cost < ((struct t_path_node *)(node->data))->cost )
+        {
+            // Les coûts
+            ((struct t_path_node *)(node->data))->cost = pathNode->cost;
+            ((struct t_path_node *)(node->data))->costFromStart = pathNode->costFromStart;
+            ((struct t_path_node *)(node->data))->costToGoal_heuristic = pathNode->costToGoal_heuristic;
+            ((struct t_path_node *)(node->data))->costNode = pathNode->costNode;
+        }
+    }
+    // Si c'est plus petit
+    // Alors ca va a droite
+    else if ( (costStored = ((struct t_path_node *)(node->data))->cost)
+              < (costToStore = pathNode->cost) )
+        node->next = binary_search_tree_add_path (node->next, pathNode);
+    // Si c'est plus grand
+    // Alors ca va a gauche
+    else if (costStored > costToStore)
+        node->prev = binary_search_tree_add_path (node->prev, pathNode);
+
+    return node;
+}
+
+struct tree_t* binary_search_tree_search_lowestCostNode (struct tree_t *root)
+{
+    t_double_linked_tree_t *lowestCostNode = NULL;
+
+    while (root != NULL)
+    {
+        lowestCostNode = root;
+        root = root->prev;
+    }
+
+    return lowestCostNode;
+}
+
+void binary_search_tree_search_isOpen (struct tree_t *root, struct t_path_node *Node)
+{
+    while (root != NULL)
+    {
+        if ( ((struct t_path_node *)(root->data))->Position.x == Node->Position.x
+                && ((struct t_path_node *)(root->data))->Position.y == Node->Position.y )
+        {
+            Node->isOpen = 1;
+            break;
+        }
+
+        root = root->next;
+    }
+}
+
+void binary_search_tree_search_isClose (struct tree_t *root, struct t_path_node *Node)
+{
+    while (root != NULL)
+    {
+        if ( ((struct t_path_node *)(root->data))->Position.x == Node->Position.x
+                && ((struct t_path_node *)(root->data))->Position.y == Node->Position.y )
+        {
+            Node->isOpen = 0;
+            break;
+        }
+
+        root = root->prev;
+    }
+}
+

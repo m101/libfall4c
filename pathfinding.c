@@ -419,7 +419,6 @@ void path_node_zero (struct t_path_node *Node)
 }
 
 // Tri Liste Open
-
 void path_ajouter_noeud_liste_ouverte ()
 {
 }
@@ -427,3 +426,14 @@ void path_ajouter_noeud_liste_ouverte ()
 void path_ajouter_noeud_liste_fermee ()
 {
 }
+
+void binary_tree_display_path (struct tree_t *root)
+{
+    if (root != NULL)
+    {
+        // binary_tree_display_right (root->prev);
+        printf("x : %3ld, y : %3ld\n", ((struct t_path_node *)(root->data))->Position.x, ((struct t_path_node *)(root->data))->Position.y);
+        binary_tree_display_path (root->prev);
+    }
+}
+

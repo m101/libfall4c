@@ -58,5 +58,16 @@ struct List* path_sort_list (struct List *List);
 // Initialisation d'un t_path_node
 void path_node_zero (t_path_node *Node);
 
+
+
+struct tree_t* binary_search_tree_add_path (struct tree_t *node,
+                    struct t_path_node *pathNode);
+void binary_tree_display_path (struct tree_t *racine);
+struct tree_t* binary_search_tree_search_lowestCostNode (struct tree_t *Root);
+
+// Ouvert ou ferme?
+void binary_search_tree_search_isOpen (struct tree_t *Root, t_path_node *Node);
+void binary_search_tree_search_isClose (struct tree_t *Root, t_path_node *Node);
+
 #endif
 

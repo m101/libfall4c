@@ -3,42 +3,29 @@
 
 #include <stddef.h>             /* pour size_t */
 
-#include "list.h"
+#include "tree_t.h"
 #include "arbres_binaires.h"
 #include "pathfinding.h"
 
-struct t_branche
-{
-    struct t_branche *parent;
-    struct List feuille;
-};
-
-struct List* binary_search_tree_add (struct List *node,
+struct tree_t* binary_search_tree_add (struct tree_t *node,
                     long integer);
-struct List* binary_search_tree_add_path (struct List *node,
-                    struct t_path_node *pathNode);
-void binary_tree_display (struct List *racine);
-void binary_tree_display_right (struct List *racine);
-void binary_tree_display_path (struct List *racine);
-struct List* binary_search_tree_search_lowestCostNode (struct List *Root);
-
-// Ouvert ou ferme?
-void binary_search_tree_search_isOpen (struct List *Root, t_path_node *Node);
-void binary_search_tree_search_isClose (struct List *Root, t_path_node *Node);
+void binary_tree_display (struct tree_t *racine);
+void binary_tree_display_right (struct tree_t *racine);
 
 // AVL
-struct t_tree
+struct tree_t
 {
     void *data;
     int balance;
     int h;
     int elt;
-    List *node;
+    tree_t *node;
     t_tree *left, *right;
     t_tree *son, *brother;
 
     // functions
     int (*comparator)(void *data1, void *data2);
+    size_t (*get_data_size)(void *data);
 };
 
-#endif /* not H_LISTEDOUBLE */
+#endif /* not H_tree_tEDOUBLE */
