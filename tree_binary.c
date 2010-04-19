@@ -1,14 +1,64 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "tree_tes_doubles.h"
+#include <assert.h>
+
+#include "struct tree_tes_doubles.h"
 #include "arbres_binaires.h"
 #include "pathfinding.h"
 #include "math_basic.h"
 
-struct tree_t* binary_search_tree_add (struct tree_t *node, void *data)
+/*  @brief  Create new tree
+*/
+struct tree_t* tree_new (int (*comparator)(void *, void *), size_t (*get_data_size)(void *))
 {
-    if (node == NULL)
+    struct tree_t *struct tree_table;
+
+    struct tree_table = calloc (1, sizeof(*struct tree_table));
+    assert (struct tree_table != NULL);
+    struct tree_table->root = calloc (1, sizeof(*(struct tree_table->root)));
+    struct tree_table->comparator = comparator;
+    struct tree_table->get_data_size = get_data_size;
+}
+
+/*  @brief  Destroy tree
+*/
+void tree_free (struct tree_t *root)
+{
+    if (root)
+    {
+        tree_free_stub (root->root);
+        free (root);
+    }
+}
+
+// recursively traverse nodes to free them
+void tree_free_stub (struct tree_node_t *node)
+{
+    if (node)
+    {
+        tree_free_stub (node->left);
+        tree_free_stub (node->right);
+        free (node);
+    }
+}
+
+/* @brief   add data to tree
+ */
+struct tree_t* binary_search_tree_add (struct tree_t *root, void *data)
+{
+    if (!root || !data)
+        return NULL;
+    binary_search_tree_add_node (root->root, data);
+}
+
+/* @brief   add node to tree
+ */
+struct tree_node_t* binary_search_tree_add_node (struct tree_node_t *node, void *data)
+{
+    if (!data)
+        return NULL;
+    if (!node)
     {
         node = calloc (1, sizeof(*node));
         node->data = data;
@@ -16,17 +66,18 @@ struct tree_t* binary_search_tree_add (struct tree_t *node, void *data)
     // if smaller
     // then we go left
     else if (node->comparator(node->data, data) <= 0)
-        node->prev = binary_search_tree_add (node->left, data);
+        node->left = binary_search_tree_add (node->left, data);
     // if bigger
     // then we go right
     else if (node->comparator(node->data, data) > 0)
-        node->next = binary_search_tree_add (node->right, data);
+        node->right = binary_search_tree_add (node->right, data);
 
     return node;
 }
 
-
-void binary_tree_display (struct tree_t *root)
+/* @brief   Display whole tree
+ */
+void binary_search_tree_display (struct tree_t *root)
 {
     if (root != NULL)
     {
@@ -36,26 +87,35 @@ void binary_tree_display (struct tree_t *root)
     }
 }
 
-void binary_tree_display_right (struct tree_t *root)
+void binary_search_tree_display_right (struct tree_t *root)
 {
     if (root != NULL)
     {
-        // binary_tree_display_right (root->prev);
         printf("%4ld\n", *(long *)root->data);
         binary_tree_display_right (root->prev);
     }
 }
+
+void binary_search_tree_display_left (struct tree_t *root)
+{
+    if (root != NULL)
+    {
+        printf("%4ld\n", *(long *)root->data);
+        binary_tree_display_left (root->prev);
+    }
+}
+
 
 
 // AVL
 
 void binary_search_tree_sort (struct tree_t *root, struct t_path_node *Treeroot)
 {
-    t_double_linked_tree_t *tree_tTemp = NULL;
+    t_double_linked_struct tree_t *struct tree_tTemp = NULL;
 
     if ( ((struct t_path_node *)(root->data))->cost < Treeroot->cost )
     {
-        tree_tTemp = root->prev;
+        struct tree_tTemp = root->prev;
         root->prev = root;
     }
 
@@ -63,102 +123,14 @@ void binary_search_tree_sort (struct tree_t *root, struct t_path_node *Treeroot)
     binary_search_tree_sort (root->prev, Treeroot);
 }
 
-t_tree* binary_tree_rotate_left (t_tree *A)
-{
-    t_tree *B = NULL;
-    int a = 0, b = 0;
-
-    if ( A != NULL )
-    {
-        // Rotate left
-        // B = A->right branch
-        B = A->right;
-        // A->left branch = A->right->left branch
-        A->right = B->left;
-        // A->right->left branch = A branch
-        B->left = A;
-        // Balance
-        a = A->balance;
-        b = B->balance;
-        A->balance = a - max ("%ld%ld", b, 0) - 1;
-        B->balance = min ("%ld%ld%ld", a - 2, a + b - 2, b - 1);
-    }
-    else
-        fprintf(stderr, "Error: Tree branch is empty\n");
-
-    return B;
-}
-
-t_tree* binary_tree_rotate_right (t_tree *A)
-{
-    t_tree *B = NULL;
-    int a = 0, b = 0;
-
-    if ( B != NULL )
-    {
-        // Rotate right
-        // B = A->left branch
-        B = A->left;
-        // A->left branch = B->left->right branch
-        A->left = B->right;
-        // B->left->right branch = A branch
-        B->right = A;
-        // Balance
-        a = A->balance;
-        b = B->balance;
-        A->balance = a - min ("%ld%ld", b, 0) + 1;
-        B->balance = max ("%ld%ld%ld", a + 2, a + b + 2, b + 1);
-    }
-    else
-        fprintf(stderr, "Error: Tree branch is empty\n");
-
-    return B;
-}
-
-t_tree* binary_tree_rotate_left_double (t_tree *A)
-{
-    if ( A != NULL )
-        A->right = binary_tree_rotate_right (A->right);
-    else
-        fprintf(stderr, "Error: Tree branch is empty\n");
-
-    return binary_tree_rotate_left (A);
-}
-
-t_tree* binary_tree_equilibrate(t_tree* A)
-{
-    if (A->balance == 2)
-    {
-        if (A->right->balance >= 0)
-            return binary_tree_rotate_left(A);
-        else
-        {
-            A->right = binary_tree_rotate_right(A->right);
-            return binary_tree_rotate_left(A);
-        }
-    }
-    else if (A->balance == -2)
-    {
-        if (A->left->balance <= 0)
-            return binary_tree_rotate_right(A);
-        else
-        {
-            A->left = binary_tree_rotate_left(A->left);
-            return binary_tree_rotate_right(A);
-        }
-    }
-    else
-        return A;
-}
-
-t_tree* binary_tree_add (t_tree* root, t_tree* Node, int h, int (*f)(void *) )
+struct tree_t* binary_tree_add (str_cstruct tree_t* root, struct tree_t* Node, int h, int (*f)(void *) )
 {
     int x = f(root), y = f(Node);
 
     if (root == NULL)
     {
         //creer un nœud root;
-        root = malloc(sizeof(t_tree));
+        root = malloc(sizeof(struct tree_t));
         root->left = NULL;
         root->right = NULL;
         root->elt = x;
@@ -205,7 +177,7 @@ t_tree* binary_tree_add (t_tree* root, t_tree* Node, int h, int (*f)(void *) )
     return root;
 }
 
-void tree_zero (t_tree *Tree)
+void tree_zero (struct tree_t *Tree)
 {
     if (Tree != NULL)
     {
@@ -213,22 +185,4 @@ void tree_zero (t_tree *Tree)
         Tree->node = NULL;
     }
 }
-
-void binary_tree_sort (t_double_linked_tree_t *Node)
-{
-    t_tree Tree;
-
-    tree_zero(&Tree);
-
-    Tree.node = Node;
-
-    if (Tree.node != NULL)
-    {
-        if (Tree.node->next->data > Tree.node->prev->data)
-            binary_tree_rotate_right (&Tree);
-        else
-            binary_tree_rotate_left (&Tree);
-    }
-}
-
 

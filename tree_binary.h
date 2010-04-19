@@ -15,17 +15,26 @@ void binary_tree_display_right (struct tree_t *racine);
 // AVL
 struct tree_t
 {
-    void *data;
+    // root of the tree
+    struct tree_node_t *root;
+    // balance of the tree
     int balance;
-    int h;
-    int elt;
-    tree_t *node;
-    t_tree *left, *right;
-    t_tree *son, *brother;
+    // height of the tree
+    int height;
+    // number of nodes
+    size_t n;
 
     // functions
     int (*comparator)(void *data1, void *data2);
     size_t (*get_data_size)(void *data);
+};
+
+struct tree_node_t
+{
+    void *data;
+    int weight;
+    struct t_tree *left, *right;
+    struct t_tree *son, *brother;
 };
 
 #endif /* not H_tree_tEDOUBLE */
