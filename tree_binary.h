@@ -35,6 +35,10 @@ struct t_tree
     int elt;
     List *node;
     t_tree *left, *right;
+    t_tree *son, *brother;
+
+    // functions
+    int (*comparator)(void *data1, void *data2);
 };
 
 #endif /* not H_LISTEDOUBLE */
