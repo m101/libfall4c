@@ -1,8 +1,8 @@
 /***************************************************************************
- *            piles.h
+ *            stack.h
  *
  *  Wed Dec 17 12:07:15 2008
- *  Copyright  2008  kurapix
+ *  Copyright  2010  kurapix
  *  <kurapix@<host>>
  ****************************************************************************/
 
@@ -25,18 +25,37 @@
 #ifndef _STACK_H
 #define _STACK_H
 
-typedef struct t_stack
+// stack
+struct stack_t
 {
-	char *data;
-	size_t size;
-	struct t_stack *next, *prev;
-} t_stack;
+    // elements of the stack
+    struct stack_element_t *elements;
+    // stack pointer
+    struct stack_element_t *top;
+    // base pointer
+    struct stack_element_t *base;
+    // number of elements in the stack
+    size_t szStack;
+};
 
-// Empilement
-struct t_stack *push (struct t_stack **p, struct t_stack *elt);
-// Depilement
-struct t_stack *pop (struct t_stack **p);
-// Allouer stack
-struct t_stack *alloc_stack_node (void);
+// stack element
+struct stack_element_t
+{
+    // data stored
+    char *data;
+    // size of data
+    size_t size;
+    // next and previous element
+    struct t_stack *next, *prev;
+};
+
+// push data on the stack
+struct stack_t* push (struct stack_t **p, void *data);
+// get last data added to the stack
+void* pop (struct stack_t **p);
+// allocate a new stack
+struct stack_new (void);
+// destroy a stack
+void stack_destroy (struct stack_t **stack);
 
 #endif
