@@ -28,7 +28,7 @@
 #include "stack.h"
 
 // push data on the stack
-struct stack_t *push (struct t_stack **p, void *data)
+struct stack_t *stack_push (struct t_stack **p, void *data)
 {
     struct stack_element_t *elt;
 
@@ -44,6 +44,8 @@ struct stack_t *push (struct t_stack **p, void *data)
         // update base pointer
         (*p)->base = elt;
     }
+    // add data
+    elt->data = data;
     // add element
 	elt->prev = (*p)->top;
     if ((*p)->top)
@@ -57,7 +59,7 @@ struct stack_t *push (struct t_stack **p, void *data)
 }
 
 // get last data added to the stack
-void* pop (struct stack_t **p)
+void* stack_pop (struct stack_t **p)
 {
     void *data;
 	struct stack_element_t *elt = NULL;
@@ -68,25 +70,27 @@ void* pop (struct stack_t **p)
 	if (!(*p))
 		return NULL;
 	
-    // get element at the top of the stack
-	elt = (*p)->top;
-    // remove it from the stack
-    if (elt)
-    {
-        // stack top
-        if (elt->prev)
-            elt->prev->next = NULL;
-        // node prev
-        elt->prev = NULL;
-        // get correct count
-        (*p)->szStack--;
-    }
-    // update top element of the stack
-	(*p)->top = (*p)->prev;
-    // node elements? then destruct it
+    // if no node elements
+    // then destruct it
     if ( (*p)->top == NULL )
+    {
         free (*p), *p = NULL;
+        return NULL;
+    }
 
+    // get element at the top of the stack
+    elt = (*p)->top;
+    // remove it from the stack
+    // stack top follower become the stack top
+    if (elt->prev)
+        elt->prev->next = NULL;
+    // update top element of the stack
+    (*p)->top = (*p)->top->prev;
+    // node prev and next
+    elt->prev = NULL;
+    elt->next = NULL;
+    // get correct count
+    (*p)->szStack--;
     // get data
     data = elt->data;
 

@@ -46,13 +46,13 @@ struct stack_element_t
     // size of data
     size_t size;
     // next and previous element
-    struct t_stack *next, *prev;
+    struct stack_element_t *next, *prev;
 };
 
 // push data on the stack
-struct stack_t* push (struct stack_t **p, void *data);
+struct stack_t* stack_push (struct stack_t **p, void *data);
 // get last data added to the stack
-void* pop (struct stack_t **p);
+void* stack_pop (struct stack_t **p);
 // allocate a new stack
 struct stack_new (void);
 // destroy a stack
