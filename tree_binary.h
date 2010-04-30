@@ -1,40 +1,29 @@
-#ifndef ARBRES_BINAIRES_H
-#define ARBRES_BINAIRES_H
+#ifndef _TREE_BINARY_H_
+#define _TREE_BINARY_H_
+
+#define TREE_BINARY
+#define TREE_AVL    
+#define TREE_RADBLACK
+#define TREE_B      
+#define TREE_BPLUS
+#define TREE_SPLAY
+#define TREE_AA
+#define TREE_HEAP // TREAP
 
 #include <stddef.h>             /* pour size_t */
 
-#include "tree_t.h"
-#include "arbres_binaires.h"
-#include "pathfinding.h"
+#include "tree_common.h"
 
-struct tree_t* binary_search_tree_add (struct tree_t *node,
-                    long integer);
-void binary_tree_display (struct tree_t *racine);
-void binary_tree_display_right (struct tree_t *racine);
+// Create new tree
+struct tree_t* tree_new (int (*comparator)(void *, void *), size_t (*get_data_size)(void *));
+// Destroy tree
+void tree_free (struct tree_t *root);
+// Add data to tree
+struct tree_t* binary_search_tree_add (struct tree_t *root, void *data);
+// Display whole tree
+void binary_tree_display (struct tree_t *root);
+void binary_tree_display_right (struct tree_t *root);
+void binary_tree_display_left (struct tree_t *root);
 
-// AVL
-struct tree_t
-{
-    // root of the tree
-    struct tree_node_t *root;
-    // balance of the tree
-    int balance;
-    // height of the tree
-    int height;
-    // number of nodes
-    size_t n;
+#endif /* _TREE_BINARY_H_ */
 
-    // functions
-    int (*comparator)(void *data1, void *data2);
-    size_t (*get_data_size)(void *data);
-};
-
-struct tree_node_t
-{
-    void *data;
-    int weight;
-    struct t_tree *left, *right;
-    struct t_tree *son, *brother;
-};
-
-#endif /* not H_tree_tEDOUBLE */

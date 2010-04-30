@@ -3,22 +3,19 @@
 
 #include <assert.h>
 
-#include "struct tree_tes_doubles.h"
-#include "arbres_binaires.h"
-#include "pathfinding.h"
-#include "math_basic.h"
+#include "tree_binary.h"
 
 /*  @brief  Create new tree
 */
 struct tree_t* tree_new (int (*comparator)(void *, void *), size_t (*get_data_size)(void *))
 {
-    struct tree_t *struct tree_table;
+    struct tree_t *tree_table;
 
-    struct tree_table = calloc (1, sizeof(*struct tree_table));
-    assert (struct tree_table != NULL);
-    struct tree_table->root = calloc (1, sizeof(*(struct tree_table->root)));
-    struct tree_table->comparator = comparator;
-    struct tree_table->get_data_size = get_data_size;
+    tree_table = calloc (1, sizeof(*tree_table));
+    assert (tree_table != NULL);
+    tree_table->root = calloc (1, sizeof(*(tree_table->root)));
+    tree_table->comparator = comparator;
+    tree_table->get_data_size = get_data_size;
 }
 
 /*  @brief  Destroy tree
@@ -43,36 +40,38 @@ void tree_free_stub (struct tree_node_t *node)
     }
 }
 
-/* @brief   add data to tree
+/* @brief   Add data to tree
  */
 struct tree_t* binary_search_tree_add (struct tree_t *root, void *data)
 {
+    // pointers check
     if (!root || !data)
         return NULL;
-    binary_search_tree_add_node (root->root, data);
+    binary_search_tree_add_node (&(root->root), data);
 }
 
-/* @brief   add node to tree
+/* @brief   Add node to tree
  */
-struct tree_node_t* binary_search_tree_add_node (struct tree_node_t *node, void *data)
+struct tree_node_t* binary_search_tree_add_node (struct tree_node_t **node, void *data)
 {
-    if (!data)
+    // pointers check
+    if (!data || !node)
         return NULL;
-    if (!node)
+    if (!*node)
     {
-        node = calloc (1, sizeof(*node));
-        node->data = data;
+        *node = calloc (1, sizeof(*node));
+        (*node)->data = data;
+        return *node;
     }
+    // we don't check equality since we don't want dupes
     // if smaller
     // then we go left
-    else if (node->comparator(node->data, data) <= 0)
-        node->left = binary_search_tree_add (node->left, data);
+    else if ((*node)->comparator((*node)->data, data) < 0)
+        return binary_search_tree_add (&((*node)->left), data);
     // if bigger
     // then we go right
-    else if (node->comparator(node->data, data) > 0)
-        node->right = binary_search_tree_add (node->right, data);
-
-    return node;
+    else if ((*node)->comparator((*node)->data, data) > 0)
+        return (*node)->right = binary_search_tree_add (&((*node)->right), data);
 }
 
 /* @brief   Display whole tree
@@ -87,6 +86,8 @@ void binary_search_tree_display (struct tree_t *root)
     }
 }
 
+/* @brief   Display right children
+ */
 void binary_search_tree_display_right (struct tree_t *root)
 {
     if (root != NULL)
@@ -96,6 +97,8 @@ void binary_search_tree_display_right (struct tree_t *root)
     }
 }
 
+/* @brief   Display right children
+ */
 void binary_search_tree_display_left (struct tree_t *root)
 {
     if (root != NULL)
@@ -108,27 +111,38 @@ void binary_search_tree_display_left (struct tree_t *root)
 
 
 // AVL
-
-void binary_search_tree_sort (struct tree_t *root, struct t_path_node *Treeroot)
+void binary_search_tree_sort (struct tree_t *root)
 {
-    t_double_linked_struct tree_t *struct tree_tTemp = NULL;
-
-    if ( ((struct t_path_node *)(root->data))->cost < Treeroot->cost )
-    {
-        struct tree_tTemp = root->prev;
-        root->prev = root;
-    }
-
-    binary_search_tree_sort (root->prev, Treeroot);
-    binary_search_tree_sort (root->prev, Treeroot);
+    if (root)
+        binary_search_sort_stub (root->root);
 }
 
-void tree_zero (struct tree_t *Tree)
+void binary_search_tree_sort_stub (struct tree_node_t *node)
 {
-    if (Tree != NULL)
+    struct tree_t *leftOld = NULL, *rightOld = NULL;
+
+    // pointer check
+    if (!node)
+        return;
+
+    binary_search_tree_sort (node->prev);
+
+    // 
+    if ( node->left && node->right )
     {
-        Tree->balance = 0;
-        Tree->node = NULL;
+        if ( node->comparator (node->left->data, node->right->data) < 0 )
+        {
+            rightOld = node->right;
+            node->right = node;
+        }
     }
+
+    binary_search_tree_sort (node->right);
+}
+
+void tree_zero (struct tree_t *root)
+{
+    if (root != NULL)
+        memset (root, sizeof(*root), 0);
 }
 

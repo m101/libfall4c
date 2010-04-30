@@ -3,6 +3,58 @@
 
 #include "string.h"
 
+// secure string length
+size_t string_len (string_t *str) {
+    if (str)
+        return str->szString;
+    else
+        return -1;
+}
+
+// secure string copy
+string_t* string_cpy (string_t *dst, string_t *src) {
+    // new size
+    size_t nsize;
+
+    // pointer check
+    if (!dst || !src)
+        return NULL;
+
+    // if buffer isn't big enough
+    // then allocate an adapted one
+    if (dst->capacity < src->szString) {
+        dst->capacity = src->szString;
+        dst->string = realloc (dst->string, dst->capacity);
+    }
+
+    // we copy string
+    strncpy (dst->string, src->string, src->szString);
+
+    return dst;
+}
+
+// secure string concatenation
+string_t *string_cat (string_t *dst, string_t *src) {
+    // new size
+    size_t nsize;
+
+    // pointer check
+    if (!dst || !src)
+        return NULL;
+
+    // if buffer isn't big enough
+    // then allocate an adapted one
+    if (dst->capacity < dst->szString + src->szString) {
+        dst->capacity = dst->szString + src->szString;
+        dst->szString = realloc (dst->string, dst->capacity);
+    }
+
+    // we copy string
+    strncat (dst->string, src->string, src->szString);
+
+    return dst;
+}
+
 long strlen(char *string)
 {
     char *pChaine = string;

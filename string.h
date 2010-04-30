@@ -31,8 +31,12 @@ extern "C"
 #endif
 
     struct string_t {
+        // string
         char *string;
+        // size of string
         size_t szString;
+        // size of allocated space
+        size_t capacity;
     };
 
     void clean(char *chaine);

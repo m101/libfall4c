@@ -39,7 +39,7 @@ char* stringtoupper (char *string)
 *   @param   string      Chaine à convertir
 *   @return              Renvoi l'adresse de la chaine convertie
 */
-char* stringtolower (char string[])
+char* stringtolower (char *string)
 {
     while (*string)
     {
