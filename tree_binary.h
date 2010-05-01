@@ -1,15 +1,6 @@
 #ifndef _TREE_BINARY_H_
 #define _TREE_BINARY_H_
 
-#define TREE_BINARY
-#define TREE_AVL    
-#define TREE_RADBLACK
-#define TREE_B      
-#define TREE_BPLUS
-#define TREE_SPLAY
-#define TREE_AA
-#define TREE_HEAP // TREAP
-
 #include <stddef.h>             /* pour size_t */
 
 #include "tree_common.h"

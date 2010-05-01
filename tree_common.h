@@ -1,6 +1,17 @@
 #ifndef _TREE_COMMON_H_
 #define _TREE_COMMON_H_
 
+#define TREE_BINARY
+#define TREE_AVL    
+#define TREE_RADBLACK
+#define TREE_B      
+#define TREE_BPLUS
+#define TREE_SPLAY
+#define TREE_AA
+#define TREE_HEAP // TREAP
+
+
+
 // generic tree structure
 struct tree_t
 {
