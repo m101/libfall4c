@@ -27,6 +27,7 @@ struct tree_t
     size_t (*get_data_size)(void *data);
 };
 
+// node structure
 struct tree_node_t
 {
     void *data;
@@ -49,6 +50,8 @@ struct tree_node_t
 struct tree_t* tree_new (int (*comparator)(void *, void *), size_t (*get_data_size)(void *));
 // Destroy tree
 void tree_free (struct tree_t *root);
+// Create a tree node
+struct tree_node_t* tree_node_new (void);
 
 #endif /* _TREE_COMMON_H_ */
 
