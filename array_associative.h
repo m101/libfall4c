@@ -1,7 +1,7 @@
 #ifndef _ARRAY_ASSOCIATIVE_
 #define _ARRAY_ASSOCIATIVE_
 
-#include "tree_binary.h"
+#include "tree_common.h"
 
 // associative array element
 struct aarray_elt_t {
