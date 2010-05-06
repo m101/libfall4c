@@ -1,3 +1,8 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+#include <tree_avl.h>
+
 void avl_tree_balance (struct tree_t *root)
 {
     struct tree_t *balanced;
@@ -108,7 +113,7 @@ struct tree_t* avl_tree_equilibrate(struct tree_t* A)
         return A;
 }
 
-struct tree_t* avl_tree_add (str_cstruct tree_t* root, struct tree_t* Node, int h, int (*f)(void *) )
+struct tree_t* avl_tree_add (struct tree_t* root, struct tree_t* Node, int h, int (*f)(void *) )
 {
     int x = f(root), y = f(Node);
 

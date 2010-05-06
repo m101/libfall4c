@@ -5,40 +5,6 @@
 
 #include "tree_binary.h"
 
-/*  @brief  Create new tree
-*/
-struct tree_t* tree_new (int (*comparator)(void *, void *), size_t (*get_data_size)(void *))
-{
-    struct tree_t *tree_table;
-
-    tree_table = calloc (1, sizeof(*tree_table));
-    assert (tree_table != NULL);
-    tree_table->root = calloc (1, sizeof(*(tree_table->root)));
-    tree_table->comparator = comparator;
-    tree_table->get_data_size = get_data_size;
-}
-
-/*  @brief  Destroy tree
-*/
-void tree_free (struct tree_t *root)
-{
-    if (root)
-    {
-        tree_free_stub (root->root);
-        free (root);
-    }
-}
-
-// recursively traverse nodes to free them
-void tree_free_stub (struct tree_node_t *node)
-{
-    if (node)
-    {
-        tree_free_stub (node->left);
-        tree_free_stub (node->right);
-        free (node);
-    }
-}
 
 /* @brief   Add data to tree
  */

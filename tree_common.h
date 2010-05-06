@@ -10,8 +10,6 @@
 #define TREE_AA
 #define TREE_HEAP // TREAP
 
-
-
 // generic tree structure
 struct tree_t
 {
@@ -46,6 +44,11 @@ struct tree_node_t
         };
     };
 };
+
+// Create new tree
+struct tree_t* tree_new (int (*comparator)(void *, void *), size_t (*get_data_size)(void *));
+// Destroy tree
+void tree_free (struct tree_t *root);
 
 #endif /* _TREE_COMMON_H_ */
 
