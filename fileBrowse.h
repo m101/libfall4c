@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void dirwalk (char *dirname, void (*fonction)(char *));
+void dirwalk (char *dirname);
 void readTreeNode (char *dirname);
 
 #endif

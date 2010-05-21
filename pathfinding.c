@@ -18,11 +18,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <allegro.h>
-
 #include "pathfinding.h"
-#include "structures.h"
-#include "arbres_binaires.h"
+#include "tree_binary.h"
 
 #define DEBUG
 
