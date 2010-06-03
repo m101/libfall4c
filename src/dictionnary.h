@@ -1,31 +1,26 @@
 #ifndef _ARBRES_H
 #define _ARBRES_H
 
-/*! @brief Fonctions pour un dictionnaire dans un arbre */
-
-/*! @brief Structure dictionnaire en utilisant les arbres n-aires
-*/
+// dictionnary structure
 struct dict_t
 {
-    /*! Caractere */
-    char c;
-    /*! Fils frere */
-    struct dict_t *frere;
-    /*! Fils */
-    struct dict_ *fils;
+    //
+    char *str;
+    size_t szStr;
+    //
+    char *description;
+    //
+    size_t count;
+    struct dict_t *left, *right;
 };
 
 // dictionnary : insert a word
-struct dict_t* dict_insert_word (struct dict_t **anchor, char *word);
+int dict_insert_word (struct dict_t **dict, char *str, size_t szStr);
 // search a word in the dictionnary
-char *dict_search_word (struct dict_t *anchor, char *word,
-                     char *recherche, size_t i);
-// search a word in the dictionnary
-char *dict_search_word (struct dict_t *anchor, char *word,
-                     char *recherche, size_t i);
+struct dict_t* dict_search_word (struct dict_t *anchor, char *word);
 // load a dictionnary file
-struct dict_t *dict_load (char *dict_filename);
+// struct dict_t *dict_load (char *dict_filename);
 // dictionnary : save to a file
-int dict_save (char *dict_file, struct dict_t *dict);
+// int dict_save (char *dict_file, struct dict_t *dict);
 
 #endif

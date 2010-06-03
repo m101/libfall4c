@@ -7,118 +7,151 @@
 
 #define BUFFER_SIZE 1000
 
-// dictionnary : insert a word
-struct dict_t* dict_insert_word (struct dict_t **anchor, char *word) {
-    // pointers check
-    if (!word)
-        return NULL;
-    if (!anchor)
-        return NULL;
-    if (!*anchor)
-        *anchor = calloc( 1, sizeof(struct dict_t) );
+// insert a word
+int dict_insert_word (struct dict_t **dict, char *str, size_t szStr) {
+    int check;
 
-    // insert caracter as long as it's not NULL
-    if (*word != '\0') {
-        (*anchor)->c = *word;
-        if ((*anchor)->c > *word)
-            dict_insert_word(&((*anchor)->fils), word + 1);
-        else if ((*anchor)->c < *word)
-            dict_insert_word(&((*anchor)->frere), word + 1);
+    // check for string validity
+    if (!str || !szStr)
+        return 0;
+    // check for dictionnary double pointer validity
+    if (!dict)
+        return 0;
+
+    // if we are at a leaf node
+    // then we can insert the data
+    if (!(*dict)) {
+        // we allocate a node
+        *dict = calloc(1, sizeof(*dict));
+        // we allocate enough space for string
+        (*dict)->str = calloc(1, szStr * sizeof(*str) + 1);
+        // we make sure the string is zeroed out
+//        bzero((*dict)->str, szStr * sizeof(*str) + 1);
+        // we insert the string
+        memcpy ( (*dict)->str, str, szStr * sizeof(*str) );
+        // we initialize all variable to ensure correct behavior
+        (*dict)->szStr = szStr;
+        (*dict)->count = 1;
+        (*dict)->right = NULL;
+        (*dict)->left = NULL;
+
+        return 1;
     }
-    // stop insertion
+
+    // compare strings
+    check = memcmp((*dict)->str, str, szStr);
+
+    // insertion
+    if ( check > 0 )
+        return dictionnary_insert ( &((*dict)->right), str, szStr);
+    else if ( check < 0 )
+        return dictionnary_insert ( &((*dict)->left), str, szStr);
     else {
-        (*anchor)->c = '\0';
-        return *anchor;
+        (*dict)->count++;
+        return 1;
     }
+
+    return 0;
 }
 
 // search a word in the dictionnary
-char *dict_search_word (struct dict_t *anchor, char *word,
-                     char *recherche, size_t i) {
-    // pointer check
-    if (anchor == NULL)
-        return 0;
-    // Si la lettre du noeud courant est apres la lettre courante du word
-    // Alors on a un echec
-    if (anchor->c > word[i])
-        return 0;
-    // Si le caractere du noeud courant correspond a la lettre courante du word
-    // Alors on stocke dans recherche et on appel recursivement la fonction
-    else if (anchor->c == word[i])
-    {
-        recherche[i] = word[i];
-        dict_search_word (anchor->fils, word, recherche, i + 1);
-    }
-    // Sinon on continue a parcourir le word
-    else if (anchor->c > word[i])
-    {
-        dict_search_word (anchor->frere, word, recherche, i + 1);
-    }
-    // if word is in dictionnary
-    if (strcmp(word, recherche))
-        return recherche;
-    // we arrived at the end of the word
-    if (anchor->c == '\0')
-        return 0;
-}
+struct dict_t* dict_search_word (struct dict_t *anchor, char *word) {
+    int check;
 
-// load a dictionnary file
-struct dict_t *dict_load (char *dict_filename)
-{
-    struct dict_t *dict = NULL;
-    FILE *dict_file = NULL;
-    char *buffer = malloc(sizeof(*buffer) * BUFFER_SIZE);
-    int nbword = 0;
-
-    // pointers check
-    if (!dict_filename)
+    if (!anchor || !word)
         return NULL;
 
-    dict_file = fopen(dict_filename, "r");
+    check = strcmp (anchor->str, word);
+    // found
+    if (check == 0)
+        return anchor;
+    else if (check < 0)
+        return dict_search_word (anchor->left, word);
+    else
+        return dict_search_word (anchor->right, word);
+}
 
-    // we get number of words
-    fgets(buffer, BUFFER_SIZE * sizeof(*buffer), dict_file);
-    nbword = atoi(buffer);
+// build a dictionnary from a sequence of characters
+// usefull to study frequency analysis
+struct dict_t* dictionnary_build (char *str, size_t szStr, size_t szToken) {
+    struct dict_t *dict;
+    char *pStr;
 
-    // dict load
-    // we construct the tree
-    while (fgets(buffer, BUFFER_SIZE * sizeof(*buffer), dict_file))
-        inserer_word(&dict, buffer);
+    // check string validity
+    if (!str || !szStr || !szToken)
+        return NULL;
 
-    // cleaning up
-    fclose(dict_file);
-    free(buffer);
+    // we construct dictionary
+    pStr = str, dict = NULL;
+    while (pStr < str + szStr - 1) {
+        dictionnary_insert(&dict, pStr, szToken);
+        pStr++;
+    }
 
     return dict;
 }
 
-// dictionnary : save to a file
-int dict_save (char *dict_file, struct dict_t *dict)
-{
-    FILE *file = NULL;
+//
+struct dict_t *dictionnary_search_highest_occurrences (struct dict_t *dict, struct dict_t **node) {
+    int check;
 
-    // pointers check
-    if ( (dict_file == NULL) || (dict == NULL) )
-        return 0;
-    else
-    {
-        // Parcours de l'arbre recursivement
-        // Sauvegarde du word
+    // if invalid node pointer given
+    // then we exit
+    if (!node || !dict)
+        return NULL;
+
+    if (dict) {
+        // if node is null
+        // then it is equal to first the anchor
+        if (!*node)
+            *node = dict;
+
+        // traverse tree
+        // right side
+        if (dict->right) {
+            // if right node count is higher than actual node
+            // then we update the actual node
+            if (dict->right->count > (*node)->count)
+                *node = dict->right;
+            // if we have the same count
+            // then we update the actual node according to alphabetical order
+            else if (dict->right->count == (*node)->count) {
+                // get order
+                check = memcmp(dict->right->str, (*node)->str, (*node)->szStr);
+
+                // if right node is before actual node
+                // then we update actual node
+                if (check < 0)
+                    *node = dict->right;
+            }
+
+            // we go right
+            dictionnary_search_highest_occurrences(dict->right, node);
+        }
+
+        // left side
+        if (dict->left) {
+            // if right node count is higher than actual node
+            // then we update the actual node
+            if (dict->left->count > (*node)->count)
+                *node = dict->left;
+            // if we have the same count
+            // then we update the actual node according to alphabetical order
+            else if (dict->left->count == (*node)->count) {
+                // get order
+                check = memcmp(dict->left->str, (*node)->str, (*node)->szStr);
+
+                // if left node is before actual node
+                // then we update actual node
+                if (check < 0)
+                    *node = dict->left;
+            }
+
+            // we go left
+            dictionnary_search_highest_occurrences(dict->left, node);
+        }
     }
+
+    return *node;
 }
 
-// show dictionnary
-void dict_show (struct dict_t *dict)
-{
-    if (!dict)
-    {
-        fprintf (stderr, "Error: %s", "Dict not initialised");
-        return;
-    }
-    else
-    {
-        printf("%c", dict->c);
-        afficher_arbre(dict->fils);
-        afficher_arbre(dict->frere);
-    }
-}
