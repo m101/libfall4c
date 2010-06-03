@@ -31,6 +31,10 @@ extern "C"
         // size of allocated space
         size_t capacity;
     };
+    
+    string_t string_cpy (string_t *str1, string_t str2);
+    string_t string_cat (string_t *str1, string_t str2);
+    string_t string_cmp (string_t *str1, string_t str2);
 
     void clean(char *chaine);
     void purger(void);

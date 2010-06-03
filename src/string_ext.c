@@ -72,6 +72,13 @@ string_t *string_cat (string_t *dst, string_t *src) {
     return dst;
 }
 
+string_t string_cmp (string_t *str1, string_t str2) {
+    if (str1->size != str2->size)
+        return *(str1->bytes) - *(str2->bytes);
+
+    return strncmp (str1->bytes, str2->bytes, str1->szUsed);
+}
+
 long strlen(char *string)
 {
     char *pChaine = string;
