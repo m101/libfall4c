@@ -30,6 +30,6 @@ char* fgetl(FILE *stream, char *pLine);
 // Fonction récupérant une ligne de texte à partir d'un fichier
 long getLine (char *line, long max);
 // Vérifie si le fichier est vide ou non
-long check_file_emptiness (char *fileName);#endif
+long check_file_emptiness (char *fileName);
 
 #endif

@@ -32,20 +32,21 @@ extern "C"
         size_t capacity;
     };
     
-    string_t string_cpy (string_t *str1, string_t str2);
-    string_t string_cat (string_t *str1, string_t str2);
-    string_t string_cmp (string_t *str1, string_t str2);
+    struct string_t string_cpy (struct string_t *str1, struct string_t str2);
+    struct string_t string_cat (struct string_t *str1, struct string_t str2);
+    struct string_t string_cmp (struct string_t *str1, struct string_t str2);
 
     void clean(char *chaine);
     void purger(void);
     void read (size_t bufferLength);
     void readNumber (size_t bufferLength);
     long stringLength (char string[]);
+    /*
     char *_DEFUN (strtok_r, (s, delim, lasts),
                 	register char *s _AND
                 	register const char *delim _AND
                 	char **lasts);
-
+    */
 #ifdef __cplusplus
 }
 #endif

@@ -3,9 +3,26 @@
 
 #include <string.h>
 
-#include "arbres.h"
+#include "dictionnary.h"
 
 #define BUFFER_SIZE 1000
+
+// destroy dictionnary recursively
+void dict_destroy (struct dict_t **dict) {
+    size_t i;
+
+    if (dict != NULL && *dict != NULL) {
+        // traverse nodes
+        dict_destroy ( &((*dict)->left) );
+        dict_destroy ( &((*dict)->right) );
+        // free fields
+        free ((*dict)->str);
+        free ((*dict)->description);
+        free ((*dict)->pointers);
+        // free node
+        free (*dict), *dict = NULL;
+    }
+}
 
 // insert a word
 int dict_insert_word (struct dict_t **dict, char *str, size_t szStr) {
@@ -22,32 +39,48 @@ int dict_insert_word (struct dict_t **dict, char *str, size_t szStr) {
     // then we can insert the data
     if (!(*dict)) {
         // we allocate a node
-        *dict = calloc(1, sizeof(*dict));
+        *dict = calloc(1, sizeof(**dict));
         // we allocate enough space for string
-        (*dict)->str = calloc(1, szStr * sizeof(*str) + 1);
+        (*dict)->str = calloc(1, szStr * sizeof(*str));
         // we make sure the string is zeroed out
 //        bzero((*dict)->str, szStr * sizeof(*str) + 1);
         // we insert the string
-        memcpy ( (*dict)->str, str, szStr * sizeof(*str) );
+        memcpy ( (*dict)->str, str, szStr * sizeof(*str));
         // we initialize all variable to ensure correct behavior
         (*dict)->szStr = szStr;
         (*dict)->count = 1;
         (*dict)->right = NULL;
         (*dict)->left = NULL;
+        //
+        (*dict)->szPointers = 0;
+        (*dict)->pointers = NULL;
 
         return 1;
     }
+
+    dict_destroy_dupes (NULL, dict, str, szStr);
 
     // compare strings
     check = memcmp((*dict)->str, str, szStr);
 
     // insertion
     if ( check > 0 )
-        return dictionnary_insert ( &((*dict)->right), str, szStr);
+        return dict_insert_word ( &((*dict)->right), str, szStr);
     else if ( check < 0 )
-        return dictionnary_insert ( &((*dict)->left), str, szStr);
+        return dict_insert_word ( &((*dict)->left), str, szStr);
     else {
         (*dict)->count++;
+
+        // keep track of pointers
+        if ((*dict)->count >= (*dict)->szPointers) {
+            if ( (*dict)->szPointers == 0 )
+                (*dict)->szPointers = POINTERS_NB;
+            else
+                (*dict)->szPointers *= 2;
+            (*dict)->pointers = realloc ( (*dict)->pointers, (*dict)->szPointers * sizeof(**dict));
+        }
+        (*dict)->pointers[(*dict)->count] = (unsigned long) str;
+
         return 1;
     }
 
@@ -55,44 +88,100 @@ int dict_insert_word (struct dict_t **dict, char *str, size_t szStr) {
 }
 
 // search a word in the dictionnary
-struct dict_t* dict_search_word (struct dict_t *anchor, char *word) {
+struct dict_t* dict_search_word (struct dict_t *anchor, char *word, size_t szWord) {
     int check;
 
     if (!anchor || !word)
         return NULL;
 
-    check = strcmp (anchor->str, word);
+    check = memcmp (anchor->str, word, szWord);
     // found
     if (check == 0)
         return anchor;
     else if (check < 0)
-        return dict_search_word (anchor->left, word);
+        return dict_search_word (anchor->left, word, szWord);
     else
-        return dict_search_word (anchor->right, word);
+        return dict_search_word (anchor->right, word, szWord);
+}
+
+// find and destroy duplicates
+struct dict_t* dict_destroy_dupes (struct dict_t *parent, struct dict_t **dict, char *word, size_t szWord) {
+    int check;
+
+    if (dict) {
+        dict_destroy_dupes (*dict, &((*dict)->left), word, szWord);
+        dict_destroy_dupes (*dict, &((*dict)->right), word, szWord);
+
+        // same length
+        if (parent && (*dict)->szStr == szWord) {
+            check = strcmp ((*dict)->str, word);
+            // found word
+            if (!check && parent->szStr == (*dict)->szStr ) {
+                check = strcmp (parent->str, (*dict)->str);
+                // found dupe
+                if (!check) {
+                    parent->count += (*dict)->count;
+                    dict_destroy(dict);
+                }
+            }
+        }
+    }
 }
 
 // build a dictionnary from a sequence of characters
 // usefull to study frequency analysis
-struct dict_t* dictionnary_build (char *str, size_t szStr, size_t szToken) {
-    struct dict_t *dict;
+struct dict_t* dict_build_static_size (struct dict_t **dict, char *str, size_t szStr, size_t szToken) {
     char *pStr;
 
     // check string validity
-    if (!str || !szStr || !szToken)
+    if (!dict || !str || !szStr || !szToken)
         return NULL;
 
     // we construct dictionary
-    pStr = str, dict = NULL;
+    pStr = str;
     while (pStr < str + szStr - 1) {
-        dictionnary_insert(&dict, pStr, szToken);
+        dict_insert_word(dict, pStr, szToken);
         pStr++;
     }
 
-    return dict;
+    return *dict;
+}
+
+// build a dictionnary from a sequence of characters
+struct dict_t* dict_build (struct dict_t **dict, char *str, size_t szStr, size_t szTokenMax) {
+    size_t i;
+
+    // check string validity
+    if (!dict || !str || !szStr || !szTokenMax)
+        return NULL;
+
+    for (i = 1; i <= szTokenMax; i++)
+        dict_build_static_size (dict, str, szStr, i);
+
+    return *dict;
+}
+
+// compute distance between equal words
+struct dict_t *dict_distance (struct dict_t *dict) {
+    size_t i;
+
+    if (dict) {
+        dict_distance (dict->left);
+        // if there
+        if (dict->count <= 1) {
+            for (i = 1; i < dict->count; i++) {
+                if (dict->pointers[i] > dict->pointers[i-1])
+                    dict->pointers[i] -= dict->pointers[i-1];
+                else
+                    dict->pointers[i] = dict->pointers[i-1] - dict->pointers[i];
+            }
+        }
+        dict_distance (dict->right);
+    }
 }
 
 //
-struct dict_t *dictionnary_search_highest_occurrences (struct dict_t *dict, struct dict_t **node) {
+struct dict_t *dict_search_highest_occurrences (struct dict_t *dict, struct dict_t **node) {
     int check;
 
     // if invalid node pointer given
@@ -126,7 +215,7 @@ struct dict_t *dictionnary_search_highest_occurrences (struct dict_t *dict, stru
             }
 
             // we go right
-            dictionnary_search_highest_occurrences(dict->right, node);
+            return dict_search_highest_occurrences(dict->right, node);
         }
 
         // left side
@@ -148,10 +237,21 @@ struct dict_t *dictionnary_search_highest_occurrences (struct dict_t *dict, stru
             }
 
             // we go left
-            dictionnary_search_highest_occurrences(dict->left, node);
+            return dict_search_highest_occurrences(dict->left, node);
         }
     }
 
     return *node;
+}
+
+void dict_show (struct dict_t *dict) {
+    if (dict) {
+        if (dict->str) {
+            printf("dict->str : %s\n", dict->str);
+            printf("    count : %u\n", dict->count);
+        }
+        dict_show (dict->right);
+        dict_show (dict->left);
+    }
 }
 

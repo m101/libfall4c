@@ -18,6 +18,8 @@
 #ifndef _QUEUE_H_
 #define _QUEUE_H_
 
+#include <stdlib.h>
+
 // queue
 struct queue_t
 {
@@ -47,7 +49,7 @@ struct queue_t* queue_push (struct queue_t **p, void *data);
 // get last data added to the queue
 void* queue_pop (struct queue_t **p);
 // allocate a new queue
-struct queue_new (void);
+struct queue_t* queue_new (void);
 // destroy a queue
 void queue_destroy (struct queue_t **queue);
 

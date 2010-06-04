@@ -47,7 +47,7 @@ struct stack_t* stack_push (struct stack_t **p, void *data);
 // get last data added to the stack
 void* stack_pop (struct stack_t **p);
 // allocate a new stack
-struct stack_new (void);
+struct stack_t* stack_new (void);
 // destroy a stack
 void stack_destroy (struct stack_t **stack);
 

@@ -53,7 +53,13 @@ AC_TYPE_SIZE_T
 # Checks for library functions.
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
+AC_CHECK_FUNCS([bzero])
+AC_CHECK_FUNCS([floor])
+AC_CHECK_FUNCS([memset])
+AC_CHECK_FUNCS([pow])
+AC_CHECK_FUNCS([strchr])
 AC_CHECK_FUNCS([strstr])
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile
+                 src/Makefile])
 AC_OUTPUT
