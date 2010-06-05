@@ -7,6 +7,17 @@
 
 #define BUFFER_SIZE 1000
 
+// default dict constructor
+struct dict_t* dict_new (struct dict_t **dict) {
+    struct dict_t *pDict;
+
+    pDict = calloc(1, sizeof(**dict));
+    if (dict)
+        *dict = pDict;
+    
+    return pDict;
+}
+
 // destroy dictionnary recursively
 void dict_destroy (struct dict_t **dict) {
     size_t i;
@@ -103,33 +114,34 @@ struct dict_t* dict_search_word (struct dict_t *anchor, char *word, size_t szWor
 }
 
 // search if there is at least one dupe
-struct dict_t* dict_find_dupe (struct dict_t *dict, char *word, size_t szWord, size_t *count) {
+struct dict_t* dict_find_dupe (struct dict_t *root, struct dict_t **dict, struct dict_t **dupes) {
     int check;
-    struct dict_t *ret;
 
     //
-    if (dict && word && szWord && count) {
+    if (dict && dict && dupes) {
         // check
-        if (szWord == dict->szStr) {
+        if (root->szStr == (*dict)->szStr) {
             // small optimisation
-            check = *word - *(dict->str);
+            check = *root->str - *((*dict)->str);
             // full check
             if (!check)
-                check = memcmp (word, dict->str, szWord);
-            // found word
+                check = memcmp (root->str, (*dict)->str, root->szStr);
+            // found dupe
             if (!check) {
-                (*count)++;
-                // found dupe
-                if (*count > 1) {
-                    return dict;
+                if (!*dupes) {
+                    *dupes = dict_new(dupes);
+                    (*dupes)->root = *dict;
                 }
+                (*dupes)->count++;
+                (*dupes)->next = *dict;
+                (*dupes) = *dict;
             }
         }
 
-        ret = dict_find_dupe (dict->left, word, szWord, count);
+        ret = dict_find_dupe ((*dict)->left, root->str, szroot->str, count);
         if (ret)
             return ret;
-        ret = dict_find_dupe (dict->right, word, szWord, count);
+        ret = dict_find_dupe ((*dict)->right, root->str, szroot->str, count);
         if (ret)
             return ret;
     }
@@ -137,8 +149,21 @@ struct dict_t* dict_find_dupe (struct dict_t *dict, char *word, size_t szWord, s
     return NULL;
 }
 
+struct dict_t* dict_find_dupes (struct dict_t *root, struct dict_t **dict) {
+}
+
+struct dict_t* dict_destroy_dupe (struct dict_t *root, struct dict_t **dict) {
+    if (root && dict) {
+        if (*dict) {
+            if (root->szStr == (*dict)->szStr
+                    && memcmp(root->str, (*dict)->str, root->szStr)) {
+            }
+        }
+    }
+}
+
 // find and destroy duplicates
-struct dict_t* dict_destroy_dupes (struct dict_t **dict, char *word, size_t szWord) {
+struct dict_t* dict_destroy_dupes (struct dict_t **dict) {
     int check;
     size_t count = 0;
     struct dict_t *ldict;
