@@ -25,74 +25,53 @@ extern "C"
 
 #include <stdio.h>
 
-// list management data
-// A static attribute is shared among ALL instance of a class, so if we have many different lists
-// they will all have the same head and tail pointer value which is not a correct behaviour.
-// The node in a same lists share the same list head, tail and size attributes.
-// The following structure will allow to have correct behaviour since other lists
-// won't corrupt other lists head, tail and size.
-struct ManagementData
-{
-    // pointer for head and tail of list
-    // I have errors when using List * so I used the generic pointer void *
-    void *m_head, *m_tail;
-    // size of list
-    size_t m_size;
+struct list_t {
+    struct list_node_t *head, *tail;
+    size_t szList;
 };
 
-// allocate a new management data unit
-struct ManagementData* management_data_new (void);
-// destroy a management data unit
-int management_data_destroy (struct ManagementData **md);
-
-struct List
-{
-    // management info (head, tail and list size)
-    struct ManagementData *m_md;
+struct list_node_t {
     // doubly linked list
-    struct List *m_next, *m_prev;
+    struct list_node_t *next, *prev;
     // data
-    void *m_data;
-    // if node is used : true
-    // else : false
-    int m_used;
-};
-
-// node characteristic
-// a node is defined by it's address and it's position in a linked list
-struct NodeCharacteristics
-{
-    size_t m_pos;
-    void* m_node;
+    void *data;
 };
 
     // default constructor for list
-    struct List* list_new (struct List **list);
+    struct list_t* list_new (struct list_t **list);
+    // default destructor
+    int list_destroy (struct list_t **list, void (*destroy_data)(void *));
+    // default constructor for node
+    struct list_node_t* list_node_new (struct list_node_t **node);
+    // default destructor for node
+    int list_node_destroy (struct list_node_t **node, void (*destroy_data)(void *));
     // append a node to existing list
-    int list_append_node (struct List **list, struct List *node);
-    // append data to existing struct List
-    int list_append_data (struct List **list, void *data);
+    int list_append_node (struct list_t **list, struct list_t *node);
+    // append data to existing struct list_t
+    int list_append_data (struct list_t **list, void *data);
     // prepend a node to existing list
-    int list_prepend_node (struct List **list, struct List *node);
+    int list_prepend_node (struct list_t **list, struct list_t *node);
     // prepend data to existing list
-    int list_prepend_data (struct List **list, void *data);
+    int list_prepend_data (struct list_t **list, void *data);
     // insert a node at specified position
-    int list_insert_node (struct List **list, struct List *node, size_t pos);
+    int list_insert_node (struct list_t **list, struct list_t *node, size_t pos);
     // insert data at specified position
-    int list_insert_data (struct List **list, void* data, size_t pos);
+    int list_insert_data (struct list_t **list, void *data, size_t pos);
     // remove current node
-    int list_remove_node (struct List **node);
+    int list_remove_node (struct list_t *list, struct list_node_t **node);
     // remove a node at specified position
-    int list_remove_node_at_pos (struct List **list, size_t pos);
+    int list_remove_node_at_pos (struct list_t **list, size_t pos);
+    // get data at specified node position
+    void* list_get_data_at_pos (struct list_t **list, size_t pos);
 
     // show all elements of the list
-    void list_show_all (struct List *list);
+    void list_show_all (struct list_t *list);
     // get list size
-    size_t list_get_size (struct List *list);
+    size_t list_get_size (struct list_t *list);
     // return head of list
-    struct List* list_begin (struct List *list);
+    struct list_t* list_begin (struct list_t *list);
     // return tail of list
-    struct List* list_end (struct List *list);
+    struct list_t* list_end (struct list_t *list);
 
 #ifdef __cplusplus
 }

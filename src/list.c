@@ -20,268 +20,173 @@
 
 #include "list.h"
 
-// create a new management data unit
-struct ManagementData* management_data_new (void)
-{
-    struct ManagementData* md;
-
-    // we allocate memory
-    md = malloc(sizeof(*md));
-    // we initialize correctly the structure
-    md->m_head = NULL;
-    md->m_tail = NULL;
-    md->m_size = 0;
-
-    return md;
-}
-
-// destroy a management data unit
-int management_data_destroy (struct ManagementData **md)
-{
-    // bad pointer given
-    if (!md)
-        return -1;
-    // we free md unit
-    if (*md)
-    {
-        free(*md);
-        *md = NULL;
-        return 1;
-    }
-
-    return 0;
-}
-
 // default constructor for list
-struct List* list_new (struct List **list)
-{
+struct list_t* list_new (struct list_t **list) {
+    struct list_t *pList;
+
+    pList = calloc(1, sizeof(**list));
     // check list validity
-    if (!list)
-        return NULL;
+    if (list)
+        *list = pList;
 
-    *list = malloc(sizeof(*list));
-    //
-    (*list)->m_next = NULL;
-    (*list)->m_prev = NULL;
-    // management data
-    (*list)->m_md = NULL;
-    //
-    (*list)->m_data = 0;
-    (*list)->m_used = 0;
-
-    return *list;
+    return pList;
 }
 
 // default destructor
-int list_destroy (struct List **list)
-{
+int list_destroy (struct list_t **list, void (*destroy_data)(void *)) {
     // node for traversing linked list
-    struct List *nodeTraverse;
+    struct list_node_t *node;
     // head and tail to ease reading
-    struct List *head, *tail;
+    struct list_node_t *head, *tail;
 
     // check list validity
     if (!list)
         return -1;
 
-    head = (*list)->m_md->m_head;
-    tail = (*list)->m_md->m_tail;
+    if (!destroy_data)
+        destroy_data = free;
+
+    head = (*list)->head;
+    tail = (*list)->tail;
     // we destroy data management unit
-    free((*list)->m_md);
-    (*list)->m_md = NULL;
+    free((*list));
+    (*list) = NULL;
 
     // we traverse the linked list to destroy it
-    for (nodeTraverse = head; nodeTraverse != NULL; )
-    {
-        nodeTraverse = nodeTraverse->m_next;
+    for (node = head; node != NULL; ) {
+        node = node->next;
 
         // we destroy the current node
-        if (nodeTraverse)
-        {
+        if (node) {
             // we destroy node
-            free(nodeTraverse->m_prev);
+            free(node->prev);
+            if (node->data)
+                destroy_data(node->data);
             // we ensure m_prev value in case of double frees
-            nodeTraverse->m_prev = NULL;
+            node->prev = NULL;
         }
     }
     
     return 0;
 }
 
+// default constructor for node
+struct list_node_t* list_node_new (struct list_node_t **node) {
+    struct list_node_t **pNode;
+
+    pNode = calloc (1, sizeof(**node));
+    if (node)
+        *node = pNode;
+
+    return pNode;
+}
+
+// default destructor for node
+int list_node_destroy (struct list_node_t **node, void (*destroy_data)(void *)) {
+    if (!node)
+        return -1;
+
+    if (!destroy_data)
+        destroy_data = free;
+
+    destroy_data(node->data);
+    free(*node);
+    *node = NULL;
+
+    return 0;
+}
+
 // append a node to existing list
-int list_append_node (struct List **list, struct List *node)
-{
+int list_append_node (struct list_t **list, struct list_t *node) {
     // check list and node validity
     if (!list || !node)
         return -1;
     if (!(*list))
         list_new(list);
-    // we check that management data exist
-    if (!(*list)->m_md)
-    {
-        // we create a data management unit
-        (*list)->m_md = management_data_new();
-        // we update the head pointer
-        (*list)->m_md->m_head = *list;
-    }
+
+    // if not defined
+    // we update head pointer
+    if (!(*list)->head)
+        (*list)->head = node;
+    // we end the list
+    if ((*list)->tail)
+        (*list)->tail->next = node;
 
     // we link the node to the list
-    node->m_prev = (*list)->m_md->m_tail;
-
-    // we end the list
-    if ((*list)->m_md->m_tail)
-        ((struct List *)(*list)->m_md->m_tail)->m_next = node;
-
-    // we end list
-    node->m_next = NULL;
-    // the node is used
-    node->m_used = 1;
-    // we update node management data
-    node->m_md = (*list)->m_md;
+    node->prev = (*list)->tail;
+    node->next = NULL;
     // we update the tail pointer
-    (*list)->m_md->m_tail = node;
+    (*list)->tail = node;
     // we added a new node
-    (*list)->m_md->m_size++;
+    (*list)->szList++;
 
     return 0;
 }
 
 // append data to existing list
-int list_append_data (struct List **list, void *data)
-{
-    struct List *nodeNew;
+int list_append_data (struct list_t **list, void *data) {
+    int rc;
+    struct list_t *node;
 
-    // check list and node validity
-    if (!list || !data)
-        return -1;
-    if (!(*list))
-        list_new(list);
+    node = list_node_new (NULL);
+    node->data = data;
+    rc = list_append_node (list, node);
 
-    // we ensure that the management data zone exist
-    if (!(*list)->m_md)
-        (*list)->m_md = management_data_new();
+    if (rc)
+        list_node_destroy (&node, NULL);
 
-    // if not defined
-    // we update head pointer
-    if (!(*list)->m_md->m_head)
-        (*list)->m_md->m_head = *list;
-    // if not defined
-    // we update tail pointer
-    if (!(*list)->m_md->m_tail)
-        (*list)->m_md->m_tail = (*list)->m_md->m_head;
-
-    // if the current node isn't marked as used
-    // then we only add data
-    if (!(*list)->m_used)
-    {
-        (*list)->m_md->m_size++;
-        (*list)->m_used = 1;
-        (*list)->m_data = data;
-    }
-    // else we append a new node and add data
-    else
-    {
-        list_new(&nodeNew);
-        nodeNew->m_data = data;
-        list_append_node (list, nodeNew);
-    }
-
-    // printf("append data - m_size : %u\n", (*list)->m_md->m_size);
-
-    return 0;
+    return rc;
 }
 
 // prepend a node to existing list
-int list_prepend_node (struct List **list, struct List *node)
-{
+int list_prepend_node (struct list_t **list, struct list_t *node) {
     // check list and node validity
     if (!list || !node)
         return -1;
     if (!(*list))
         list_new(list);
 
-    // we check that management data exist
-    if (!(*list)->m_md)
-    {
-        // we create a data management unit
-        (*list)->m_md = management_data_new();
-        // we update the tail pointer
-        (*list)->m_md->m_tail = *list;
-    }
-
     // we link the node to the list
-    node->m_next = (*list)->m_md->m_head;
+    node->next = (*list)->head;
 
-    // we end the list
-    if ((*list)->m_md->m_head)
-        ((struct List *)(*list)->m_md->m_head)->m_prev = node;
+    // update head and tail
+    if ((*list)->head)
+        (*list)->head->prev = node;
+    if (!(*list)->tail)
+        (*list)->tail = node;
 
-    // we end list
-    node->m_prev = NULL;
-    // the node is used
-    node->m_used = 1;
-    // we update node management data
-    node->m_md = (*list)->m_md;
+    // we link node
+    node->prev = NULL;
+    node->next = (*list)->head;
     // we update the head pointer
-    (*list)->m_md->m_head = node;
+    (*list)->head = node;
     // we added a new node
-    (*list)->m_md->m_size++;
+    (*list)->szList++;
 
     return 0;
 }
 
 // prepend data to existing list
-list_prepend_data (struct List **list, void *data)
-{
-    struct List *nodeNew;
+list_prepend_data (struct list_t **list, void *data) {
+    int rc;
+    struct list_t *node;
 
-    // check list and node validity
-    if (!list || !data)
-        return -1;
-    if (!(*list))
-        list_new(list);
+    node = list_node_new (NULL);
+    node->data = data;
+    rc = list_prepend_node(list, node);
 
-    // we ensure that the management data zone exist
-    if (!(*list)->m_md)
-        (*list)->m_md = management_data_new();
-
-    // if not defined
-    // we update head pointer
-    if (!(*list)->m_md->m_head)
-        (*list)->m_md->m_head = list;
-    // if not defined
-    // we update tail pointer
-    if (!(*list)->m_md->m_tail)
-        (*list)->m_md->m_tail = (*list)->m_md->m_head;
-
-    // if the current node isn't marked as used
-    // then we only add data
-    if (!(*list)->m_used)
-    {
-        (*list)->m_md->m_size++;
-        (*list)->m_used = 1;
-        (*list)->m_data = data;
-    }
-    // else we append a new node and add data
-    else
-    {
-        list_new(&nodeNew);
-        nodeNew->m_data = data;
-        list_prepend_node(list, nodeNew);
-    }
-
-    printf("prepend data - m_size : %u\n", (*list)->m_md->m_size);
+    if (rc)
+        list_node_destroy (&node, NULL);
 
     return 0;
 }
 
 // insert a node at specified position
-int list_insert_node (struct List **list, struct List *node, size_t pos)
-{
+int list_insert_node (struct list_t **list, struct list_t *node, size_t pos) {
     // node for traversing linked list
-    struct List *nodeTraverse;
+    struct list_t *nodeTraverse;
     // variable to ease reading
-    struct List *head;
+    struct list_t *head;
     // iterator for position
     size_t i;
 
@@ -290,54 +195,41 @@ int list_insert_node (struct List **list, struct List *node, size_t pos)
         return -1;
     if (!(*list))
         list_new(list);
-
-    // we check to see if data management unit exist
-    if (!(*list)->m_md)
-    {
-        // we allocate a data management unit
-        (*list)->m_md = management_data_new();
-        // the node being inserted will have the same management unit as the list
-        node->m_md = (*list)->m_md;
-    }
-
-    // we cast
-    head = (*list)->m_md->m_head;
-
     // position inexistent
-    if ((*list)->m_md->m_size < pos)
+    if ((*list)->szList < pos)
         return -1;
 
+    // we cast
+    head = (*list)->head;
+
     // we traverse the linked list
-    for (nodeTraverse = head, i = 1; nodeTraverse != NULL; nodeTraverse = nodeTraverse->m_next, i++)
-    {
+    for (nodeTraverse = head, i = 0; nodeTraverse != NULL; nodeTraverse = nodeTraverse->next, i++) {
         // if we found the specified position
         // then we add the node
-        if (i == pos)
-        {
+        if (i == pos) {
             // if we are at the last node
             // then we append it
-            if (!nodeTraverse->m_next)
+            if (!nodeTraverse->next)
                 list_append_node(list, node);
             // else we insert between nodes
-            else
-            {
+            else {
                 // we link node
                 // the new node is put at specified position (starting from 1)
-                node->m_next = nodeTraverse;
-                node->m_prev = nodeTraverse->m_prev;
+                node->next = nodeTraverse;
+                node->prev = nodeTraverse->prev;
 
                 //
-                if (node->m_prev)
-                    node->m_prev->m_next = node;
+                if (node->prev)
+                    node->prev->next = node;
                 else
-                    (*list)->m_md->m_head = node;
+                    (*list)->head = node;
 
                 // we update links in nodes
-                nodeTraverse->m_prev = node;
+                nodeTraverse->prev = node;
             }
 
             // since we added a node, the list size increase
-            (*list)->m_md->m_size++;
+            (*list)->szList++;
 
             // success
             return 0;
@@ -350,9 +242,8 @@ int list_insert_node (struct List **list, struct List *node, size_t pos)
 }
 
 // insert data at specified position
-int list_insert_data (struct List **list, void* data, size_t pos)
-{
-    struct List *nodeNew;
+int list_insert_data (struct list_t **list, void *data, size_t pos) {
+    struct list_t *node;
     int failed;
 
     // check list and node validity
@@ -362,75 +253,63 @@ int list_insert_data (struct List **list, void* data, size_t pos)
         list_new(list);
 
     // we allocate a new node
-    list_new(&nodeNew);
+    list_node_new(&node);
     // we insert data
-    nodeNew->m_data = data;
+    node->data = data;
 
     // we insert the node in the list
-    failed = list_insert_node(list, nodeNew, pos);
+    failed = list_insert_node(list, node, pos);
     // if successful
     if (!failed)
         return 0;
     // else we failed
-    else
-    {
-        list_destroy(&nodeNew);
+    else {
+        list_node_destroy(&node);
         return -1;
     }
 }
 
 // remove current node
-int list_remove_node (struct List **node)
-{
+int list_remove_node (struct list_t *list, struct list_node_t **node) {
     // node not valid
-    if (!node)
+    if (!list || !node)
         return -1;
     if (!*node)
         return -1;
 
     // we first check for pointer validity
     // then we fix links
-    if ( (*node)->m_next)
-        (*node)->m_next->m_prev = (*node)->m_prev;
-    if ((*node)->m_prev)
-        (*node)->m_prev->m_next = (*node)->m_next;
+    if ((*node)->next)
+        (*node)->next->prev = (*node)->prev;
+    if ((*node)->prev)
+        (*node)->prev->next = (*node)->next;
 
     // we remove the actual node
     free(node);
     *node = NULL;
+    list->szList--;
 
     return 0;
 }
 
 // remove a node at specified position
-int list_remove_node_at_pos (struct List **list, size_t pos)
-{
-    struct List *nodeTraverse;
+int list_remove_node_at_pos (struct list_t **list, size_t pos) {
+    struct list_t *node;
     size_t i;
 
     // check pointer validity
     if (!list || !pos || !*list)
         return -1;
 
-    // if we want to remove the first node
-    // we remove it
-    if (pos == 1)
-        return list_remove_node(list);
-
-    // we check for data management unit
-    // if it doesn't exist, then we can't remove the node at the specified position
-    if (!(*list)->m_md)
-        return -1;
-
     // position inexistent
-    if ((*list)->m_md->m_size < pos)
+    if ((*list)->szList < pos)
         return -1;
 
-    for (nodeTraverse = (*list)->m_md->m_head, i = 1; nodeTraverse != NULL; nodeTraverse = nodeTraverse->m_next, i++)
-    {
-        if (i == pos)
-            list_remove_node(&nodeTraverse);
-
+    for (node = (*list)->head, i = 0; node != NULL; node = node->next, i++) {
+        if (i == pos) {
+            list_remove_node(&node);
+            return 0;
+        }
     }
 
     // we didn't remove any node
@@ -438,9 +317,8 @@ int list_remove_node_at_pos (struct List **list, size_t pos)
 }
 
 // get data at specified node position
-void* list_get_data_at_pos (struct List **list, size_t pos)
-{
-    struct List *nodeTraverse;
+void* list_get_data_at_pos (struct list_t **list, size_t pos) {
+    struct list_t *node;
     size_t i;
 
     // check list and node validity
@@ -450,76 +328,60 @@ void* list_get_data_at_pos (struct List **list, size_t pos)
         list_new(list);
 
     // we check if position specified is in range
-    if (pos > (*list)->m_md->m_size)
-        return (*list)->m_data;
+    if (pos > (*list)->szList)
+        return (*list)->data;
 
     // we traverse the linked list
-    for (nodeTraverse = (*list)->m_md->m_head, i = 1; nodeTraverse != NULL; nodeTraverse = nodeTraverse->m_next, i++)
-    {
+    for (node = (*list)->head, i = 0; node != NULL; node = node->next, i++) {
         // if we found the specified node
         // then we return the data
         if (i == pos)
-            return nodeTraverse->m_data;
+            return node->data;
     }
 
     // failed to get the data at the specified location
-    return (*list)->m_data;
+    return NULL;
 }
 
 // show all elements
-void list_show_all (struct List *list)
-{
+void list_show_all (struct list_t *list) {
     size_t i;
-    struct List *nodeTraverse;
+    struct list_t *node;
 
     // check list and node validity
     if (!list)
         return;
 
     // we traverse link list and show all node value
-    for (nodeTraverse = list->m_md->m_head, i = 1; nodeTraverse != NULL; nodeTraverse = nodeTraverse->m_next, i++)
-        printf("node %u : %p\n", i, nodeTraverse->m_data);
+    for (node = list->head, i = 0; node != NULL; node = node->next, i++)
+        printf("node %u : %p\n", i, node->data);
 }
 
 // get list size
-size_t list_get_size (struct List *list)
-{
-    // check list and node validity
-    if (!list)
-        return -1;
-
-    if (list->m_md)
-        return list->m_md->m_size;
+size_t list_get_size (struct list_t *list) {
+    if (list)
+        return list->szList;
     else
-        return 0;
+        return -1;
 }
 
 // return head of list
-struct List* list_begin (struct List *list)
-{
-    // check list pointer validity
-    if (!list)
-        return NULL;
-    // if management data unit exist
-    // then we have other nodes
-    if (list->m_md)
-        return list->m_md->m_head;
+struct list_t* list_begin (struct list_t *list) {
+    //
+    if (list)
+        return list->head;
     // else it's a standalone node
     else
-        return list;
+        return NULL;
 }
 
 // return tail of list
-struct List* list_end (struct List *list)
-{
-    // check list pointer validity
-    if (!list)
-        return NULL;
-    // if management data unit exist
-    // then we have other nodes
-    if (list->m_md)
-        return list->m_md->m_tail;
+struct list_t* list_end (struct list_t *list) {
+    //
+    if (list)
+        return list->tail;
     // else it's a standalone node
     else
-        return list;
+        return NULL;
 }
+
