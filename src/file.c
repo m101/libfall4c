@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /*! @brief                    Fonction copiant un fichier en mode texte
 *   @param   dest             Fichier de copie
@@ -87,7 +88,7 @@ char* fgetl(FILE *stream, char *pLine)
         if (i >= length)
         {
             length = length * 2;
-            realloc(pLine, length * sizeof(*pLine));
+            pLine = realloc(pLine, length * sizeof(*pLine));
         }
 
         pLine[i] = fgetc(stream);

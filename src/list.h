@@ -46,15 +46,15 @@ struct list_node_t {
     // default destructor for node
     int list_node_destroy (struct list_node_t **node, void (*destroy_data)(void *));
     // append a node to existing list
-    int list_append_node (struct list_t **list, struct list_t *node);
+    int list_append_node (struct list_t **list, struct list_node_t *node);
     // append data to existing struct list_t
     int list_append_data (struct list_t **list, void *data);
     // prepend a node to existing list
-    int list_prepend_node (struct list_t **list, struct list_t *node);
+    int list_prepend_node (struct list_t **list, struct list_node_t *node);
     // prepend data to existing list
     int list_prepend_data (struct list_t **list, void *data);
     // insert a node at specified position
-    int list_insert_node (struct list_t **list, struct list_t *node, size_t pos);
+    int list_insert_node (struct list_t **list, struct list_node_t *node, size_t pos);
     // insert data at specified position
     int list_insert_data (struct list_t **list, void *data, size_t pos);
     // remove current node
@@ -69,9 +69,9 @@ struct list_node_t {
     // get list size
     size_t list_get_size (struct list_t *list);
     // return head of list
-    struct list_t* list_begin (struct list_t *list);
+    struct list_node_t* list_begin (struct list_t *list);
     // return tail of list
-    struct list_t* list_end (struct list_t *list);
+    struct list_node_t* list_end (struct list_t *list);
 
 #ifdef __cplusplus
 }

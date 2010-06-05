@@ -146,7 +146,7 @@ struct dict_t* dict_destroy_dupes (struct dict_t **dict, char *word, size_t szWo
     if (dict) {
         while ( (ldict = dict_find_dupe (*dict, word, szWord, &count)) ) {
             if (count > 1)
-                dict_destroy(ldict);
+                dict_destroy(&ldict);
         }
     }
 }

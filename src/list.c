@@ -72,7 +72,7 @@ int list_destroy (struct list_t **list, void (*destroy_data)(void *)) {
 
 // default constructor for node
 struct list_node_t* list_node_new (struct list_node_t **node) {
-    struct list_node_t **pNode;
+    struct list_node_t *pNode;
 
     pNode = calloc (1, sizeof(**node));
     if (node)
@@ -85,11 +85,12 @@ struct list_node_t* list_node_new (struct list_node_t **node) {
 int list_node_destroy (struct list_node_t **node, void (*destroy_data)(void *)) {
     if (!node)
         return -1;
+    if (!*node)
 
     if (!destroy_data)
         destroy_data = free;
 
-    destroy_data(node->data);
+    destroy_data((*node)->data);
     free(*node);
     *node = NULL;
 
@@ -97,7 +98,7 @@ int list_node_destroy (struct list_node_t **node, void (*destroy_data)(void *)) 
 }
 
 // append a node to existing list
-int list_append_node (struct list_t **list, struct list_t *node) {
+int list_append_node (struct list_t **list, struct list_node_t *node) {
     // check list and node validity
     if (!list || !node)
         return -1;
@@ -126,7 +127,7 @@ int list_append_node (struct list_t **list, struct list_t *node) {
 // append data to existing list
 int list_append_data (struct list_t **list, void *data) {
     int rc;
-    struct list_t *node;
+    struct list_node_t *node;
 
     node = list_node_new (NULL);
     node->data = data;
@@ -139,7 +140,7 @@ int list_append_data (struct list_t **list, void *data) {
 }
 
 // prepend a node to existing list
-int list_prepend_node (struct list_t **list, struct list_t *node) {
+int list_prepend_node (struct list_t **list, struct list_node_t *node) {
     // check list and node validity
     if (!list || !node)
         return -1;
@@ -169,7 +170,7 @@ int list_prepend_node (struct list_t **list, struct list_t *node) {
 // prepend data to existing list
 list_prepend_data (struct list_t **list, void *data) {
     int rc;
-    struct list_t *node;
+    struct list_node_t *node;
 
     node = list_node_new (NULL);
     node->data = data;
@@ -182,11 +183,11 @@ list_prepend_data (struct list_t **list, void *data) {
 }
 
 // insert a node at specified position
-int list_insert_node (struct list_t **list, struct list_t *node, size_t pos) {
+int list_insert_node (struct list_t **list, struct list_node_t *node, size_t pos) {
     // node for traversing linked list
-    struct list_t *nodeTraverse;
+    struct list_node_t *pNode;
     // variable to ease reading
-    struct list_t *head;
+    struct list_node_t *head;
     // iterator for position
     size_t i;
 
@@ -203,20 +204,20 @@ int list_insert_node (struct list_t **list, struct list_t *node, size_t pos) {
     head = (*list)->head;
 
     // we traverse the linked list
-    for (nodeTraverse = head, i = 0; nodeTraverse != NULL; nodeTraverse = nodeTraverse->next, i++) {
+    for (pNode = head, i = 0; pNode != NULL; pNode = pNode->next, i++) {
         // if we found the specified position
         // then we add the node
         if (i == pos) {
             // if we are at the last node
             // then we append it
-            if (!nodeTraverse->next)
+            if (!pNode->next)
                 list_append_node(list, node);
             // else we insert between nodes
             else {
                 // we link node
                 // the new node is put at specified position (starting from 1)
-                node->next = nodeTraverse;
-                node->prev = nodeTraverse->prev;
+                node->next = pNode;
+                node->prev = pNode->prev;
 
                 //
                 if (node->prev)
@@ -225,7 +226,7 @@ int list_insert_node (struct list_t **list, struct list_t *node, size_t pos) {
                     (*list)->head = node;
 
                 // we update links in nodes
-                nodeTraverse->prev = node;
+                pNode->prev = node;
             }
 
             // since we added a node, the list size increase
@@ -243,7 +244,7 @@ int list_insert_node (struct list_t **list, struct list_t *node, size_t pos) {
 
 // insert data at specified position
 int list_insert_data (struct list_t **list, void *data, size_t pos) {
-    struct list_t *node;
+    struct list_node_t *node;
     int failed;
 
     // check list and node validity
@@ -264,7 +265,7 @@ int list_insert_data (struct list_t **list, void *data, size_t pos) {
         return 0;
     // else we failed
     else {
-        list_node_destroy(&node);
+        list_node_destroy(&node, NULL);
         return -1;
     }
 }
@@ -294,7 +295,7 @@ int list_remove_node (struct list_t *list, struct list_node_t **node) {
 
 // remove a node at specified position
 int list_remove_node_at_pos (struct list_t **list, size_t pos) {
-    struct list_t *node;
+    struct list_node_t *node;
     size_t i;
 
     // check pointer validity
@@ -307,7 +308,7 @@ int list_remove_node_at_pos (struct list_t **list, size_t pos) {
 
     for (node = (*list)->head, i = 0; node != NULL; node = node->next, i++) {
         if (i == pos) {
-            list_remove_node(&node);
+            list_remove_node(*list, &node);
             return 0;
         }
     }
@@ -318,7 +319,7 @@ int list_remove_node_at_pos (struct list_t **list, size_t pos) {
 
 // get data at specified node position
 void* list_get_data_at_pos (struct list_t **list, size_t pos) {
-    struct list_t *node;
+    struct list_node_t *node;
     size_t i;
 
     // check list and node validity
@@ -329,7 +330,7 @@ void* list_get_data_at_pos (struct list_t **list, size_t pos) {
 
     // we check if position specified is in range
     if (pos > (*list)->szList)
-        return (*list)->data;
+        return NULL;
 
     // we traverse the linked list
     for (node = (*list)->head, i = 0; node != NULL; node = node->next, i++) {
@@ -346,7 +347,7 @@ void* list_get_data_at_pos (struct list_t **list, size_t pos) {
 // show all elements
 void list_show_all (struct list_t *list) {
     size_t i;
-    struct list_t *node;
+    struct list_node_t *node;
 
     // check list and node validity
     if (!list)
@@ -366,7 +367,7 @@ size_t list_get_size (struct list_t *list) {
 }
 
 // return head of list
-struct list_t* list_begin (struct list_t *list) {
+struct list_node_t* list_begin (struct list_t *list) {
     //
     if (list)
         return list->head;
@@ -376,7 +377,7 @@ struct list_t* list_begin (struct list_t *list) {
 }
 
 // return tail of list
-struct list_t* list_end (struct list_t *list) {
+struct list_node_t* list_end (struct list_t *list) {
     //
     if (list)
         return list->tail;
