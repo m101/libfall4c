@@ -41,6 +41,7 @@ struct tree_t
 
     // functions
     int (*comparator)(void *data1, void *data2);
+    void (*destroy_data)(void *data);
     size_t (*get_data_size)(void *data);
 };
 

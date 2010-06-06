@@ -22,8 +22,7 @@
 
 /*  @brief  Create new tree
 */
-struct tree_t* tree_new (int (*comparator)(void *, void *), size_t (*get_data_size)(void *))
-{
+struct tree_t* tree_new (int (*comparator)(void *, void *), size_t (*get_data_size)(void *)) {
     struct tree_t *tree_table;
 
     tree_table = calloc (1, sizeof(*tree_table));
@@ -35,20 +34,16 @@ struct tree_t* tree_new (int (*comparator)(void *, void *), size_t (*get_data_si
 
 /*!  @brief  Destroy tree
 */
-void tree_free (struct tree_t *root)
-{
-    if (root)
-    {
+void tree_free (struct tree_t *root) {
+    if (root) {
         tree_free_stub (root->root);
         free (root);
     }
 }
 
 // recursively traverse nodes to free them
-void tree_free_stub (struct tree_node_t *node)
-{
-    if (node)
-    {
+void tree_free_stub (struct tree_node_t *node) {
+    if (node) {
         tree_free_stub (node->left);
         tree_free_stub (node->right);
         free (node);

@@ -8,8 +8,8 @@
 #define BUFFER_SIZE 1000
 
 // default dict constructor
-struct dict_t* dict_new (struct dict_t **dict) {
-    struct dict_t *pDict;
+struct dict_elt_t* dict_new (struct dict_elt_t **dict) {
+    struct dict_elt_t *pDict;
 
     pDict = calloc(1, sizeof(**dict));
     if (dict)
@@ -19,7 +19,7 @@ struct dict_t* dict_new (struct dict_t **dict) {
 }
 
 // destroy dictionnary recursively
-void dict_destroy (struct dict_t **dict) {
+void dict_destroy (struct dict_elt_t **dict) {
     size_t i;
 
     if (dict != NULL && *dict != NULL) {
@@ -29,14 +29,14 @@ void dict_destroy (struct dict_t **dict) {
         // free fields
         free ((*dict)->str);
         free ((*dict)->description);
-        free ((*dict)->pointers);
+        free ((*dict)->offsets);
         // free node
         free (*dict), *dict = NULL;
     }
 }
 
 // insert a word
-int dict_insert_word (struct dict_t **dict, char *str, size_t szStr) {
+int dict_insert_word (struct dict_elt_t **dict, char *str, size_t szStr) {
     int check;
 
     // check for string validity
@@ -48,13 +48,13 @@ int dict_insert_word (struct dict_t **dict, char *str, size_t szStr) {
 
     // if we are at a leaf node
     // then we can insert the data
-    if (!(*dict)) {
+    if (!*dict) { 
         // we allocate a node
         *dict = calloc(1, sizeof(**dict));
         // we allocate enough space for string
         (*dict)->str = calloc(1, szStr * sizeof(*str));
         // we make sure the string is zeroed out
-//        bzero((*dict)->str, szStr * sizeof(*str) + 1);
+        //        bzero((*dict)->str, szStr * sizeof(*str) + 1);
         // we insert the string
         memcpy ( (*dict)->str, str, szStr * sizeof(*str));
         // we initialize all variable to ensure correct behavior
@@ -63,8 +63,8 @@ int dict_insert_word (struct dict_t **dict, char *str, size_t szStr) {
         (*dict)->right = NULL;
         (*dict)->left = NULL;
         //
-        (*dict)->szPointers = 0;
-        (*dict)->pointers = NULL;
+        (*dict)->szOffsets = 0;
+        (*dict)->offsets = NULL;
 
         return 1;
     }
@@ -81,14 +81,14 @@ int dict_insert_word (struct dict_t **dict, char *str, size_t szStr) {
         (*dict)->count++;
 
         // keep track of pointers
-        if ((*dict)->count >= (*dict)->szPointers) {
-            if ( (*dict)->szPointers == 0 )
-                (*dict)->szPointers = POINTERS_NB;
+        if ((*dict)->count >= (*dict)->szOffsets) {
+            if ( (*dict)->szOffsets == 0 )
+                (*dict)->szOffsets = POINTERS_NB;
             else
-                (*dict)->szPointers *= 2;
-            (*dict)->pointers = realloc ( (*dict)->pointers, (*dict)->szPointers * sizeof(**dict));
+                (*dict)->szOffsets *= 2;
+            (*dict)->offsets = realloc ( (*dict)->offsets, (*dict)->szOffsets * sizeof(**dict));
         }
-        (*dict)->pointers[(*dict)->count] = (unsigned long) str;
+        (*dict)->offsets[(*dict)->count] = (unsigned long) str;
 
         return 1;
     }
@@ -97,7 +97,7 @@ int dict_insert_word (struct dict_t **dict, char *str, size_t szStr) {
 }
 
 // search a word in the dictionnary
-struct dict_t* dict_search_word (struct dict_t *anchor, char *word, size_t szWord) {
+struct dict_elt_t* dict_search_word (struct dict_elt_t *anchor, char *word, size_t szWord) {
     int check;
 
     if (!anchor || !word)
@@ -114,34 +114,36 @@ struct dict_t* dict_search_word (struct dict_t *anchor, char *word, size_t szWor
 }
 
 // search if there is at least one dupe
-struct dict_t* dict_find_dupe (struct dict_t *root, struct dict_t **dict, struct dict_t **dupes) {
+struct dict_elt_t* dict_find_dupe (struct dict_elt_t **root, struct dict_elt_t **dict, struct dict_elt_t **dupes) {
     int check;
+    struct dict_elt_t *ret;
 
     //
-    if (dict && dict && dupes) {
+    if (root && dict && dupes) {
+        if (!*dict || !*root)
+            return NULL;
         // check
-        if (root->szStr == (*dict)->szStr) {
+        if ((*root)->szStr == (*dict)->szStr) {
             // small optimisation
-            check = *root->str - *((*dict)->str);
+            check = *((*root)->str) - *((*dict)->str);
             // full check
             if (!check)
-                check = memcmp (root->str, (*dict)->str, root->szStr);
+                check = memcmp ((*root)->str, (*dict)->str, (*root)->szStr);
             // found dupe
             if (!check) {
-                if (!*dupes) {
+                if (!*dupes)
                     *dupes = dict_new(dupes);
-                    (*dupes)->root = *dict;
-                }
                 (*dupes)->count++;
                 (*dupes)->next = *dict;
                 (*dupes) = *dict;
+                return *dict;
             }
         }
 
-        ret = dict_find_dupe ((*dict)->left, root->str, szroot->str, count);
+        ret = dict_find_dupe (&((*dict)->left), root, dupes);
         if (ret)
             return ret;
-        ret = dict_find_dupe ((*dict)->right, root->str, szroot->str, count);
+        ret = dict_find_dupe (&((*dict)->right), root, dupes);
         if (ret)
             return ret;
     }
@@ -149,36 +151,41 @@ struct dict_t* dict_find_dupe (struct dict_t *root, struct dict_t **dict, struct
     return NULL;
 }
 
-struct dict_t* dict_find_dupes (struct dict_t *root, struct dict_t **dict) {
+struct dict_elt_t* dict_find_dupes (struct dict_elt_t *root, struct dict_elt_t **dict) {
 }
 
-struct dict_t* dict_destroy_dupe (struct dict_t *root, struct dict_t **dict) {
+// destroy dupes by agregation
+struct dict_elt_t* dict_destroy_dupe (struct dict_elt_t *root, struct dict_elt_t **dict) {
     if (root && dict) {
-        if (*dict) {
+        if (*dict && (*dict != root)) {
             if (root->szStr == (*dict)->szStr
                     && memcmp(root->str, (*dict)->str, root->szStr)) {
+                root->count += (*dict)->count;
             }
         }
     }
 }
 
 // find and destroy duplicates
-struct dict_t* dict_destroy_dupes (struct dict_t **dict) {
-    int check;
-    size_t count = 0;
-    struct dict_t *ldict;
+/*
+   struct dict_elt_t* dict_destroy_dupes (struct dict_t *dict) {
+   int check;
+   size_t count = 0;
+   struct dict_elt_t *ldict, *dupes;
 
-    if (dict) {
-        while ( (ldict = dict_find_dupe (*dict, word, szWord, &count)) ) {
-            if (count > 1)
-                dict_destroy(&ldict);
-        }
-    }
-}
+   if (dict) {
+   dupes = NULL;
+   while ( (ldict = dict_find_dupe (&(dict->root), , &dupes)) ) {
+   if (count > 1)
+   dict_destroy(&ldict);
+   }
+   }
+   }
+//*/
 
 // build a dictionnary from a sequence of characters
 // usefull to study frequency analysis
-struct dict_t* dict_build_static_size (struct dict_t **dict, char *str, size_t szStr, size_t szToken) {
+struct dict_elt_t* dict_build_static_size (struct dict_elt_t **dict, char *str, size_t szStr, size_t szToken) {
     char *pStr;
 
     // check string validity
@@ -196,7 +203,7 @@ struct dict_t* dict_build_static_size (struct dict_t **dict, char *str, size_t s
 }
 
 // build a dictionnary from a sequence of characters
-struct dict_t* dict_build (struct dict_t **dict, char *str, size_t szStr, size_t szTokenMax) {
+struct dict_elt_t* dict_build (struct dict_elt_t **dict, char *str, size_t szStr, size_t szTokenMax) {
     size_t i;
 
     // check string validity
@@ -210,7 +217,7 @@ struct dict_t* dict_build (struct dict_t **dict, char *str, size_t szStr, size_t
 }
 
 // compute distance between equal words
-struct dict_t *dict_distance (struct dict_t *dict) {
+struct dict_elt_t *dict_distance (struct dict_elt_t *dict) {
     size_t i;
 
     if (dict) {
@@ -218,10 +225,10 @@ struct dict_t *dict_distance (struct dict_t *dict) {
         // if there
         if (dict->count <= 1) {
             for (i = 1; i < dict->count; i++) {
-                if (dict->pointers[i] > dict->pointers[i-1])
-                    dict->pointers[i] -= dict->pointers[i-1];
+                if (dict->offsets[i] > dict->offsets[i-1])
+                    dict->offsets[i] -= dict->offsets[i-1];
                 else
-                    dict->pointers[i] = dict->pointers[i-1] - dict->pointers[i];
+                    dict->offsets[i] = dict->offsets[i-1] - dict->offsets[i];
             }
         }
         dict_distance (dict->right);
@@ -229,7 +236,7 @@ struct dict_t *dict_distance (struct dict_t *dict) {
 }
 
 //
-struct dict_t *dict_search_highest_occurrences (struct dict_t *dict, struct dict_t **node) {
+struct dict_elt_t *dict_search_highest_occurrences (struct dict_elt_t *dict, struct dict_elt_t **node) {
     int check;
 
     // if invalid node pointer given
@@ -292,11 +299,12 @@ struct dict_t *dict_search_highest_occurrences (struct dict_t *dict, struct dict
     return *node;
 }
 
-void dict_show (struct dict_t *dict) {
+void dict_show (struct dict_elt_t *dict) {
     if (dict) {
         if (dict->str) {
-            printf("dict->str : %s\n", dict->str);
-            printf("    count : %u\n", dict->count);
+            //printf("dict->str : %s\n", dict->str);
+            //printf("    count : %u\n", dict->count);
+            printf("%s\n", dict->str);
         }
         dict_show (dict->right);
         dict_show (dict->left);
