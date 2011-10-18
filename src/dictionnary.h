@@ -18,7 +18,7 @@
 
 #include <stdlib.h>
 
-#define POINTERS_NB     32
+#define POINTERS_NB     16
 
 // dictionnary structure
 struct dict_t {
@@ -73,6 +73,8 @@ struct dict_t* dict_build_from_str (struct dict_t *dict, char *str, int szStr, i
 struct dict_t *dict_distance (struct dict_t *dict);
 // count number of offsets
 int dict_offsets_count (struct dict_t *dict);
+// count number of nodes
+int dict_nodes_count (struct dict_t *dict);
 // load a dictionnary file
 // struct dict_elt_t *dict_load (char *dict_filename);
 // dictionnary : save to a file

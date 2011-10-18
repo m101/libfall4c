@@ -82,12 +82,6 @@ int dict_insert_word_stub (struct dict_elt_t **node, char *word, int szWord) {
         // we allocate a node
         *node = calloc(1, sizeof(**node));
         (*node)->str = word;
-        // we allocate enough space for word
-        // (*node)->str = calloc(szWord + 1, sizeof(*word));
-        // we make sure the wording is zeroed out
-        // memset((*node)->str, 0, szWord * sizeof(*word) + 1);
-        // we insert the wording
-        // memcpy ( (*node)->str, word, szWord * sizeof(*word));
         // we initialize all variable to ensure correct behavior
         (*node)->szStr = szWord;
         (*node)->count = 1;
@@ -291,26 +285,47 @@ struct dict_t *dict_distance (struct dict_t *dict) {
     return dict;
 }
 
+// count number of nodes (stub)
+int dict_nodes_count_stub (struct dict_elt_t *node, int total) {
+    if (!node)
+        return total;
+    else {
+        total++;
+        total = dict_nodes_count_stub(node->left, total);
+        total = dict_nodes_count_stub(node->right, total);
+    }
+
+    return total;
+}
+
+// count number of nodes
+int dict_nodes_count (struct dict_t *dict) {
+    if (!dict)
+        return -1;
+
+    return dict_nodes_count_stub (dict->root, 0);
+}
+
 // count number of offsets (stub)
 int dict_offsets_count_stub (struct dict_elt_t *node, int total) {
     if (!node)
         return total;
     else {
-        // printf("[%p] node->count: %lu - word: %s\n", node, node->count, node->str);
-        dict_offsets_count_stub(node->left, total + node->count);
-        dict_offsets_count_stub(node->right, total + node->count);
+        printf("[%p] node->count: %lu - word: %s\n", node, node->count, node->str);
+        total += node->count;
+        total = dict_offsets_count_stub(node->left, total);
+        total = dict_offsets_count_stub(node->right, total);
     }
+
+    return total;
 }
 
 // count number of offsets
 int dict_offsets_count (struct dict_t *dict) {
-    struct dict_elt_t *root;
-
     if (!dict)
         return -1;
 
-    root = dict->root;
-    return dict_offsets_count_stub (root, 0);
+    return dict_offsets_count_stub (dict->root, 0);
 }
 
 // get word with highest occurence (stub)
