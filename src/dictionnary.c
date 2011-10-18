@@ -250,6 +250,10 @@ int compare_ulong (const void *a, const void *b) {
     return *(unsigned long *)a - *(unsigned long *)b;
 }
 
+int compare_int (const void *a, const void *b) {
+    return *(int *)a - *(int *)b;
+}
+
 // compute distance between equal words
 struct dict_elt_t *dict_distance_stub (struct dict_elt_t *node) {
     int i;
@@ -261,7 +265,7 @@ struct dict_elt_t *dict_distance_stub (struct dict_elt_t *node) {
     // compute each offset
     if (node->count >= 1 && node->offsets) {
         if (node->base == 0) {
-            qsort (node->offsets, node->count, sizeof(unsigned long), compare_ulong);
+            qsort (node->offsets, node->count, sizeof(int), compare_int);
             node->base = node->offsets[0];
         }
         for (i = 0; i < node->count; i++) {

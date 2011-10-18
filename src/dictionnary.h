@@ -23,7 +23,7 @@
 // dictionnary structure
 struct dict_t {
     //
-    size_t count;
+    int count;
     //
     struct dict_elt_t *root;
     struct dict_elt_t *nodes;
@@ -33,17 +33,17 @@ struct dict_t {
 };
 
 struct dict_elt_t {
-    size_t count;
+    int count;
     //
     char *str;
-    size_t szStr;
+    int szStr;
     //
     unsigned long base;
-    unsigned long *offsets;
-    size_t szOffsets;
+    int *offsets;
+    int szOffsets;
     //
     char *description;
-    size_t szDescription;
+    int szDescription;
 
     union {
         struct {
