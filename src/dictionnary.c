@@ -260,10 +260,14 @@ struct dict_elt_t *dict_distance_stub (struct dict_elt_t *node) {
 
     // compute each offset
     if (node->count >= 1 && node->offsets) {
+        if (node->base == 0) {
+            qsort (node->offsets, node->count, sizeof(unsigned long), compare_ulong);
+            node->base = node->offsets[0];
+        }
         for (i = 0; i < node->count; i++) {
             // check that offset is bigger than base
             // in order to avoid integer wrapping
-            if (node->offsets[i] > node->base)
+            if (node->offsets[i] >= node->base)
                 node->offsets[i] = abs (node->offsets[i] - node->base);
         }
     }
@@ -275,22 +279,10 @@ struct dict_elt_t *dict_distance_stub (struct dict_elt_t *node) {
 
 // get distance between 2 same word in a file
 struct dict_t *dict_distance (struct dict_t *dict) {
-    struct dict_elt_t *root;
-
     if (!dict)
         return NULL;
 
-    root = dict->root;
-    if (!root)
-        return NULL;
-
-    if (root->offsets) {
-        qsort (root->offsets, root->count, sizeof(unsigned long), compare_ulong);
-
-        root->base = root->offsets[0];
-
-        dict_distance_stub (root);
-    }
+    dict_distance_stub (dict->root);
 
     return dict;
 }
@@ -301,8 +293,6 @@ int dict_offsets_count_stub (struct dict_elt_t *node, int total) {
         return total;
     else {
         // printf("[%p] node->count: %lu - word: %s\n", node, node->count, node->str);
-        // printf("node->count: %lu - word: %s\n", node->count, node->str);
-        // printf("%s\n", node->str);
         dict_offsets_count_stub(node->left, total + node->count);
         dict_offsets_count_stub(node->right, total + node->count);
     }
@@ -402,18 +392,11 @@ void dict_show_stub (struct dict_elt_t *node) {
         return;
 
     if (node->str) {
-        printf("str(%d) = %d occurrences : ", node->szStr, node->count);
         for (idxStr = 0; idxStr < node->szStr; idxStr++)
             putchar(node->str[idxStr]);
         putchar('\n');
     }
 
-    /*
-    if (node->offsets) {
-        for (idxStr = 0; idxStr < node->count; idxStr++)
-            printf("offset[%d] = %ld\n", idxStr, node->offsets[idxStr]);
-    }
-    */
     dict_show_stub (node->right);
     dict_show_stub (node->left);
 }
