@@ -22,8 +22,7 @@
 
 #include "ctype_extended.h"
 
-long l_round (double value)
-{
+long l_round (double value) {
     long roundedValue = 0;
 
     if (abs(value - (long)value) >= 0.5)
@@ -39,12 +38,9 @@ long l_round (double value)
 *   @param   string      Chaine à convertir
 *   @return              Renvoi l'adresse de la chaine convertie
 */
-char* stringtoupper (char *string)
-{
-    while (*string)
-    {
+char* stringtoupper (char *string) {
+    while (*string) {
         *string = toupper(*string);
-        //toupper(*string);
         string++;
     }
 
@@ -56,10 +52,8 @@ char* stringtoupper (char *string)
 *   @param   string      Chaine à convertir
 *   @return              Renvoi l'adresse de la chaine convertie
 */
-char* stringtolower (char *string)
-{
-    while (*string)
-    {
+char* stringtolower (char *string) {
+    while (*string) {
         *string = tolower(*string);
         string++;
     }

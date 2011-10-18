@@ -1,7 +1,23 @@
+/*
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <string.h>
+#include <math.h>
 
 #include "dictionnary.h"
 
@@ -27,7 +43,7 @@ void dict_destroy (struct dict_elt_t **dict) {
         dict_destroy ( &((*dict)->left) );
         dict_destroy ( &((*dict)->right) );
         // free fields
-        free ((*dict)->str);
+        // free ((*dict)->str);
         free ((*dict)->description);
         free ((*dict)->offsets);
         // free node
@@ -48,27 +64,28 @@ int dict_insert_word (struct dict_elt_t **dict, char *str, size_t szStr) {
 
     // if we are at a leaf node
     // then we can insert the data
-    if (!*dict) { 
+    if (!*dict) {
         // we allocate a node
         *dict = calloc(1, sizeof(**dict));
+        (*dict)->str = str;
         // we allocate enough space for string
-        (*dict)->str = calloc(1, szStr * sizeof(*str));
+        // (*dict)->str = calloc(szStr + 1, sizeof(*str));
         // we make sure the string is zeroed out
-        //        bzero((*dict)->str, szStr * sizeof(*str) + 1);
+        // memset((*dict)->str, 0, szStr * sizeof(*str) + 1);
         // we insert the string
-        memcpy ( (*dict)->str, str, szStr * sizeof(*str));
+        // memcpy ( (*dict)->str, str, szStr * sizeof(*str));
         // we initialize all variable to ensure correct behavior
-        (*dict)->szStr = szStr;
+        (*dict)->szStr = szStr + 1;
         (*dict)->count = 1;
         (*dict)->right = NULL;
         (*dict)->left = NULL;
         //
-        (*dict)->szOffsets = 0;
-        (*dict)->offsets = NULL;
+        (*dict)->szOffsets = POINTERS_NB;
+        (*dict)->offsets = calloc(POINTERS_NB, sizeof(*(*dict)->offsets));
+        (*dict)->offsets[0] = (unsigned long) str;
 
         return 1;
     }
-
     // compare strings
     check = memcmp((*dict)->str, str, szStr);
 
@@ -82,13 +99,10 @@ int dict_insert_word (struct dict_elt_t **dict, char *str, size_t szStr) {
 
         // keep track of pointers
         if ((*dict)->count >= (*dict)->szOffsets) {
-            if ( (*dict)->szOffsets == 0 )
-                (*dict)->szOffsets = POINTERS_NB;
-            else
-                (*dict)->szOffsets *= 2;
-            (*dict)->offsets = realloc ( (*dict)->offsets, (*dict)->szOffsets * sizeof(**dict));
+            (*dict)->szOffsets *= 2;
+            (*dict)->offsets = realloc ( (*dict)->offsets, (*dict)->szOffsets * sizeof(*(*dict)->offsets));
         }
-        (*dict)->offsets[(*dict)->count] = (unsigned long) str;
+        (*dict)->offsets[(*dict)->count-1] = (unsigned long) str;
 
         return 1;
     }
@@ -194,7 +208,7 @@ struct dict_elt_t* dict_build_static_size (struct dict_elt_t **dict, char *str, 
 
     // we construct dictionary
     pStr = str;
-    while (pStr < str + szStr - 1) {
+    while (pStr + szToken < str + szStr) {
         dict_insert_word(dict, pStr, szToken);
         pStr++;
     }
@@ -216,22 +230,37 @@ struct dict_elt_t* dict_build (struct dict_elt_t **dict, char *str, size_t szStr
     return *dict;
 }
 
+int compare_ulong (const void *a, const void *b) {
+    return *(unsigned long *)a - *(unsigned long *)b;
+}
+
 // compute distance between equal words
-struct dict_elt_t *dict_distance (struct dict_elt_t *dict) {
+struct dict_elt_t *dict_distance_stub (struct dict_elt_t *dict) {
     size_t i;
 
     if (dict) {
-        dict_distance (dict->left);
         // if there
-        if (dict->count <= 1) {
-            for (i = 1; i < dict->count; i++) {
-                if (dict->offsets[i] > dict->offsets[i-1])
-                    dict->offsets[i] -= dict->offsets[i-1];
-                else
-                    dict->offsets[i] = dict->offsets[i-1] - dict->offsets[i];
-            }
+        if (dict->count >= 1 && dict->offsets) {
+            for (i = 0; i < dict->count; i++)
+                dict->offsets[i] = abs (dict->offsets[i] - dict->base);
         }
-        dict_distance (dict->right);
+        dict_distance_stub (dict->left);
+        dict_distance_stub (dict->right);
+    }
+}
+
+struct dict_elt_t *dict_distance (struct dict_elt_t *dict) {
+    size_t i;
+
+    if (!dict)
+        return NULL;
+
+    if (dict->offsets) {
+        qsort (dict->offsets, dict->count, sizeof(unsigned long), compare_ulong);
+
+        dict->base = dict->offsets[0];
+
+        dict_distance_stub (dict);
     }
 }
 
@@ -300,12 +329,26 @@ struct dict_elt_t *dict_search_highest_occurrences (struct dict_elt_t *dict, str
 }
 
 void dict_show (struct dict_elt_t *dict) {
+    size_t i;
+
     if (dict) {
-        if (dict->str) {
-            //printf("dict->str : %s\n", dict->str);
-            //printf("    count : %u\n", dict->count);
-            printf("%s\n", dict->str);
-        }
+        dict_distance(dict);
+
+        //if (dict->count > 1) {
+
+            if (dict->str) {
+                printf("str   : %s\n", dict->str);
+                printf("szStr : %lu\n", dict->szStr);
+            }
+
+            printf("count : %lu\n", dict->count);
+
+            if (dict->offsets) {
+                for (i = 0; i < dict->count; i++)
+                    printf("offset[%lu] = %lu\n", i, dict->offsets[i]);
+                printf("\n");
+            }
+        //}
         dict_show (dict->right);
         dict_show (dict->left);
     }
