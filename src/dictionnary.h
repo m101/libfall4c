@@ -27,6 +27,9 @@ struct dict_t {
     //
     struct dict_elt_t *root;
     struct dict_elt_t *nodes;
+    // base str
+    char *str;
+    long szStr;
 };
 
 struct dict_elt_t {
@@ -52,28 +55,29 @@ struct dict_elt_t {
     };
 };
 
+// default dict constructor
+struct dict_t* dict_new (struct dict_t **dict);
 // destroy dictionnary recursively
-void dict_destroy (struct dict_elt_t **dict);
+void dict_destroy (struct dict_t **dict);
 // dictionnary : insert a word
-int dict_insert_word (struct dict_elt_t **dict, char *str, size_t szStr);
+int dict_insert_word (struct dict_t *dict, char *word, int szWord);
 // search a word in the dictionnary
-struct dict_elt_t* dict_search_word (struct dict_elt_t *anchor, char *word, size_t szWord);
-// search if there is at least one dupe
-struct dict_elt_t* dict_find_dupe (struct dict_elt_t **root, struct dict_elt_t **dict, struct dict_elt_t **dupes);
+struct dict_elt_t* dict_search_word (struct dict_t *dict, char *word, int szWord);
 // find and destroy duplicates
-struct dict_elt_t* dict_destroy_dupes (struct dict_elt_t **dict);
+struct dict_t* dict_destroy_dupes (struct dict_t *dict);
 // build a dictionnary from a sequence of characters
-struct dict_elt_t* dict_build_static_size (struct dict_elt_t **dict, char *str, size_t szStr, size_t szToken);
+struct dict_t* dict_build_from_str_static_size (struct dict_t *dict, char *str, int szStr, int szToken);
 // build a dictionnary from a sequence of characters
-struct dict_elt_t* dict_build (struct dict_elt_t **dict, char *str, size_t szStr, size_t szTokenMax);
+struct dict_t* dict_build_from_str (struct dict_t *dict, char *str, int szStr, int szTokenMax);
 // compute distance between equal words
-struct dict_elt_t *dict_distance (struct dict_elt_t *dict);
-//
-struct dict_elt_t *dict_search_highest_occurrences (struct dict_elt_t *dict, struct dict_elt_t **node);
+struct dict_t *dict_distance (struct dict_t *dict);
+// count number of offsets
+int dict_offsets_count (struct dict_t *dict);
 // load a dictionnary file
 // struct dict_elt_t *dict_load (char *dict_filename);
 // dictionnary : save to a file
 // int dict_save (char *dict_file, struct dict_elt_t *dict);
-void dict_show (struct dict_elt_t *dict);
+// show dictionnary
+void dict_show (struct dict_t *dict);
 
 #endif
