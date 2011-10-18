@@ -19,8 +19,7 @@
 #define _STACK_H
 
 // stack
-struct stack_t
-{
+struct stack_t {
     // elements of the stack
     struct stack_element_t *elements;
     // stack pointer
@@ -32,8 +31,7 @@ struct stack_t
 };
 
 // stack element
-struct stack_element_t
-{
+struct stack_element_t {
     // data stored
     char *data;
     // size of data

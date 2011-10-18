@@ -21,8 +21,7 @@
 #include "stack.h"
 
 // push data on the stack
-struct stack_t *stack_push (struct t_stack **p, void *data)
-{
+struct stack_t *stack_push (struct t_stack **p, void *data) {
     struct stack_element_t *elt;
 
     // pointer check
@@ -31,8 +30,7 @@ struct stack_t *stack_push (struct t_stack **p, void *data)
 	
     elt = stack_element_new();
     // was stack allocated?
-	if (!(*p))
-    {
+	if (!(*p)) {
 		*p = stack_new();
         // update base pointer
         (*p)->base = elt;
@@ -52,8 +50,7 @@ struct stack_t *stack_push (struct t_stack **p, void *data)
 }
 
 // get last data added to the stack
-void* stack_pop (struct stack_t **p)
-{
+void* stack_pop (struct stack_t **p) {
     void *data;
 	struct stack_element_t *elt = NULL;
 	
@@ -65,8 +62,7 @@ void* stack_pop (struct stack_t **p)
 	
     // if no node elements
     // then destruct it
-    if ( (*p)->top == NULL )
-    {
+    if ( (*p)->top == NULL ) {
         free (*p), *p = NULL;
         return NULL;
     }
@@ -94,8 +90,7 @@ void* stack_pop (struct stack_t **p)
 }
 
 // allocate stack element
-struct stack_element_t *stack_element_new(void)
-{
+struct stack_element_t *stack_element_new (void) {
     struct stack_element_t elt = {0};
     struct stack_element_t *node = NULL;
 
@@ -106,8 +101,7 @@ struct stack_element_t *stack_element_new(void)
 }
 
 // allocate a new stack
-struct stack_t *stack_new(void)
-{
+struct stack_t *stack_new (void) {
     struct stack_t elt = {0};
     struct stack_t *node = NULL;
 
@@ -118,8 +112,7 @@ struct stack_t *stack_new(void)
 }
 
 // destroy a stack
-void stack_destroy (struct stack_t **stack)
-{
+void stack_destroy (struct stack_t **stack) {
     struct stack_element_t *elt, *next;
     // pointers check
     if (!stack)
@@ -129,8 +122,7 @@ void stack_destroy (struct stack_t **stack)
 
     // traverse stack and destroy each element
     elt = (*stack)->base;
-    while (elt)
-    {
+    while (elt) {
         next = elt->next;
         free (elt);
         elt = next;
