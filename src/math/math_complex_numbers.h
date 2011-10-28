@@ -1,8 +1,12 @@
 #ifndef _MATHS_COMPLEX_NUMBERS_
 #define _MATHS_COMPLEX_NUMBERS_
 
-struct t_complex
+#ifdef __cplusplus
+extern "C"
 {
+#endif
+
+struct t_complex {
     // real part
     double real;
     // imaginary part
@@ -31,6 +35,8 @@ double complex_norm (struct t_complex *complexNumber);
 // complex number argument in radian
 double complex_arg (struct t_complex *complexNumber);
 
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _MATHS_COMPLEX_NUMBERS_ */

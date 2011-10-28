@@ -18,6 +18,11 @@
 #ifndef _QUEUE_H_
 #define _QUEUE_H_
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdlib.h>
 
 // queue
@@ -52,5 +57,9 @@ void* queue_pop (struct queue_t **p);
 struct queue_t* queue_new (void);
 // destroy a queue
 void queue_destroy (struct queue_t **queue);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

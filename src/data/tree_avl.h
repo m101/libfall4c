@@ -18,6 +18,15 @@
 #ifndef _TREE_AVL_H
 #define _TREE_AVL_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include "tree_common.h"
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _TREE_AVL_H */

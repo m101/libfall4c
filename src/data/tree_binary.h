@@ -18,6 +18,11 @@
 #ifndef _TREE_BINARY_H_
 #define _TREE_BINARY_H_
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stddef.h>             /* pour size_t */
 
 #include "tree_common.h"
@@ -28,6 +33,10 @@ struct tree_t* binary_search_tree_add (struct tree_t *root, void *data);
 void binary_tree_display (struct tree_t *root);
 void binary_tree_display_right (struct tree_t *root);
 void binary_tree_display_left (struct tree_t *root);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* _TREE_BINARY_H_ */
 

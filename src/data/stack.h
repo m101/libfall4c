@@ -18,6 +18,11 @@
 #ifndef _STACK_H
 #define _STACK_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 // stack
 struct stack_t {
     // elements of the stack
@@ -48,5 +53,9 @@ void* stack_pop (struct stack_t **p);
 struct stack_t* stack_new (void);
 // destroy a stack
 void stack_destroy (struct stack_t **stack);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -18,6 +18,11 @@
 #ifndef _ARRAY_ASSOCIATIVE_
 #define _ARRAY_ASSOCIATIVE_
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include "tree_common.h"
 
 // associative array element
@@ -41,5 +46,9 @@ void *get_value (struct aarray_t **array, char *key);
 int aarray_comparator (void *elt1, void *elt2);
 // size of an associative array element
 size_t aarray_elt_size (void *elt);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

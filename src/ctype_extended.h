@@ -21,6 +21,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 /*! @file c_type_extended.h
 *   @brief Fonctions supplémentaires de conversion de type
 */
@@ -32,5 +37,10 @@ long l_round (double value);
 char* stringtoupper (char string[]);
 // Convertit une chaine en minuscule
 char* stringtolower (char string[]);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif

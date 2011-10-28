@@ -16,6 +16,11 @@
 #ifndef _DICTIONNARY_H
 #define _DICTIONNARY_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdlib.h>
 
 #define POINTERS_NB     16
@@ -83,5 +88,9 @@ int dict_nodes_count (struct dict_t *dict);
 // int dict_save (char *dict_file, struct dict_elt_t *dict);
 // show dictionnary
 void dict_show (struct dict_t *dict);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

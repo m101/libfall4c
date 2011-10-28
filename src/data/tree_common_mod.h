@@ -48,6 +48,8 @@ struct tree_t
     int (*comparator)(void *data1, void *data2);
     void (*destroy_data)(void *data);
     size_t (*get_data_size)(void *data);
+    // view functions
+    void (*show)(void *data);
 };
 
 // node structure
@@ -70,11 +72,21 @@ struct tree_node_t
 };
 
 // Create new tree
-struct tree_t* tree_new (int (*comparator)(void *, void *), size_t (*get_data_size)(void *));
+struct tree_t* tree_new (void);
 // Destroy tree
 void tree_free (struct tree_t *root);
 // Create a tree node
 struct tree_node_t* tree_node_new (void);
+
+// setters
+// comparator
+void tree_set_comparator (int (*comparator)(void *, void *));
+//
+void tree_set_get_data_size (size_t (*get_data_size)(void *));
+//
+void tree_set_destroy (void (*destroy_data)(void *data));
+//
+void tree_set_show (void (*show)(void *data));
 
 #ifdef __cplusplus
 }

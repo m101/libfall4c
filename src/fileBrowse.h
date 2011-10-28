@@ -18,10 +18,19 @@
 #ifndef _FILE_BROWSE_H
 #define _FILE_BROWSE_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 
 void dirwalk (char *dirname);
 void readTreeNode (char *dirname);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
