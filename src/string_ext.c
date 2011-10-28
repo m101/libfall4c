@@ -223,3 +223,19 @@ cont:
 	/* NOTREACHED */
 }
 
+char *str_reverse (char *str)
+{
+  char *head, *tail;
+
+  head = str;
+  tail = str + strlen(str) - 1;
+
+  while (head < tail)
+  {
+    *head = *tail;
+    head++;
+    tail--;
+  }
+
+  return str;
+}
