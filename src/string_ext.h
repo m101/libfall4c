@@ -35,12 +35,13 @@ extern "C"
     struct string_t string_cpy (struct string_t *str1, struct string_t str2);
     struct string_t string_cat (struct string_t *str1, struct string_t str2);
     struct string_t string_cmp (struct string_t *str1, struct string_t str2);
+    // separate a string in its column components
+    char** string_get_columns (char *str, int len, int nColumns);
+    // normalize string to ascii (no accent, etc)
+    char *normalize_str (char *str, int szStr);
 
     void clean(char *chaine);
     void purger(void);
-    void read (size_t bufferLength);
-    void readNumber (size_t bufferLength);
-    long stringLength (char string[]);
     /*
     char *_DEFUN (strtok_r, (s, delim, lasts),
                 	register char *s _AND

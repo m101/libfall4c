@@ -116,7 +116,6 @@ long getLine (char *line, long max)
 *   @param   lineNumber       Ligne à atteindre
 *   @return                   Position du curseur dans le flux
 */
-
 long fgotol (FILE *stream, long lineNumber)
 {
     char *pLine = NULL;
@@ -139,3 +138,19 @@ long fgotoc (FILE *stream, long characterNumber)
 
     return ftell(stream);
 }
+
+// get filesize
+int get_filesize(FILE *fp) {
+    int offset, sz;
+
+    if (!fp)
+        return -1;
+
+    offset = ftell(fp);
+    fseek(fp, 0, SEEK_END);
+    sz = ftell(fp);
+    fseek(fp, offset, SEEK_SET);
+
+    return sz;
+}
+

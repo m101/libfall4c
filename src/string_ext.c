@@ -18,6 +18,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// depedencies
+#include <unac.h>
+
 #include "string.h"
 
 // secure string length
@@ -96,6 +99,77 @@ int string_word_delete (char *str, char *word) {
         return -1;
     
     return 0;
+}
+
+// separate a string in its column components
+char** string_get_columns (char *str, int len, int nColumns) {
+    // multiple len and rest len
+    int mLen, rLen;
+    // indexes
+    int idxStr, idxAlpha;
+    // string table
+    char **cstr;
+
+    // allocate the ciphertext space
+    cstr = calloc(nColumns, sizeof(*cstr));
+    if (!cstr)
+        return NULL;
+
+    // calculate
+    rLen = len % nColumns;
+    mLen = len - rLen;
+    mLen = mLen / nColumns;
+
+    // construct the different strings
+    for (idxAlpha = 0; idxAlpha < nColumns; idxAlpha++) {
+        cstr[idxAlpha] = calloc(mLen + 2, sizeof(**cstr));
+        for (idxStr = 0; idxStr < mLen; idxStr++) {
+            // cstr[idxAlpha][idxStr] = str[idxStr * nColumns + idxAlpha];
+            cstr[idxAlpha][idxStr] = str[idxAlpha * nColumns + idxStr];
+        }
+    }
+
+    // end the different strings
+    for (idxAlpha = 0; idxAlpha < rLen; idxAlpha++) {
+        for (idxStr = mLen; idxStr < mLen + 1; idxStr++) {
+            // cstr[idxAlpha][idxStr] = str[idxStr * nColumns + idxAlpha];
+            cstr[idxAlpha][idxStr] = str[idxAlpha * nColumns + idxStr];
+        }
+        // printf("cstr: '%s'\n", cstr[idxAlpha]);
+    }
+
+    return cstr;
+}
+
+// normalize string to ascii (no accent, etc)
+char *normalize_str (char *str, int szStr) {
+    int idxStr, idxNew;
+    // normalized string
+    char *normalized = NULL;
+    size_t sznormalized = 0;
+    // return code
+    int rc;
+
+    // check ptrs
+    if (!str || szStr <= 0)
+        return NULL;
+
+    // remove all accents and diacritics
+    // ISO646-US === ASCII
+    rc = unac_string("ISO646-US", str, szStr, &normalized, &sznormalized);
+    if (rc < 0)
+        fatal("normalize_str():Error: Failed removing accents\n");
+    // printf("normalize_str():normalized: '%s'\n", normalized);
+
+    // toupper string
+    for (idxStr = 0, idxNew = 0; idxStr < sznormalized; idxStr++) {
+        if (isalpha(normalized[idxStr])) {
+            normalized[idxNew++] = toupper(normalized[idxStr]);
+        }
+    }
+    normalized[idxNew] = '\0';
+
+    return normalized;
 }
 
 char *

@@ -240,6 +240,58 @@ struct dict_t* dict_build_from_str (struct dict_t *dict, char *str, int szStr, i
     return dict;
 }
 
+// build a dictionnary from a sequence of characters
+// usefull to study frequency analysis
+struct dict_t* dict_build_from_str_static_size_kasiski (struct dict_t *dict, char *str, int szStr, int szToken) {
+    char *pStr1, *pStr2;
+    int check;
+    int dupe;
+
+    // check string validity
+    if (!dict || !str || (szStr <= 0) || !szToken)
+        return NULL;
+
+    // we construct dictionary
+    pStr1 = str;
+    while (pStr1 + szToken < str + szStr) {
+        // check if token appear more than once
+        dupe = 0;
+        pStr2 = str;
+        while (pStr2 < str + szStr) {
+            check = memcmp(pStr1, pStr2, szToken);
+            if (check == 0) {
+                dupe++;
+                if (dupe > 1)
+                    break;
+            }
+            pStr2++;
+        }
+
+        // if it appear more than once
+        // then we are interested in it
+        if (dupe > 1)
+            dict_insert_word(dict, pStr1, szToken);
+        pStr1++;
+    }
+
+    return dict;
+}
+
+// build a dictionnary from a sequence of characters
+struct dict_t* dict_build_from_str_kasiski (struct dict_t *dict, char *str, int szStr, int szTokenMax) {
+    int szToken;
+
+    // check string validity
+    if (!dict || !str || (szStr <= 0) || !szTokenMax)
+        return NULL;
+
+    for (szToken = 1; szToken <= szTokenMax; szToken++) {
+        dict_build_from_str_static_size_kasiski (dict, str, szStr, szToken);
+    }
+
+    return dict;
+}
+
 int compare_ulong (const void *a, const void *b) {
     return *(unsigned long *)a - *(unsigned long *)b;
 }
@@ -311,7 +363,7 @@ int dict_offsets_count_stub (struct dict_elt_t *node, int total) {
     if (!node)
         return total;
     else {
-        printf("[%p] node->count: %lu - word: %s\n", node, node->count, node->str);
+        // printf("[%p] node->count: %lu - word: %s\n", node, node->count, node->str);
         total += node->count;
         total = dict_offsets_count_stub(node->left, total);
         total = dict_offsets_count_stub(node->right, total);

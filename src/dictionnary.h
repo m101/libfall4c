@@ -69,6 +69,8 @@ struct dict_t* dict_destroy_dupes (struct dict_t *dict);
 struct dict_t* dict_build_from_str_static_size (struct dict_t *dict, char *str, int szStr, int szToken);
 // build a dictionnary from a sequence of characters
 struct dict_t* dict_build_from_str (struct dict_t *dict, char *str, int szStr, int szTokenMax);
+// build a dictionnary from a sequence of characters
+struct dict_t* dict_build_from_str_kasiski (struct dict_t *dict, char *str, int szStr, int szTokenMax);
 // compute distance between equal words
 struct dict_t *dict_distance (struct dict_t *dict);
 // count number of offsets

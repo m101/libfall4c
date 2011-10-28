@@ -31,5 +31,7 @@ char* fgetl(FILE *stream, char *pLine);
 long getLine (char *line, long max);
 // Vérifie si le fichier est vide ou non
 long check_file_emptiness (char *fileName);
+// get filesize
+int get_filesize(FILE *fp);
 
 #endif
