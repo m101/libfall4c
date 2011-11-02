@@ -18,10 +18,8 @@
 #ifndef _PATHFINDING_H
 #define _PATHFINDING_H
 
-#include <allegro.h>
-
-#include "struct Listes_doubles.h"
-#include "structures.h"
+#include "list.h"
+#include "math/geometry_space.h"
 
 struct path_node
 {

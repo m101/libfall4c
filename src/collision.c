@@ -18,37 +18,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <allegro.h>
-
-#include "structures.h"
+#include "math/geometry_space.h"
 #include "collision.h"
 
 /*! @brief                    Detection de collision pour rectangles
-*   @param Objet1             Objet1
-*   @param Objet2             Objet2
+*   @param Object1             Object1
+*   @param Object2             Object2
 */
-int collision_rect (struct t_object *Objet1, struct t_object *Objet2)
+int collision_rect (struct solid_t *Object1, struct solid_t *Object2)
 {
     long booleenCollision = 1;
 
-    if ( (Objet1 != NULL) && (Objet2 != NULL) )
+    if ( (Object1 != NULL) && (Object2 != NULL) )
     {
-        // Si l'objet 1 est a gauche de l'objet 2
+        // Si l'Object 1 est a gauche de l'Object 2
         // Alors pas de collision
-        if ( (Objet1->Position.x + Objet1->width) < Objet2->Position.x )
+        if ( (Object1->Position.x + Object1->width) < Object2->Position.x )
             booleenCollision = 0;
-        // Si l'objet 1 est a droite de l'objet 2
+        // Si l'Object 1 est a droite de l'Object 2
         // Alors pas de collision
-        else if ( Objet1->Position.x > (Objet2->Position.x + Objet2->width) )
+        else if ( Object1->Position.x > (Object2->Position.x + Object2->width) )
             booleenCollision = 0;
 
-        // Si l'objet 1 est au dessus de l'objet 2
+        // Si l'Object 1 est au dessus de l'Object 2
         // Alors pas de collision
-        if ( (Objet1->Position.y + Objet1->height) < Objet2->Position.y )
+        if ( (Object1->Position.y + Object1->height) < Object2->Position.y )
             booleenCollision = 0;
-        // Si l'objet 1 est en dessous de l'objet 2
+        // Si l'Object 1 est en dessous de l'Object 2
         // Alors pas de collision
-        else if ( Objet1->Position.y > (Objet2->Position.y + Objet2->height) )
+        else if ( Object1->Position.y > (Object2->Position.y + Object2->height) )
             booleenCollision = 0;
     }
 
@@ -57,47 +55,47 @@ int collision_rect (struct t_object *Objet1, struct t_object *Objet2)
 
 /*! @brief                    Detection de collision pour rectangles
 *                             avec un cadre
-*   @param Objet1             Objet1
-*   @param Objet2             Objet2
+*   @param Object1             Object1
+*   @param Object2             Object2
 */
-int collision_rect_box (struct t_object *Objet1, struct t_object *Objet2)
+int collision_rect_box (struct solid_t *Object1, struct solid_t *Object2)
 {
     long booleenCollision = 1;
 
-    if ( (Objet1 != NULL) && (Objet2 != NULL) )
+    if ( (Object1 != NULL) && (Object2 != NULL) )
     {
         // On calcul la collision box
-        // Objet1
-        Objet1->collisionWidth = Objet1->width * 0.80;
-        Objet1->collisionHeight = Objet1->height * 0.80;
-        Objet1->collisionOffsetX = (Objet1->width - Objet1->collisionWidth)/2;
-        Objet1->collisionOffsetY = (Objet1->height - Objet1->collisionHeight)/2;
-        // Objet2
-        Objet2->collisionWidth = Objet2->width * 0.80;
-        Objet2->collisionHeight = Objet2->height * 0.80;
-        Objet2->collisionOffsetX = (Objet2->width - Objet2->collisionWidth)/2;
-        Objet2->collisionOffsetY = (Objet2->height - Objet2->collisionHeight)/2;
+        // Object1
+        Object1->collisionWidth = Object1->width * 0.80;
+        Object1->collisionHeight = Object1->height * 0.80;
+        Object1->collisionOffsetX = (Object1->width - Object1->collisionWidth)/2;
+        Object1->collisionOffsetY = (Object1->height - Object1->collisionHeight)/2;
+        // Object2
+        Object2->collisionWidth = Object2->width * 0.80;
+        Object2->collisionHeight = Object2->height * 0.80;
+        Object2->collisionOffsetX = (Object2->width - Object2->collisionWidth)/2;
+        Object2->collisionOffsetY = (Object2->height - Object2->collisionHeight)/2;
 
-        // Si l'objet 1 est a gauche de l'objet 2
+        // Si l'Object 1 est a gauche de l'Object 2
         // Alors pas de collision
-        if ( (Objet1->Position.x + Objet1->width + Objet1->collisionOffsetX)
-                < (Objet2->Position.x + Objet2->collisionOffsetX) )
+        if ( (Object1->Position.x + Object1->width + Object1->collisionOffsetX)
+                < (Object2->Position.x + Object2->collisionOffsetX) )
             booleenCollision = 0;
-        // Si l'objet 1 est a droite de l'objet 2
+        // Si l'Object 1 est a droite de l'Object 2
         // Alors pas de collision
-        else if ( (Objet1->Position.x + Objet1->collisionOffsetX)
-                  > (Objet2->Position.x + Objet2->collisionOffsetX + Objet2->width) )
+        else if ( (Object1->Position.x + Object1->collisionOffsetX)
+                  > (Object2->Position.x + Object2->collisionOffsetX + Object2->width) )
             booleenCollision = 0;
 
-        // Si l'objet 1 est au dessus de l'objet 2
+        // Si l'Object 1 est au dessus de l'Object 2
         // Alors pas de collision
-        if ( (Objet1->Position.y + Objet1->height + Objet1->collisionOffsetY)
-                < (Objet2->Position.y + Objet2->collisionOffsetY) )
+        if ( (Object1->Position.y + Object1->height + Object1->collisionOffsetY)
+                < (Object2->Position.y + Object2->collisionOffsetY) )
             booleenCollision = 0;
-        // Si l'objet 1 est en dessous de l'objet 2
+        // Si l'Object 1 est en dessous de l'Object 2
         // Alors pas de collision
-        else if ( (Objet1->Position.y + Objet1->collisionOffsetY)
-                  > (Objet2->Position.y + Objet2->height + Objet2->collisionOffsetY) )
+        else if ( (Object1->Position.y + Object1->collisionOffsetY)
+                  > (Object2->Position.y + Object2->height + Object2->collisionOffsetY) )
             booleenCollision = 0;
     }
 
@@ -106,66 +104,66 @@ int collision_rect_box (struct t_object *Objet1, struct t_object *Objet2)
 
 
 /*! @brief                    Pixel Perfect
-*                             Detection de collision pour 2 objet
+*                             Detection de collision pour 2 Object
 *   @param screenBuffer       Bitmap a analyse pour les collisions
-*   @param Objet1             Objet1
-*   @param Objet2             Objet2
+*   @param Object1             Object1
+*   @param Object2             Object2
 *   @param collisionColor     Couleur de collision
 */
-int collision_pixel_perfect (BITMAP *screenBuffer, struct t_object *Objet1, struct t_object *Objet2, long collisionColor)
+/*
+int collision_pixel_perfect (BITMAP *screenBuffer, struct solid_t *Object1, struct solid_t *Object2, long collisionColor)
 {
-
     int left1, left2, over_left;
     int right1, right2, over_right;
     int top1, top2, over_top;
     int bottom1, bottom2, over_bottom;
     int i = 0, j = 0;
 
-    left1 = Objet1->Position.x;
-    left2 = Objet2->Position.x;
-    right1 = Objet1->Position.x + Objet1->width;
-    right2 = Objet2->Position.x + Objet2->width;
-    top1 = Objet1->Position.y;
-    top2 = Objet2->Position.y;
-    bottom1 = Objet1->Position.y + Objet1->height;
-    bottom2 = Objet2->Position.y + Objet2->height;
+    left1 = Object1->Position.x;
+    left2 = Object2->Position.x;
+    right1 = Object1->Position.x + Object1->width;
+    right2 = Object2->Position.x + Object2->width;
+    top1 = Object1->Position.y;
+    top2 = Object2->Position.y;
+    bottom1 = Object1->Position.y + Object1->height;
+    bottom2 = Object2->Position.y + Object2->height;
 
     // Les collisions simples (Bounding Box)
-    // Si le bas de l'objet 1 est au dessus du haut de l'objet 2
+    // Si le bas de l'Object 1 est au dessus du haut de l'Object 2
     // Alors il n'y a pas collision
     if (bottom1 < top2)
         return 0 ;
-    // Si le haut de l'objet 1 est en dessous du bas de l'objet 2
+    // Si le haut de l'Object 1 est en dessous du bas de l'Object 2
     // Alors il n'y a pas collision
     if (top1 > bottom2)
         return 0 ;
-    // Si la droite de l'objet 1 est gauche du cote gauche de l'objet 2
+    // Si la droite de l'Object 1 est gauche du cote gauche de l'Object 2
     // Alors il n'y a pas collision
     if (right1 < left2)
         return 0 ;
-    // Si la gauche de l'objet 1 est droite du cote droit de l'objet 2
+    // Si la gauche de l'Object 1 est droite du cote droit de l'Object 2
     // Alors il n'y a pas collision
     if (left1 > right2)
         return 0 ;
 
 
     // Ok, compute the rectangle of overlap:
-    // Si l'objet 1 est en dessous de l'objet 2
-    // Alors l'objet 2 est l'objet se trouvant le plus en haut
+    // Si l'Object 1 est en dessous de l'Object 2
+    // Alors l'Object 2 est l'Object se trouvant le plus en haut
     if (bottom1 > bottom2)
         over_bottom = bottom2;
-    // Sinon l'objet 1 est au dessus
+    // Sinon l'Object 1 est au dessus
     else
         over_bottom = bottom1;
 
-    // Si l'objet 1 est au dessus de l'objet 2
-    // Alors l'objet 2 est l'objet se trouvant le plus en bas
+    // Si l'Object 1 est au dessus de l'Object 2
+    // Alors l'Object 2 est l'Object se trouvant le plus en bas
     if (top1 < top2)
         over_top = top2;
-    // Sinon l'objet 1 est en dessous
+    // Sinon l'Object 1 est en dessous
     else
         over_top = top1;
-    // Si la droite de l'objet 1 est droite du cote droite de l'objet 2
+    // Si la droite de l'Object 1 est droite du cote droite de l'Object 2
     // Alors la droite du rectangle d'overlap vaut right2
     if (right1 > right2)
         over_right = right2;
@@ -173,7 +171,7 @@ int collision_pixel_perfect (BITMAP *screenBuffer, struct t_object *Objet1, stru
     else
         over_right = right1;
 
-    // Si la gauche de l'objet 1 est a gauche du cote gauche de l'objet 2
+    // Si la gauche de l'Object 1 est a gauche du cote gauche de l'Object 2
     // Alors la gauche du rectangle d'overlap vaut left2
     if (left1 < left2)
         over_left = left2;
@@ -199,3 +197,5 @@ int collision_pixel_perfect (BITMAP *screenBuffer, struct t_object *Objet1, stru
 
     return 0;
 }
+//*/
+

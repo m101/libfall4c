@@ -18,6 +18,8 @@
 #ifndef _STRINGMANIPULATION_H
 #define _STRINGMANIPULATION_H
 
+#include "errors.h"
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -25,16 +27,19 @@ extern "C"
 
     struct string_t {
         // string
-        char *string;
+        char *bytes;
         // size of string
-        size_t szString;
+        int size;
         // size of allocated space
-        size_t capacity;
+        int capacity;
     };
     
-    struct string_t string_cpy (struct string_t *str1, struct string_t str2);
-    struct string_t string_cat (struct string_t *str1, struct string_t str2);
-    struct string_t string_cmp (struct string_t *str1, struct string_t str2);
+    // secure string copy
+    struct string_t* string_cpy (struct string_t *dst, struct string_t *src);
+    // secure string concatenation
+    struct string_t* string_cat (struct string_t *dst, struct string_t *src);
+    // secure string comparison
+    int string_cmp (struct string_t *str1, struct string_t *str2);
     // separate a string in its column components
     char** string_get_columns (char *str, int len, int nColumns);
     // normalize string to ascii (no accent, etc)

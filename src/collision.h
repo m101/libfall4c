@@ -21,15 +21,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <allegro.h>
-
-#include "structures.h"
+#include "math/geometry_space.h"
 #include "collision.h"
 
-struct struct t_object
+struct solid_t
 {
     // Image de l'objet
-    BITMAP *ObjetImage;
+    // BITMAP *ObjetImage;
     // Position de l'image
     struct t_position Position;
     // Vecteur (donne le sens et la direction)
@@ -42,15 +40,14 @@ struct struct t_object
     unsigned collisionHeight;
     unsigned collisionOffsetX;
     unsigned collisionOffsetY;
-    t_images Tiles;
+    // t_images Tiles;
 };
 
-long collisionOlimarEnvironment (BITMAP *screenBuffer, struct t_position positionOlimar);
 // Detection de collision pour rectangles
-int collision_rect (struct t_object *Objet1, struct t_object *Objet2);
+int collision_rect (struct solid_t *Objet1, struct solid_t *Objet2);
 // Detection de collision pour rectangles avec un cadre
-int collision_rect_box (struct t_object *Objet1, struct t_object *Objet2);
+int collision_rect_box (struct solid_t *Objet1, struct solid_t *Objet2);
 // Pixel Perfect : Detection de collision pour 2 objet
-int collision_pixel_perfect (BITMAP *screenBuffer, struct t_object *Objet1, struct t_object *Objet2, long collisionColor);
+// int collision_pixel_perfect (BITMAP *screenBuffer, struct solid_t *Objet1, struct solid_t *Objet2, long collisionColor);
 
 #endif

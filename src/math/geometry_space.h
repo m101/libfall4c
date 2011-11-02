@@ -1,4 +1,4 @@
-#ifndef _GEOMATRY_SPACE_H
+#ifndef _GEOMETRY_SPACE_H
 #define _GEOMETRY_SPACE_H
 
 struct t_position {

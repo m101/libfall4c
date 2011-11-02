@@ -21,18 +21,18 @@
 // depedencies
 #include <unac.h>
 
-#include "string.h"
+#include "string_ext.h"
 
 // secure string length
-size_t string_len (string_t *str) {
+size_t string_len (struct string_t *str) {
     if (str)
-        return str->szString;
+        return str->size;
     else
         return -1;
 }
 
 // secure string copy
-string_t* string_cpy (string_t *dst, string_t *src) {
+struct string_t* string_cpy (struct string_t *dst, struct string_t *src) {
     // new size
     size_t nsize;
 
@@ -42,20 +42,20 @@ string_t* string_cpy (string_t *dst, string_t *src) {
 
     // if buffer isn't big enough
     // then allocate an adapted one
-    if (dst->capacity < src->szString) {
-        dst->capacity = src->szString;
-        dst->string = realloc (dst->string, dst->capacity);
+    if (dst->capacity < src->size) {
+        dst->capacity = src->size;
+        dst->bytes = realloc (dst->bytes, dst->capacity);
     }
 
     // we copy string
-    strncpy (dst->string, src->string, src->szString);
-    dst->string[dst->szString - 1] = '\0';
+    strncpy (dst->bytes, src->bytes, src->size);
+    dst->bytes[dst->size - 1] = '\0';
 
     return dst;
 }
 
 // secure string concatenation
-string_t *string_cat (string_t *dst, string_t *src) {
+struct string_t* string_cat (struct string_t *dst, struct string_t *src) {
     // new size
     size_t nsize;
 
@@ -65,23 +65,24 @@ string_t *string_cat (string_t *dst, string_t *src) {
 
     // if buffer isn't big enough
     // then allocate an adapted one
-    if (dst->capacity < dst->szString + src->szString) {
-        dst->capacity = dst->szString + src->szString;
-        dst->szString = realloc (dst->string, dst->capacity);
+    if (dst->capacity < dst->size + src->size) {
+        dst->capacity = dst->size + src->size;
+        dst->size = realloc (dst->bytes, dst->capacity);
     }
 
     // we copy string
-    strncat (dst->string, src->string, src->szString);
-    dst->string[dst->szString - 1] = '\0';
+    strncat (dst->bytes, src->bytes, src->size);
+    dst->bytes[dst->size - 1] = '\0';
 
     return dst;
 }
 
-string_t string_cmp (string_t *str1, string_t str2) {
+// secure string comparison
+int string_cmp (struct string_t *str1, struct string_t *str2) {
     if (str1->size != str2->size)
         return *(str1->bytes) - *(str2->bytes);
 
-    return strncmp (str1->bytes, str2->bytes, str1->szString);
+    return strncmp (str1->bytes, str2->bytes, str1->size);
 }
 
 int string_word_delete (char *str, char *word) {
@@ -172,6 +173,7 @@ char *normalize_str (char *str, int szStr) {
     return normalized;
 }
 
+/*
 char *
 _DEFUN (strtok_r, (s, delim, lasts),
 	register char *s _AND
@@ -186,9 +188,7 @@ _DEFUN (strtok_r, (s, delim, lasts),
 	if (s == NULL && (s = *lasts) == NULL)
 		return (NULL);
 
-	/*
-	 * Skip (span) leading delimiters (s += strspn(s, delim), sort of).
-	 */
+	 // Skip (span) leading delimiters (s += strspn(s, delim), sort of).
 cont:
 	c = *s++;
 	for (spanp = (char *)delim; (sc = *spanp++) != 0;) {
@@ -196,16 +196,15 @@ cont:
 			goto cont;
 	}
 
-	if (c == 0) {		/* no non-delimiter characters */
+    // no non-delimiter characters
+	if (c == 0) {		
 		*lasts = NULL;
 		return (NULL);
 	}
 	tok = s - 1;
 
-	/*
-	 * Scan token (scan for delimiters: s += strcspn(s, delim), sort of).
-	 * Note that delim must have one NUL; we stop if we see that, too.
-	 */
+	 // Scan token (scan for delimiters: s += strcspn(s, delim), sort of).
+	 // Note that delim must have one NUL; we stop if we see that, too.
 	for (;;) {
 		c = *s++;
 		spanp = (char *)delim;
@@ -220,8 +219,9 @@ cont:
 			}
 		} while (sc != 0);
 	}
-	/* NOTREACHED */
+	// NOTREACHED
 }
+//*/
 
 char *str_reverse (char *str)
 {
