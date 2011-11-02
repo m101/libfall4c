@@ -32,8 +32,10 @@
 #define X_AXIS 0
 #define Y_AXIS 1
 
-#include "ret_codes.h"
 #include "vector_space.h"
+
+#define ERROR_MATRIX_NOTSQUARE  -1
+#define ERROR_MATRIX_NOT_FILLED -2
 
 /*! @brief Matrix object : Contain matrix data
  */
@@ -78,7 +80,8 @@ struct Matrix_max* matrix_max (struct Matrix *matrix);
 // Return infinite norm of a matrix
 double matrix_norm_inf (struct Matrix *matrix);
 // Determinant with Sarrus
-struct SRet matrix_det_sarrus (struct Matrix *matrix);
+// struct SRet matrix_det_sarrus (struct Matrix *matrix);
+int matrix_det_sarrus (struct Matrix *matrix);
 // Matrix filling row
 int matrix_fill_row (struct Matrix *matrix, size_t rowNb, char *row);
 // Matrix fill

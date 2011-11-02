@@ -30,7 +30,8 @@
 #include <math.h>
 
 //#include "interpolation.h"
-#include "maths_matrix.h"
+#include "errors.h"
+#include "math_matrix.h"
 #include "vector_space.h"
 
 #define matrix_rref_gauss_java(var) matrix_rref_gauss(var)
@@ -157,7 +158,7 @@ struct Matrix* matrix_inverse (struct Matrix *matrix)
     size_t i = 0, j = 0;
     // Index to browse inverted matrix
     size_t k = 0;
-    struct SRet Ret = {0};
+    // struct SRet Ret = {0};
     // Matrix identity to append
     struct Matrix *m_identity = NULL;
     // augmented matrix
@@ -166,24 +167,28 @@ struct Matrix* matrix_inverse (struct Matrix *matrix)
     struct Matrix *m_rref = NULL;
     // Inverted matrix
     struct Matrix *m_inverse = NULL;
+    // determinant
+    int det;
 
-    Ret = matrix_det_sarrus(matrix);
+    // Ret = matrix_det_sarrus(matrix);
+    det = matrix_det_sarrus(matrix);
 
     if (!matrix)
     {
-        Ret.ret = ERROR_NULL_POINTER;
+        // // Ret.ret = ERROR_NULL_POINTER;
         printf("matrix_inverse: Matrix not allocated\n");
         return NULL;
     }
 
     if (matrix->nr != matrix->nc)
     {
-        Ret.ret = ERROR_MATRIX_NOTSQUARE;
+        // Ret.ret = ERROR_MATRIX_NOTSQUARE;
         printf("matrix_inverse: Matrix not square\n");
         return NULL;
     }
 
-    if (!Ret.ret)
+    // if (!Ret.ret)
+    if (!det)
     {
         printf("matrix_inverse: Matrix not inversible\n");
         return NULL;
@@ -741,23 +746,25 @@ double matrix_norm_inf (struct Matrix *matrix)
 	@param matrix		Matrix to compute determinant from
 	@return				Structure with return code and determinant
  */
-struct SRet matrix_det_sarrus (struct Matrix *matrix)
+int matrix_det_sarrus (struct Matrix *matrix)
 {
     size_t i = 0, j = 0, k = 0;
     double val = 1, det = 0;
-    struct SRet Ret = {0};
+    // struct SRet Ret = {0};
 
     if (!matrix)
     {
-        Ret.ret = ERROR_NULL_POINTER;
-        return Ret;
+        // Ret.ret = ERROR_NULL_POINTER;
+        // return Ret;
+        return ERROR_NULL_POINTER;
     }
 
     // Check if matrix are square
     if (matrix->nr != matrix->nc)
     {
-        Ret.ret = ERROR_MATRIX_NOTSQUARE;
-        return Ret;
+        // Ret.ret = ERROR_MATRIX_NOTSQUARE;
+        // return Ret;
+        return ERROR_MATRIX_NOTSQUARE;
     }/*
 	 else if ( ((matrix->nr == 3) || (matrix->nr == 2))
 			  && (matrix->nc == matrix->nr) )*/
@@ -790,7 +797,7 @@ struct SRet matrix_det_sarrus (struct Matrix *matrix)
         }
 
         // Result
-        Ret.ret = det;
+        // Ret.ret = det;
     }
     // Matrice 2x2
     else if  ( (matrix->nr == 2)
@@ -801,10 +808,10 @@ struct SRet matrix_det_sarrus (struct Matrix *matrix)
         // Diagonal going up
         det -= (matrix->data[1][0] * matrix->data[0][1]);
         // Result
-        Ret.ret = det;
+        // Ret.ret = det;
     }
 
-    return Ret;
+    return det;
 }
 
 /*! @brief				Fill a matrix row

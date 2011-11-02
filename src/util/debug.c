@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <ctype.h>
+
 // dump
 int dump (unsigned char *bytes, size_t nbytes, size_t align) {
     size_t i, j, last;

@@ -6,6 +6,9 @@ extern "C"
 {
 #endif
 
+#define ERROR_NULL_POINTER  -1
+#define ERROR_OUTOFRANGE    -2
+
 // print fatal message
 void fatal (char *fmt, ...);
 

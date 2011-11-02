@@ -6,7 +6,7 @@ extern "C"
 {
 #endif
 
-struct t_complex {
+struct complex_t {
     // real part
     double real;
     // imaginary part
@@ -20,20 +20,20 @@ struct complex_t* complex_new (double im, double r);
 void complex_delete (struct complex_t **cnum);
 
 // complex number multiplication
-struct t_complex* complex_multiply (struct t_complex **result,
-                                    struct t_complex *complex1,
-                                    struct t_complex *complex2);
+struct complex_t* complex_multiply (struct complex_t **result,
+                                    struct complex_t *complex1,
+                                    struct complex_t *complex2);
 
 // complex number addition
-struct t_complex* complex_add (struct t_complex **result,
-                               struct t_complex *complex1,
-                               struct t_complex *complex2);
+struct complex_t* complex_add (struct complex_t **result,
+                               struct complex_t *complex1,
+                               struct complex_t *complex2);
 
 // complex number norm
-double complex_norm (struct t_complex *complexNumber);
+double complex_norm (struct complex_t *complexNumber);
 
 // complex number argument in radian
-double complex_arg (struct t_complex *complexNumber);
+double complex_arg (struct complex_t *complexNumber);
 
 #ifdef __cplusplus
 }
