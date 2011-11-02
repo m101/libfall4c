@@ -480,3 +480,23 @@ void dict_show (struct dict_t *dict) {
     dict_distance(dict);
     dict_show_stub(dict->root);
 }
+
+// compare count
+int dict_compare_count (void *dict1, void *dict2) {
+    struct dict_elt *pDict1, *pDict2;
+    int check;
+
+    if (!dict1 || !dict2)
+        return -1;
+
+    pDict1 = dict1;
+    pDict2 = dict2;
+
+
+    if (pDict1->count == pDict2->count)
+        check = dict_compare_str (dict1, dict2);
+    else
+        check = pDict1->count - pDict2->count;
+
+    return check;
+}
