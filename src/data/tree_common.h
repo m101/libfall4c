@@ -23,6 +23,9 @@ extern "C"
 {
 #endif
 
+#include <stdint.h>
+
+// tree types to use
 #define TREE_BINARY
 #define TREE_AVL    
 #define TREE_RADBLACK
@@ -31,6 +34,12 @@ extern "C"
 #define TREE_SPLAY
 #define TREE_AA
 #define TREE_HEAP // TREAP
+
+// callbacks ids
+#define TREE_CALLBACK_MAX_NUM           16
+#define TREE_CALLBACK_COMPARATOR        0
+#define TREE_CALLBACK_DESTROY_DATA      1
+#define TREE_CALLBACK_GET_DATA_SIZE     2
 
 // generic tree structure
 struct tree_t
@@ -43,6 +52,9 @@ struct tree_t
     int height;
     // number of nodes
     size_t n;
+
+    // callbacks
+    uint64_t (*callbacks[TREE_CALLBACK_MAX_NUM]) (void *data1, void *data2);
 
     // functions
     int (*comparator)(void *data1, void *data2);
@@ -61,6 +73,10 @@ struct tree_node_t
         struct
         {
             struct t_tree *left, *right;
+        };
+        struct
+        {
+            struct t_tree *prev, *next;
         };
         struct 
         {

@@ -20,8 +20,22 @@
 
 #include "stack.h"
 
+// INTERNAL
+// allocate stack element
+struct stack_element_t *stack_element_new (void) {
+    struct stack_element_t elt = {0};
+    struct stack_element_t *node = NULL;
+
+    node = malloc(sizeof(elt));
+    *node = elt;
+
+    return node;
+}
+
+
+// PUBLIC
 // push data on the stack
-struct stack_t *stack_push (struct t_stack **p, void *data) {
+struct stack_t *stack_push (struct stack_t **p, void *data) {
     struct stack_element_t *elt;
 
     // pointer check
@@ -87,17 +101,6 @@ void* stack_pop (struct stack_t **p) {
     free (elt);
 
     return data;
-}
-
-// allocate stack element
-struct stack_element_t *stack_element_new (void) {
-    struct stack_element_t elt = {0};
-    struct stack_element_t *node = NULL;
-
-    node = malloc(sizeof(elt));
-    *node = elt;
-
-    return node;
 }
 
 // allocate a new stack

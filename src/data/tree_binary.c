@@ -13,7 +13,7 @@
 
     You should have received a copy of the GNU Lesser General Public License
     along with fall4c.  If not, see <http://www.gnu.org/licenses/>.
-*/
+    */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +24,7 @@
 
 
 /* @brief   Add data to tree
- */
+*/
 struct tree_t* binary_search_tree_add (struct tree_t *bst, void *data) {
     // pointers check
     if (!bst || !data)
@@ -33,7 +33,7 @@ struct tree_t* binary_search_tree_add (struct tree_t *bst, void *data) {
 }
 
 /* @brief   Add node to tree
- */
+*/
 struct tree_node_t* binary_search_tree_add_stub (struct tree_t *bst, struct tree_node_t **node, void *data) {
     // pointers check
     if (!bst || !data || !node)
@@ -49,7 +49,7 @@ struct tree_node_t* binary_search_tree_add_stub (struct tree_t *bst, struct tree
         // we don't check equality since we don't want dupes
         // if smaller
         // then we go left
-        else if (bst->comparator(data, (*node)->data) < 0)
+        if (bst->comparator(data, (*node)->data) < 0)
             return binary_search_tree_add_stub (bst, &((*node)->left), data);
         // if bigger
         // then we go right
@@ -62,37 +62,40 @@ struct tree_node_t* binary_search_tree_add_stub (struct tree_t *bst, struct tree
 
 /* @brief   Display whole tree
 */
-void binary_search_tree_display (struct tree_t *root) {
-    if (root != NULL) {
-        binary_tree_display (root->next);
-        printf("%4ld\n", *(long *)root->data);
-        binary_tree_display (root->prev);
+void binary_search_tree_display (struct tree_t *bst) {
+    // null pointer check
+    if (!bst)
+        return;
+
+    // bst is non null
+    binary_tree_display (bst->next);
+    printf("%4ld\n", *(long *)bst->data);
+    binary_tree_display (bst->prev);
+}
+
+/* @brief   Display right children
+*/
+void binary_search_tree_display_right (struct tree_t *bst) {
+    if (bst != NULL) {
+        printf("%4ld\n", *(long *)bst->data);
+        binary_tree_display_right (bst->prev);
     }
 }
 
 /* @brief   Display right children
 */
-void binary_search_tree_display_right (struct tree_t *root) {
-    if (root != NULL) {
-        printf("%4ld\n", *(long *)root->data);
-        binary_tree_display_right (root->prev);
-    }
-}
-
-/* @brief   Display right children
-*/
-void binary_search_tree_display_left (struct tree_t *root) {
-    if (root != NULL) {
-        printf("%4ld\n", *(long *)root->data);
-        binary_tree_display_left (root->prev);
+void binary_search_tree_display_left (struct tree_t *bst) {
+    if (bst != NULL) {
+        printf("%4ld\n", *(long *)bst->data);
+        binary_tree_display_left (bst->prev);
     }
 }
 
 // AVL
-    void binary_search_tree_sort (struct tree_t *bst) {
-        if (bst)
-            binary_search_sort_stub (bst, bst->root);
-    }
+void binary_search_tree_sort (struct tree_t *bst) {
+    if (bst)
+        binary_search_sort_stub (bst, bst->root);
+}
 
 void binary_search_tree_sort_stub (struct tree_t *bst, struct tree_node_t *node) {
     struct tree_t *leftOld = NULL, *rightOld = NULL;
@@ -137,12 +140,12 @@ struct tree_node_t* binary_search_tree_search_stub (struct tree_t *bst, struct t
 
 /*! @brief Search tree for specified data
 */
-    struct tree_node_t* binary_search_tree_search (struct tree_t *bst, void *data) {
-        if (!bst || !data)
-            return NULL;
+struct tree_node_t* binary_search_tree_search (struct tree_t *bst, void *data) {
+    if (!bst || !data)
+        return NULL;
 
-        return binary_search_tree_search_stub (bst, bst->root, data);
-    }
+    return binary_search_tree_search_stub (bst, bst->root, data);
+}
 
 struct tree_node_t* tree_delete_node (struct tree_t *bst, struct tree_node_t **node) {
     struct tree_node_t *pNode;

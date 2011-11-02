@@ -20,6 +20,22 @@
 
 #include "queue.h"
 
+// INTERNAL
+// allocate queue element
+struct queue_element_t *queue_element_new(void)
+{
+    struct queue_element_t elt = {0};
+    struct queue_element_t *node = NULL;
+
+    node = malloc(sizeof(elt));
+    *node = elt;
+
+    return node;
+}
+
+
+
+// PUBLIC
 // push data on the queue
 struct queue_t* queue_push (struct queue_t **p, void *data)
 {
@@ -29,6 +45,7 @@ struct queue_t* queue_push (struct queue_t **p, void *data)
 	if (!p)
 		return NULL;
 	
+    // allocate element
     elt = queue_element_new();
     // was queue allocated?
 	if (!(*p))
@@ -47,9 +64,9 @@ struct queue_t* queue_push (struct queue_t **p, void *data)
     // update queue pointer
     (*p)->back = elt;
     // update counter
-    (*p)->szqueue++;
+    (*p)->size++;
 	
-	return elt;
+	return *p;
 }
 
 // get last data added to the queue
@@ -84,7 +101,7 @@ void* queue_pop (struct queue_t **p)
     elt->prev = NULL;
     elt->next = NULL;
     // get correct count
-    (*p)->szqueue--;
+    (*p)->size--;
     // get data
     data = elt->data;
 
@@ -92,18 +109,6 @@ void* queue_pop (struct queue_t **p)
     free (elt);
 
     return data;
-}
-
-// allocate queue element
-struct queue_element_t *queue_element_new(void)
-{
-    struct queue_element_t elt = {0};
-    struct queue_element_t *node = NULL;
-
-    node = malloc(sizeof(elt));
-    *node = elt;
-
-    return node;
 }
 
 // allocate a new queue

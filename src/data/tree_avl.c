@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <tree_avl.h>
+#include "tree_avl.h"
 
 void avl_tree_balance (struct tree_t *root)
 {

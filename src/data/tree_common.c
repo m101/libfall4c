@@ -32,6 +32,17 @@ struct tree_t* tree_new (int (*comparator)(void *, void *), size_t (*get_data_si
     tree_table->get_data_size = get_data_size;
 }
 
+/*!  @brief Add new callback using an id
+ */
+struct tree_t* tree_add_callback_from_id (int id, void (*callback)(void *, void *)) {
+}
+
+
+/*!  @brief Add new callback using a callback name
+ */
+struct tree_t* tree_add_callback_from_name (char *name, void (*callback)(void *, void *)) {
+}
+
 /*!  @brief  Destroy tree
 */
 void tree_free (struct tree_t *root) {

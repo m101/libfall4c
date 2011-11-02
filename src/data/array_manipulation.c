@@ -3,7 +3,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "arrayManipulation.h"
+#include "array_manipulation.h"
 
 void printArray (long array[], size_t i)
 {
@@ -120,7 +120,7 @@ double moyenneTableau(long tableau[], long tailleTableau)
 {
     double moyenne = 0, somme;
 
-    somme = sommeTableau(tableau[], tailleTableau);
+    somme = sommeTableau(tableau, tailleTableau);
     moyenne = somme/tailleTableau;
 
     return moyenne;

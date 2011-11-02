@@ -35,7 +35,7 @@ struct queue_t
     // back of the queue : last element
     struct queue_element_t *back;
     // number of elements in the queue
-    size_t szQueue;
+    long size;
 };
 
 // queue element
@@ -44,7 +44,7 @@ struct queue_element_t
     // data stored
     char *data;
     // size of data
-    size_t size;
+    long size;
     // next and previous element
     struct queue_element_t *next, *prev;
 };

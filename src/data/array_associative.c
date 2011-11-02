@@ -21,19 +21,30 @@
 #include <string.h>
 
 #include "array_associative.h"
+#include "tree_binary.h"
+
+// compare 2 elements in a hashtable
+int hashtable_comparator (void *elt1, void *elt2) {
+    return strcmp ( ((struct aarray_elt_t *)elt1)->key, ((struct aarray_elt_t *)elt2)->key );
+}
+
+// size of an associative array element
+size_t hashtable_elt_size (void *elt) {
+    return sizeof(struct aarray_elt_t);
+}
 
 // set a value
-struct aarray_t* set_value (struct aarray_t **array, char *key, void *value) {
+struct hashtable_t* set_value (struct hashtable_t **hashtable, char *key, void *value) {
     struct aarray_elt_t *elt;
 
     // pointer check
-    if (!array)
-        return;
+    if (!hashtable)
+        return NULL;
 
     // create array if it doesn't exist
-    if (!*array) {
-        *array = calloc (1, sizeof(**array));
-        array->tree = tree_new (aarray_comparator, aarray_elt_size);
+    if (!*hashtable) {
+        *hashtable = calloc (1, sizeof(**hashtable));
+        (*hashtable)->array = tree_new (hashtable_comparator, hashtable_elt_size);
     }
 
     // create array element
@@ -42,41 +53,36 @@ struct aarray_t* set_value (struct aarray_t **array, char *key, void *value) {
     elt->value = value;
 
     // add value in tree
-    binary_search_tree_add ((*array)->tree, elt);
+    binary_search_tree_add ((*hashtable)->array, elt);
 
-    return array;
+    return *hashtable;
 }
 
 // get a value
-void *get_value (struct aarray_t *array, char *key) {
+void *get_value (struct hashtable_t *hashtable, char *key) {
     struct tree_t *node;
     struct aarray_elt_t elt = { key, NULL };
 
     // pointer check
-    if (!array)
+    if (!hashtable)
         return NULL;
 
     // search element in tree
-    node = binary_search_tree_search (array->tree, &elt);
+    node = binary_search_tree_search (hashtable->array, &elt);
 
     // if we didn't find the key
-    if (!node) 
+    if (!node)
         return NULL;
     // else
     // we found it
     else {
+        /*
         if (node->data)
             return ((struct array_elt_t *)(node->data))->value;
+        //*/
     }
-}
 
-// compare 2 elements
-int aarray_comparator (void *elt1, void *elt2) {
-    return strcmp ( ((struct aarray_elt_t *)elt1)->key, ((struct aarray_elt_t *)elt2)->key );
-}
-
-// size of an associative array element
-size_t aarray_elt_size (void *elt) {
-    return sizeof(struct aarray_elt_t);
+    // return node->data;
+    return NULL;
 }
 

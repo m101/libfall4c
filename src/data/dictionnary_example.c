@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "arbres.h"
+#include "dictionnary.h"
 
 int main(int argc, char *argv[])
 {
