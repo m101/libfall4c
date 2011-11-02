@@ -1,21 +1,10 @@
-EXEC=vigenere
-
-CC=gcc
-CFLAGS=-g -Wall
-LDFLAGS=-lunac
-
-FALL4C=dictionnary.o string_ext.o
-OBJS=vigenere.o stats.o main.o util/errors.o $(FALL4C)
-
-all: $(EXEC)
-
-$(EXEC): $(OBJS)
-	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
+all:
+	cd src && $(MAKE)
 
 .PHONY: clean mrproper
 
 clean:
-	rm *.o
+	cd src && $(MAKE) clean
 
 mrproper: clean
-	rm $(EXEC)
+	cd src && $(MAKE) mrproper
