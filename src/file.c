@@ -45,32 +45,6 @@ void file_copy (char *dest, char *src)
         printf("La copie de fichier a echoue\n");
 }
 
-/*! @brief                    Fonction récupérant une ligne de texte à partir d'un fichier
-*   @param   line             Ligne à récupérer
-*   @param   max              Taille du buffer à récupérer
-*   @return                   La longueur de la ligne
-*/
-long check_file_emptiness (char *fileName)
-{
-    FILE *file = fopen(fileName, "r");
-    unsigned long counter = 0;
-
-    if (!file)
-        fprintf(stderr, "Erreur : Ouverture du fichier a echouer\n");
-    else
-    {
-        while (fgetc(file) && (counter != (31 << 2)))
-            counter++;
-
-        if (counter != 0)
-            return 0;
-        else
-        {
-            return -1;
-        }
-    }
-}
-
 /*! @brief                    Fonction récupérant une ligne de texte à partir d'un flux
 *   @param   stream           Flux ou récupérer la ligne de texte
 *   @param   pLine            Ligne à récupérer

@@ -121,6 +121,26 @@ void matrix_destroy (struct Matrix **matrix)
     *matrix = NULL;
 }
 
+double matrix_get_elt (struct Matrix *matrix, int x, int y) {
+    //
+    if (!matrix || !(matrix->data))
+        return -1;
+
+    return matrix->data[x][y];
+}
+
+int matrix_get_nrow (struct Matrix *matrix) {
+    if (!matrix)
+        return -1;
+    return matrix->nr;
+}
+
+int matrix_get_ncol (struct Matrix *matrix) {
+    if (!matrix)
+        return -1;
+    return matrix->nc;
+}
+
 /*! @brief			Copy a matrix
 	@param  matrix  Matrix to copy
 	@return			A copy of matrix
@@ -389,18 +409,24 @@ struct Matrix* matrix_rref_gauss_java (struct Matrix *matrix)
   END FOR
 END ToReducedRowEchelonForm
  */
+/*! @brief  Reduce Row Echelon Form
+ */
 struct Matrix* matrix_rref (struct Matrix* matrix)
 {
     struct Matrix *m_rref = NULL;
     double *m_wrow = NULL;
     size_t lead = 0;
-    size_t rowCount = matrix->nr;
-    size_t colCount = matrix->nc;
+    size_t rowCount, colCount;
     size_t r = 0, i = 0;
+
+    if (!matrix)
+        return NULL;
 
     m_rref = matrix_copy(matrix);
 
     //
+    rowCount = matrix->nr;
+    colCount = matrix->nc;
     for (r = 0; r < rowCount; r++)
     {
         if (colCount <= lead)

@@ -67,7 +67,7 @@ struct Matrix* matrix_create (size_t nr, size_t nc);
 void matrix_destroy (struct Matrix **matrix);
 // Create a copy of a matrix
 struct Matrix* matrix_copy (struct Matrix *matrix);
-// Row reduction form
+// Row reduction echelon form
 struct Matrix* matrix_rref (struct Matrix *matrix);
 // Inverse matrix
 struct Matrix* matrix_inverse (struct Matrix *matrix);

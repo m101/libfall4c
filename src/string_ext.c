@@ -17,6 +17,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 
 // depedencies
 #include <unac.h>
@@ -33,11 +35,12 @@ size_t string_len (struct string_t *str) {
 
 // secure string copy
 struct string_t* string_cpy (struct string_t *dst, struct string_t *src) {
-    // new size
-    size_t nsize;
-
     // pointer check
     if (!dst || !src)
+        return NULL;
+
+    // size check
+    if (src->size < 1)
         return NULL;
 
     // if buffer isn't big enough
@@ -56,18 +59,19 @@ struct string_t* string_cpy (struct string_t *dst, struct string_t *src) {
 
 // secure string concatenation
 struct string_t* string_cat (struct string_t *dst, struct string_t *src) {
-    // new size
-    size_t nsize;
-
     // pointer check
     if (!dst || !src)
+        return NULL;
+
+    // size check
+    if (src->size < 1)
         return NULL;
 
     // if buffer isn't big enough
     // then allocate an adapted one
     if (dst->capacity < dst->size + src->size) {
         dst->capacity = dst->size + src->size;
-        dst->size = realloc (dst->bytes, dst->capacity);
+        dst->bytes = realloc (dst->bytes, dst->capacity);
     }
 
     // we copy string
@@ -79,10 +83,15 @@ struct string_t* string_cat (struct string_t *dst, struct string_t *src) {
 
 // secure string comparison
 int string_cmp (struct string_t *str1, struct string_t *str2) {
-    if (str1->size != str2->size)
-        return *(str1->bytes) - *(str2->bytes);
+    int sz;
 
-    return strncmp (str1->bytes, str2->bytes, str1->size);
+    // get the smaller size
+    if (str1->size > str2->size)
+        sz = str2->size;
+    else 
+        sz = str1->size;
+
+    return strncmp (str1->bytes, str2->bytes, sz);
 }
 
 int string_word_delete (char *str, char *word) {

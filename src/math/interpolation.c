@@ -92,7 +92,7 @@ struct Matrix* polynoms_lagrange (struct Matrix* vectors, const double x)
 
     p = matrix_create(1, vectors->nc);
 
-    printf("== debut polynomes lagrange ==\n");
+    // printf("== debut polynomes lagrange ==\n");
 
     for (i=0; i < p->nc; i++)
     {
@@ -103,13 +103,13 @@ struct Matrix* polynoms_lagrange (struct Matrix* vectors, const double x)
                 p->data[0][i] *= ( (x-vectors->data[X_AXIS][j])
                                    / (vectors->data[X_AXIS][i]-vectors->data[X_AXIS][j]) );
 
-            printf("    x-vectors->data[X_AXIS][%u] : %lf\n", i, x-vectors->data[X_AXIS][i]);
-            printf("    x-vectors->data[X_AXIS][%u] : %lf\n", j, x-vectors->data[X_AXIS][j]);
+            // printf("    x-vectors->data[X_AXIS][%u] : %lf\n", i, x-vectors->data[X_AXIS][i]);
+            // printf("    x-vectors->data[X_AXIS][%u] : %lf\n", j, x-vectors->data[X_AXIS][j]);
         }
-        printf("    p->data[0][%u] : %lf\n\n", i, p->data[0][i]);
+        // printf("    p->data[0][%u] : %lf\n\n", i, p->data[0][i]);
     }
 
-    printf("== fin polynomes lagrange ==\n\n");
+    // printf("== fin polynomes lagrange ==\n\n");
 
     return p;
 }
@@ -133,22 +133,24 @@ double interpolation_lagrange (struct Matrix* vectors, const double x)
         return 0;
     }
 
-    printf("== debut interpolation lagrange ==\n");
+    // printf("== debut interpolation lagrange ==\n");
 
     // Interpolation polynom
     for (i = 0; i < LagrangePolynoms->nc; i++)
     {
         // Interpolation polynom
         interp += LagrangePolynoms->data[0][i] * vectors->data[Y_AXIS][i];
+        /*
         printf("    interp[%u] = %lf\n", i, interp);
         printf("    vectors->data[Y_AXIS][%u] : %lf\n", i, vectors->data[Y_AXIS][i]);
         printf("    LagrangePolynoms->data[0][%u] : %lf\n", i, LagrangePolynoms->data[0][i]);
         printf("    LagrangePolynoms->data[0][%u] * vectors->data[Y_AXIS][%u] : %lf\n", i, i, LagrangePolynoms->data[0][i] * vectors->data[Y_AXIS][i]);
+        //*/
     }
 
-    printf("    interp : %lf\n", interp);
+    // printf("    interp : %lf\n", interp);
 
-    printf("== fin interpolation lagrange ==\n\n");
+    // printf("== fin interpolation lagrange ==\n\n");
 
     matrix_destroy (&LagrangePolynoms);
 

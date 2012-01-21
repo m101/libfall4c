@@ -75,23 +75,8 @@ char* num2binstr (unsigned long n) {
     return str;
 }
 
-
-// decimal concat
-long deccat (long *decimal) {
-    long nombreDecimal = 0;
-    long puissance = longArrayLength(decimal) - 1;
-
-    while (*decimal) {
-        nombreDecimal = nombreDecimal + (*decimal * pow(10, puissance));
-        puissance--;
-        decimal++;
-    }
-
-    return nombreDecimal;
-}
-
-unsigned long hex2dec (char hex[]) {
-    size_t i = 0, j = stringLength(hex) - 1;
+unsigned long hex2dec (char *hex, int hexlen) {
+    size_t i = 0;
     unsigned long dec = 0, temp = 0;
 
     while (hex[i] != '\0') {
@@ -113,7 +98,7 @@ unsigned long hex2dec (char hex[]) {
         //dec = dec + temp * ((1 << 4) << j);
 
         i++;
-        j--;
+        hexlen--;
     }
 
     return dec;
@@ -121,12 +106,12 @@ unsigned long hex2dec (char hex[]) {
 
 long* bin2bits (long bin, long *bits) {
     size_t i = 0;
-    size_t length = numlen(bin);
+    size_t length = sizeof(bin) * 8;
     char *buffer = malloc (sizeof(*buffer) * length);
     bits = realloc (bits, sizeof(*bits) * length);
 
     if ((buffer != NULL) && (bits != NULL)) {
-        sprintf (buffer, "%ld", bin);
+        snprintf (buffer, length, "%ld", bin);
 
         while (*buffer) {
             bits[i] = *buffer - '0';
