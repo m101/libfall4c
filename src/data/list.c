@@ -21,76 +21,67 @@
 #include "list.h"
 
 // default constructor for list
-struct list_t* list_new (struct list_t **list) {
-    struct list_t *pList;
+struct list* list_new (struct list_simple **list) {
+    if (!list)
+        return NULL;
 
-    pList = calloc(1, sizeof(**list));
-    // check list validity
-    if (list)
-        *list = pList;
+    *list = calloc(1, sizeof(**list));
 
-    return pList;
+    return *list;
 }
 
 // default destructor
-int list_destroy (struct list_t **list, void (*destroy_data)(void *)) {
-    // node for traversing linked list
-    struct list_node_t *node;
-    // head and tail to ease reading
-    struct list_node_t *head, *tail;
+int list_destroy (struct list_simple **list, void (*destroy_data)(void *)) {
+    struct list_node *node;
+    struct list_node *head, *tail;
 
-    // check list validity
-    if (!list)
+    if (!list || !*list)
         return -1;
 
     if (!destroy_data)
         destroy_data = free;
 
     head = (*list)->head;
-    tail = (*list)->tail;
-    // we destroy data management unit
-    free((*list));
-    (*list) = NULL;
 
     // we traverse the linked list to destroy it
-    for (node = head; node != NULL; ) {
-        node = node->next;
-
-        // we destroy the current node
-        if (node) {
-            // we destroy node
-            free(node->prev);
-            if (node->data)
-                destroy_data(node->data);
-            // we ensure m_prev value in case of double frees
-            node->prev = NULL;
-        }
+    for (node = head; node != NULL; node = node->next) {
+        free(node->prev);
+        if (node->data)
+            destroy_data(node->data);
+        tail = node;
     }
-    
+
+    free(tail);
+    free(*list);
+
     return 0;
 }
 
 // default constructor for node
-struct list_node_t* list_node_new (struct list_node_t **node) {
-    struct list_node_t *pNode;
+struct list_node* list_node_new (struct list_node **node) {
+    *node = calloc (1, sizeof(**node));
 
-    pNode = calloc (1, sizeof(**node));
-    if (node)
-        *node = pNode;
-
-    return pNode;
+    return *node;
 }
 
 // default destructor for node
-int list_node_destroy (struct list_node_t **node, void (*destroy_data)(void *)) {
-    if (!node)
+int list_node_destroy (struct list_node **node, void (*destroy_data)(void *)) {
+    struct list_node *prev, *next;
+
+    if (!node || !*node)
         return -1;
-    if (!*node)
+
+    prev = (*node)->prev;
+    next = (*node)->next;
+    if (prev)
+        (*next)->prev->next = next;
+    if (next)
+        (*next)->next->prev = prev;
 
     if (!destroy_data)
         destroy_data = free;
-
-    destroy_data((*node)->data);
+    if ((*node)->data)
+        destroy_data((*node)->data);
     free(*node);
     *node = NULL;
 
@@ -98,36 +89,29 @@ int list_node_destroy (struct list_node_t **node, void (*destroy_data)(void *)) 
 }
 
 // append a node to existing list
-int list_append_node (struct list_t **list, struct list_node_t *node) {
-    // check list and node validity
+int list_append_node (struct list_simple **list, struct list_node *node) {
     if (!list || !node)
         return -1;
-    if (!(*list))
+    if (!*list)
         list_new(list);
 
-    // if not defined
-    // we update head pointer
     if (!(*list)->head)
         (*list)->head = node;
-    // we end the list
     if ((*list)->tail)
         (*list)->tail->next = node;
 
-    // we link the node to the list
     node->prev = (*list)->tail;
     node->next = NULL;
-    // we update the tail pointer
     (*list)->tail = node;
-    // we added a new node
-    (*list)->szList++;
+    (*list)->size++;
 
     return 0;
 }
 
 // append data to existing list
-int list_append_data (struct list_t **list, void *data) {
+int list_append_data (struct list_simple **list, void *data) {
     int rc;
-    struct list_node_t *node;
+    struct list_node *node;
 
     node = list_node_new (NULL);
     node->data = data;
@@ -140,37 +124,29 @@ int list_append_data (struct list_t **list, void *data) {
 }
 
 // prepend a node to existing list
-int list_prepend_node (struct list_t **list, struct list_node_t *node) {
-    // check list and node validity
+int list_prepend_node (struct list_simple **list, struct list_node *node) {
     if (!list || !node)
         return -1;
     if (!(*list))
         list_new(list);
 
-    // we link the node to the list
-    node->next = (*list)->head;
-
-    // update head and tail
     if ((*list)->head)
         (*list)->head->prev = node;
     if (!(*list)->tail)
         (*list)->tail = node;
 
-    // we link node
     node->prev = NULL;
     node->next = (*list)->head;
-    // we update the head pointer
     (*list)->head = node;
-    // we added a new node
-    (*list)->szList++;
+    (*list)->size++;
 
     return 0;
 }
 
 // prepend data to existing list
-list_prepend_data (struct list_t **list, void *data) {
+list_prepend_data (struct list_simple **list, void *data) {
     int rc;
-    struct list_node_t *node;
+    struct list_node *node;
 
     node = list_node_new (NULL);
     node->data = data;
@@ -183,56 +159,39 @@ list_prepend_data (struct list_t **list, void *data) {
 }
 
 // insert a node at specified position
-int list_insert_node (struct list_t **list, struct list_node_t *node, size_t pos) {
-    // node for traversing linked list
-    struct list_node_t *pNode;
-    // variable to ease reading
-    struct list_node_t *head;
-    // iterator for position
+int list_insert_node (struct list_simple **list, struct list_node *node, size_t pos) {
+    struct list_node *pNode;
+    struct list_node *head;
     size_t i;
 
-    // check list and node validity
     if (!list || !node)
         return -1;
     if (!(*list))
         list_new(list);
-    // position inexistent
-    if ((*list)->szList < pos)
+    if ((*list)->size < pos)
         return -1;
 
-    // we cast
     head = (*list)->head;
 
     // we traverse the linked list
     for (pNode = head, i = 0; pNode != NULL; pNode = pNode->next, i++) {
-        // if we found the specified position
-        // then we add the node
         if (i == pos) {
-            // if we are at the last node
-            // then we append it
             if (!pNode->next)
                 list_append_node(list, node);
-            // else we insert between nodes
             else {
-                // we link node
-                // the new node is put at specified position (starting from 1)
                 node->next = pNode;
                 node->prev = pNode->prev;
 
-                //
                 if (node->prev)
                     node->prev->next = node;
                 else
                     (*list)->head = node;
 
-                // we update links in nodes
                 pNode->prev = node;
             }
 
-            // since we added a node, the list size increase
-            (*list)->szList++;
+            (*list)->size++;
 
-            // success
             return 0;
         }
     }
@@ -243,8 +202,8 @@ int list_insert_node (struct list_t **list, struct list_node_t *node, size_t pos
 }
 
 // insert data at specified position
-int list_insert_data (struct list_t **list, void *data, size_t pos) {
-    struct list_node_t *node;
+int list_insert_data (struct list_simple **list, void *data, size_t pos) {
+    struct list_node *node;
     int failed;
 
     // check list and node validity
@@ -271,31 +230,27 @@ int list_insert_data (struct list_t **list, void *data, size_t pos) {
 }
 
 // remove current node
-int list_remove_node (struct list_t *list, struct list_node_t **node) {
-    // node not valid
-    if (!list || !node)
-        return -1;
-    if (!*node)
+int list_remove_node (struct list_simple *list, struct list_node **node) {
+    if (!list || !node || !*node)
         return -1;
 
-    // we first check for pointer validity
-    // then we fix links
     if ((*node)->next)
         (*node)->next->prev = (*node)->prev;
     if ((*node)->prev)
         (*node)->prev->next = (*node)->next;
 
     // we remove the actual node
-    free(node);
+    free(*node);
     *node = NULL;
-    list->szList--;
+    free(node);
+    list->size--;
 
     return 0;
 }
 
 // remove a node at specified position
-int list_remove_node_at_pos (struct list_t **list, size_t pos) {
-    struct list_node_t *node;
+int list_remove_node_at_pos (struct list_simple **list, size_t pos) {
+    struct list_node *node;
     size_t i;
 
     // check pointer validity
@@ -303,7 +258,7 @@ int list_remove_node_at_pos (struct list_t **list, size_t pos) {
         return -1;
 
     // position inexistent
-    if ((*list)->szList < pos)
+    if ((*list)->size < pos)
         return -1;
 
     for (node = (*list)->head, i = 0; node != NULL; node = node->next, i++) {
@@ -318,8 +273,8 @@ int list_remove_node_at_pos (struct list_t **list, size_t pos) {
 }
 
 // get data at specified node position
-void* list_get_data_at_pos (struct list_t **list, size_t pos) {
-    struct list_node_t *node;
+void* list_get_data_at_pos (struct list_simple **list, size_t pos) {
+    struct list_node *node;
     size_t i;
 
     // check list and node validity
@@ -329,7 +284,7 @@ void* list_get_data_at_pos (struct list_t **list, size_t pos) {
         list_new(list);
 
     // we check if position specified is in range
-    if (pos > (*list)->szList)
+    if (pos > (*list)->size)
         return NULL;
 
     // we traverse the linked list
@@ -344,10 +299,29 @@ void* list_get_data_at_pos (struct list_t **list, size_t pos) {
     return NULL;
 }
 
+struct list_node* list_has_node (struct list_simple **list, struct list_node *node) {
+    struct list_node *iter = NULL;
+
+    for (iter = list->head; iter != node && iter != NULL; iter = iter->next);
+
+    return iter;
+}
+
+struct list_node* list_has_data (struct list_simple **list, void *data, int (*compare)(void *data1, void* data2)) {
+    struct list_node *node;
+
+    for (node = list->head; node != NULL; node = node->next) {
+        if (compare(node->data, data) == 0)
+            return node;
+    }
+
+    return NULL;
+}
+
 // show all elements
-void list_show_all (struct list_t *list) {
+void list_show_all (struct list_simple *list) {
     size_t i;
-    struct list_node_t *node;
+    struct list_node *node;
 
     // check list and node validity
     if (!list)
@@ -356,33 +330,5 @@ void list_show_all (struct list_t *list) {
     // we traverse link list and show all node value
     for (node = list->head, i = 0; node != NULL; node = node->next, i++)
         printf("node %u : %p\n", i, node->data);
-}
-
-// get list size
-size_t list_get_size (struct list_t *list) {
-    if (list)
-        return list->szList;
-    else
-        return -1;
-}
-
-// return head of list
-struct list_node_t* list_begin (struct list_t *list) {
-    //
-    if (list)
-        return list->head;
-    // else it's a standalone node
-    else
-        return NULL;
-}
-
-// return tail of list
-struct list_node_t* list_end (struct list_t *list) {
-    //
-    if (list)
-        return list->tail;
-    // else it's a standalone node
-    else
-        return NULL;
 }
 
