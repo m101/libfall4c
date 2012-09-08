@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "vector_space.h"
+#include "math/vector_space.h"
 
 /*! @brief  Cubic Interpolation
 *   @param  dots    Matrix of dots

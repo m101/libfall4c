@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-#include "math_probability.h"
+#include "math/math_probability.h"
 
 double dl_exponential (double x, long ordre) {
     size_t i = 0;

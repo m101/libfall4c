@@ -18,69 +18,97 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "list.h"
+#include "data/list.h"
 
 // default constructor for list
-struct list* list_new (struct list_simple **list) {
-    if (!list)
-        return NULL;
-
-    *list = calloc(1, sizeof(**list));
-
-    return *list;
+struct list_simple* list_new (void) 
+{
+    return calloc(1, sizeof(struct list_simple));
 }
 
 // default destructor
-int list_destroy (struct list_simple **list, void (*destroy_data)(void *)) {
-    struct list_node *node;
-    struct list_node *head, *tail;
+int list_destroy (struct list_simple **list, void (*destroy_data)(void *)) 
+{
+    struct list_node *node, *next;
 
-    if (!list || !*list)
+    if (!list ||  !*list)
         return -1;
 
-    if (!destroy_data)
-        destroy_data = free;
-
-    head = (*list)->head;
-
     // we traverse the linked list to destroy it
-    for (node = head; node != NULL; node = node->next) {
-        free(node->prev);
-        if (node->data)
-            destroy_data(node->data);
-        tail = node;
+    for (node = list_begin(*list); node != NULL; ) {
+        next = node->next;
+        list_node_destroy(&node, destroy_data);
+        node = next;
     }
+    list_node_destroy(&node, destroy_data);
 
-    free(tail);
     free(*list);
+    *list = NULL;
+
+    return 0;
+}
+
+int list_count_nodes(struct list_simple *list)
+{
+    struct list_node *node;
+    int count;
+
+    if (!list)
+        return -1;
+
+    for (node = list_begin(list), count = 0; node != NULL; node = node->next, count++);
+
+    return count;
+}
+
+int list_merge(struct list_simple *list1, struct list_simple *list2)
+{
+    if (!list1 || !list2)
+        return -1;
+
+    list_append_node(&list1, list_begin(list2));
+    list1->size = list_count_nodes(list1);
+
+    return 0;
+}
+
+int list_check(struct list_simple *list)
+{
+    struct list_node *node;
+    int count;
+
+    if (!list)
+        return -1;
+
+    count = list_count_nodes(list);
+    if (count != list->size)
+        return -2;
 
     return 0;
 }
 
 // default constructor for node
-struct list_node* list_node_new (struct list_node **node) {
-    *node = calloc (1, sizeof(**node));
+struct list_node* list_node_new (void *data)
+{
+    struct list_node *node = calloc (1, sizeof(*node));
 
-    return *node;
+    node->data = data;
+
+    return node;
 }
 
 // default destructor for node
-int list_node_destroy (struct list_node **node, void (*destroy_data)(void *)) {
-    struct list_node *prev, *next;
-
+int list_node_destroy (struct list_node **node, void (*destroy_data)(void *))
+{
     if (!node || !*node)
         return -1;
 
-    prev = (*node)->prev;
-    next = (*node)->next;
-    if (prev)
-        (*next)->prev->next = next;
-    if (next)
-        (*next)->next->prev = prev;
+    if ((*node)->prev)
+        (*node)->prev->next = (*node)->next;
+    if ((*node)->next)
+        (*node)->next->prev = (*node)->prev;
 
-    if (!destroy_data)
-        destroy_data = free;
-    if ((*node)->data)
+    if ((*node)->data && destroy_data)
         destroy_data((*node)->data);
     free(*node);
     *node = NULL;
@@ -89,11 +117,12 @@ int list_node_destroy (struct list_node **node, void (*destroy_data)(void *)) {
 }
 
 // append a node to existing list
-int list_append_node (struct list_simple **list, struct list_node *node) {
+int list_append_node (struct list_simple **list, struct list_node *node)
+{
     if (!list || !node)
         return -1;
     if (!*list)
-        list_new(list);
+        *list = list_new();
 
     if (!(*list)->head)
         (*list)->head = node;
@@ -109,12 +138,12 @@ int list_append_node (struct list_simple **list, struct list_node *node) {
 }
 
 // append data to existing list
-int list_append_data (struct list_simple **list, void *data) {
+int list_append_data (struct list_simple **list, void *data)
+{
     int rc;
     struct list_node *node;
 
-    node = list_node_new (NULL);
-    node->data = data;
+    node = list_node_new (data);
     rc = list_append_node (list, node);
 
     if (rc)
@@ -124,11 +153,12 @@ int list_append_data (struct list_simple **list, void *data) {
 }
 
 // prepend a node to existing list
-int list_prepend_node (struct list_simple **list, struct list_node *node) {
+int list_prepend_node (struct list_simple **list, struct list_node *node)
+{
     if (!list || !node)
         return -1;
-    if (!(*list))
-        list_new(list);
+    if (!*list)
+        *list = list_new();
 
     if ((*list)->head)
         (*list)->head->prev = node;
@@ -144,12 +174,12 @@ int list_prepend_node (struct list_simple **list, struct list_node *node) {
 }
 
 // prepend data to existing list
-list_prepend_data (struct list_simple **list, void *data) {
+int list_prepend_data (struct list_simple **list, void *data)
+{
     int rc;
     struct list_node *node;
 
-    node = list_node_new (NULL);
-    node->data = data;
+    node = list_node_new (data);
     rc = list_prepend_node(list, node);
 
     if (rc)
@@ -159,15 +189,16 @@ list_prepend_data (struct list_simple **list, void *data) {
 }
 
 // insert a node at specified position
-int list_insert_node (struct list_simple **list, struct list_node *node, size_t pos) {
+int list_insert_node (struct list_simple **list, struct list_node *node, size_t pos)
+{
     struct list_node *pNode;
     struct list_node *head;
     size_t i;
 
     if (!list || !node)
         return -1;
-    if (!(*list))
-        list_new(list);
+    if (!*list)
+        *list = list_new();
     if ((*list)->size < pos)
         return -1;
 
@@ -202,18 +233,19 @@ int list_insert_node (struct list_simple **list, struct list_node *node, size_t 
 }
 
 // insert data at specified position
-int list_insert_data (struct list_simple **list, void *data, size_t pos) {
+int list_insert_data (struct list_simple **list, void *data, size_t pos)
+{
     struct list_node *node;
     int failed;
 
     // check list and node validity
     if (!list || !data)
         return -1;
-    if (!(*list))
-        list_new(list);
+    if (!*list)
+        *list = list_new();
 
     // we allocate a new node
-    list_node_new(&node);
+    node = list_node_new(NULL);
     // we insert data
     node->data = data;
 
@@ -230,8 +262,9 @@ int list_insert_data (struct list_simple **list, void *data, size_t pos) {
 }
 
 // remove current node
-int list_remove_node (struct list_simple *list, struct list_node **node) {
-    if (!list || !node || !*node)
+int list_remove_node (struct list_simple *list, struct list_node **node)
+{
+    if (!list || !node ||  !*node)
         return -1;
 
     if ((*node)->next)
@@ -249,7 +282,8 @@ int list_remove_node (struct list_simple *list, struct list_node **node) {
 }
 
 // remove a node at specified position
-int list_remove_node_at_pos (struct list_simple **list, size_t pos) {
+int list_remove_node_at_pos (struct list_simple **list, size_t pos)
+{
     struct list_node *node;
     size_t i;
 
@@ -261,7 +295,8 @@ int list_remove_node_at_pos (struct list_simple **list, size_t pos) {
     if ((*list)->size < pos)
         return -1;
 
-    for (node = (*list)->head, i = 0; node != NULL; node = node->next, i++) {
+    for (node = (*list)->head, i = 0; node != NULL; node = node->next, i++)
+    {
         if (i == pos) {
             list_remove_node(*list, &node);
             return 0;
@@ -273,15 +308,16 @@ int list_remove_node_at_pos (struct list_simple **list, size_t pos) {
 }
 
 // get data at specified node position
-void* list_get_data_at_pos (struct list_simple **list, size_t pos) {
+void* list_get_data_at_pos (struct list_simple **list, size_t pos)
+{
     struct list_node *node;
     size_t i;
 
     // check list and node validity
     if (!list)
         return NULL;
-    if (!(*list))
-        list_new(list);
+    if (!*list)
+        *list = list_new();
 
     // we check if position specified is in range
     if (pos > (*list)->size)
@@ -299,16 +335,24 @@ void* list_get_data_at_pos (struct list_simple **list, size_t pos) {
     return NULL;
 }
 
-struct list_node* list_has_node (struct list_simple **list, struct list_node *node) {
+struct list_node* list_has_node (struct list_simple *list, struct list_node *node)
+{
     struct list_node *iter = NULL;
+
+    if (!list)
+        return NULL;
 
     for (iter = list->head; iter != node && iter != NULL; iter = iter->next);
 
     return iter;
 }
 
-struct list_node* list_has_data (struct list_simple **list, void *data, int (*compare)(void *data1, void* data2)) {
+struct list_node* list_has_data (struct list_simple *list, void *data, int (*compare)(void *data1, void* data2))
+{
     struct list_node *node;
+
+    if (!list)
+        return NULL;
 
     for (node = list->head; node != NULL; node = node->next) {
         if (compare(node->data, data) == 0)
@@ -319,7 +363,8 @@ struct list_node* list_has_data (struct list_simple **list, void *data, int (*co
 }
 
 // show all elements
-void list_show_all (struct list_simple *list) {
+void list_show_all (struct list_simple *list)
+{
     size_t i;
     struct list_node *node;
 

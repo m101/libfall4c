@@ -18,5 +18,5 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "math_trigonometry.h"
+#include "math/math_trigonometry.h"
 

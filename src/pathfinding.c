@@ -19,7 +19,7 @@
 #include <stdlib.h>
 
 #include "pathfinding.h"
-#include "tree_binary.h"
+#include "data/tree_binary.h"
 
 #define DEBUG
 

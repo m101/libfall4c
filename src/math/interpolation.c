@@ -31,9 +31,9 @@
 
 #include <math.h>
 
-#include "interpolation.h"
-#include "math_matrix.h"
-#include "vector_space.h"
+#include "math/interpolation.h"
+#include "math/math_matrix.h"
+#include "math/vector_space.h"
 
 /*! @brief  Linear Interpolation
     @param  dot1    Dot to start drawing from

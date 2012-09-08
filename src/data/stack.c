@@ -18,11 +18,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "stack.h"
+#include "data/stack.h"
 
 // INTERNAL
 // allocate stack element
-struct stack_element_t *stack_element_new (void) {
+struct stack_element_t *stack_element_new (void)
+{
     struct stack_element_t elt = {0};
     struct stack_element_t *node = NULL;
 
@@ -35,7 +36,8 @@ struct stack_element_t *stack_element_new (void) {
 
 // PUBLIC
 // push data on the stack
-struct stack_t *stack_push (struct stack_t **p, void *data) {
+struct stack_t *stack_push (struct stack_t **p, void *data)
+{
     struct stack_element_t *elt;
 
     // pointer check
@@ -60,11 +62,12 @@ struct stack_t *stack_push (struct stack_t **p, void *data) {
     // update counter
     (*p)->szStack++;
 	
-	return elt;
+	return *p;
 }
 
 // get last data added to the stack
-void* stack_pop (struct stack_t **p) {
+void *stack_pop (struct stack_t **p)
+{
     void *data;
 	struct stack_element_t *elt = NULL;
 	
@@ -104,7 +107,8 @@ void* stack_pop (struct stack_t **p) {
 }
 
 // allocate a new stack
-struct stack_t *stack_new (void) {
+struct stack_t *stack_new (void)
+{
     struct stack_t elt = {0};
     struct stack_t *node = NULL;
 
@@ -115,7 +119,8 @@ struct stack_t *stack_new (void) {
 }
 
 // destroy a stack
-void stack_destroy (struct stack_t **stack) {
+void stack_destroy (struct stack_t **stack)
+{
     struct stack_element_t *elt, *next;
     // pointers check
     if (!stack)

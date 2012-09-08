@@ -25,21 +25,21 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "fileBrowse.h"
+#include "file_browse.h"
 
 #define MAX_PATH 1000
 
 // show directory entry 1st level
-void dirls (char *dirname, void (*fonction)(char *))
-{
+void dirls (char *dirname, void (*function)(char *)) {
     char name[MAX_PATH];
     struct dirent *dp;
     DIR *dfd;
-    if ((dfd = opendir(dirname)) == NULL)
-    {
+
+    if ((dfd = opendir(dirname)) == NULL) {
         fprintf(stderr, "dirwalk: can't open %s\n", dirname);
         return;
     }
+
     while ((dp = readdir(dfd)) != NULL)
     {
         if (strcmp(dp->d_name, ".") == 0
@@ -51,7 +51,7 @@ void dirls (char *dirname, void (*fonction)(char *))
         else
         {
             sprintf(name, "%s/%s", dirname, dp->d_name);
-            (*fonction)(name);
+            (*function)(name);
         }
     }
     closedir(dfd);
@@ -62,8 +62,7 @@ void dirwalk (char *dirname)
 {
     struct stat statbuf;
 
-    if (stat(dirname, &statbuf) != 0)
-    {
+    if (stat(dirname, &statbuf) != 0) {
         fprintf(stderr, "readTreeNode : can't access %s\n", dirname);
         return;
     }

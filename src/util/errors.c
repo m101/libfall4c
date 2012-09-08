@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#include "errors.h"
+#include "util/errors.h"
 
 // print fatal message
 void fatal (char *fmt, ...) {

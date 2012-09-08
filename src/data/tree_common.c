@@ -18,11 +18,12 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "tree_common.h"
+#include "data/tree_common.h"
 
 /*  @brief  Create new tree
 */
-struct tree_t* tree_new (int (*comparator)(void *, void *), size_t (*get_data_size)(void *)) {
+struct tree_t* tree_new (int (*comparator)(void *, void *), size_t (*get_data_size)(void *))
+{
     struct tree_t *tree_table;
 
     tree_table = calloc (1, sizeof(*tree_table));
@@ -34,18 +35,21 @@ struct tree_t* tree_new (int (*comparator)(void *, void *), size_t (*get_data_si
 
 /*!  @brief Add new callback using an id
  */
-struct tree_t* tree_add_callback_from_id (int id, void (*callback)(void *, void *)) {
+struct tree_t* tree_add_callback_from_id (int id, void (*callback)(void *, void *))
+{
 }
 
 
 /*!  @brief Add new callback using a callback name
  */
-struct tree_t* tree_add_callback_from_name (char *name, void (*callback)(void *, void *)) {
+struct tree_t* tree_add_callback_from_name (char *name, void (*callback)(void *, void *))
+{
 }
 
 /*!  @brief  Destroy tree
 */
-void tree_free (struct tree_t *root) {
+void tree_free (struct tree_t *root)
+{
     if (root) {
         tree_free_stub (root->root);
         free (root);
@@ -53,7 +57,8 @@ void tree_free (struct tree_t *root) {
 }
 
 // recursively traverse nodes to free them
-void tree_free_stub (struct tree_node_t *node) {
+void tree_free_stub (struct tree_node_t *node)
+{
     if (node) {
         tree_free_stub (node->left);
         tree_free_stub (node->right);
@@ -64,7 +69,8 @@ void tree_free_stub (struct tree_node_t *node) {
 /*! @brief Create a tree node
  *
  */
-struct tree_node_t* tree_node_new (void) {
+struct tree_node_t* tree_node_new (void)
+{
     struct tree_node_t *node;
 
     node = calloc (1, sizeof(*node));

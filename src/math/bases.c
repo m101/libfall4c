@@ -4,7 +4,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "bases.h"
+#include "math/bases.h"
 
 // concat bits
 long bincat (long *binaire, long i) {

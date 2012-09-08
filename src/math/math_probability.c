@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "math_probability.h"
+#include "math/math_probability.h"
 #include <math.h>
 
 

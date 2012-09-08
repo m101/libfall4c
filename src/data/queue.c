@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "queue.h"
+#include "data/queue.h"
 
 // INTERNAL
 // allocate queue element

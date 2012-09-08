@@ -30,9 +30,9 @@
 #include <math.h>
 
 //#include "interpolation.h"
-#include "errors.h"
-#include "math_matrix.h"
-#include "vector_space.h"
+#include "util/errors.h"
+#include "math/math_matrix.h"
+#include "math/vector_space.h"
 
 #define matrix_rref_gauss_java(var) matrix_rref_gauss(var)
 

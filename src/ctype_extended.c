@@ -22,15 +22,16 @@
 
 #include "ctype_extended.h"
 
-long l_round (double value) {
-    long roundedValue = 0;
+long l_round (double value)
+{
+    long rounded = 0;
 
     if (abs(value - (long)value) >= 0.5)
-        roundedValue = ceil(value);
+        rounded = ceil(value);
     else if (abs(value - (long)value) < 0.5)
-        roundedValue = floor(value);
+        rounded = floor(value);
 
-    return roundedValue;
+    return rounded;
 }
 
 /*! @brief               Convertit une chaine en majuscule
@@ -38,13 +39,16 @@ long l_round (double value) {
 *   @param   string      Chaine à convertir
 *   @return              Renvoi l'adresse de la chaine convertie
 */
-char* stringtoupper (char *string) {
+char* stringtoupper (char *string)
+{
+    char *ptr = string;
+
     while (*string) {
         *string = toupper(*string);
         string++;
     }
 
-    return string;
+    return ptr;
 }
 
 /*! @brief               Convertit une chaine en minuscule
@@ -52,11 +56,15 @@ char* stringtoupper (char *string) {
 *   @param   string      Chaine à convertir
 *   @return              Renvoi l'adresse de la chaine convertie
 */
-char* stringtolower (char *string) {
+char* stringtolower (char *string)
+{
+    char *ptr = string;
+
     while (*string) {
         *string = tolower(*string);
         string++;
     }
 
-    return string;
+    return ptr;
 }
+

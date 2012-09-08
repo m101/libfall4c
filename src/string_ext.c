@@ -25,8 +25,31 @@
 
 #include "string_ext.h"
 
+struct string_t *string_init (struct string_t **str)
+{
+    *str = calloc(1, sizeof(**str));
+
+    return *str;
+}
+
+struct string_t *string_set (struct string_t *dst, char *str)
+{
+    dst->size = strlen(str);
+    dst->capacity = dst->size + 1;
+    if (dst->bytes)
+        free(dst->bytes);
+    dst->bytes = calloc(dst->capacity, sizeof(*dst->bytes));
+    if (!dst->bytes)
+        return NULL;
+
+    strncpy(dst->bytes, str, dst->size);
+
+    return dst;
+}
+
 // secure string length
-size_t string_len (struct string_t *str) {
+size_t string_len (struct string_t *str)
+{
     if (str)
         return str->size;
     else
@@ -34,19 +57,16 @@ size_t string_len (struct string_t *str) {
 }
 
 // secure string copy
-struct string_t* string_cpy (struct string_t *dst, struct string_t *src) {
+struct string_t* string_cpy (struct string_t *dst, struct string_t *src)
+{
     // pointer check
     if (!dst || !src)
         return NULL;
 
-    // size check
-    if (src->size < 1)
-        return NULL;
-
     // if buffer isn't big enough
     // then allocate an adapted one
-    if (dst->capacity < src->size) {
-        dst->capacity = src->size;
+    if (dst->capacity <= src->size) {
+        dst->capacity = src->size + 1;
         dst->bytes = realloc (dst->bytes, dst->capacity);
     }
 
@@ -58,23 +78,20 @@ struct string_t* string_cpy (struct string_t *dst, struct string_t *src) {
 }
 
 // secure string concatenation
-struct string_t* string_cat (struct string_t *dst, struct string_t *src) {
+struct string_t* string_cat (struct string_t *dst, struct string_t *src)
+{
     // pointer check
     if (!dst || !src)
-        return NULL;
-
-    // size check
-    if (src->size < 1)
         return NULL;
 
     // if buffer isn't big enough
     // then allocate an adapted one
     if (dst->capacity < dst->size + src->size) {
-        dst->capacity = dst->size + src->size;
+        dst->capacity = dst->size + src->size + 1;
         dst->bytes = realloc (dst->bytes, dst->capacity);
     }
 
-    // we copy string
+    // we concatenate strings
     strncat (dst->bytes, src->bytes, src->size);
     dst->bytes[dst->size - 1] = '\0';
 
@@ -82,7 +99,8 @@ struct string_t* string_cat (struct string_t *dst, struct string_t *src) {
 }
 
 // secure string comparison
-int string_cmp (struct string_t *str1, struct string_t *str2) {
+int string_cmp (struct string_t *str1, struct string_t *str2)
+{
     int sz;
 
     // get the smaller size
@@ -94,7 +112,8 @@ int string_cmp (struct string_t *str1, struct string_t *str2) {
     return strncmp (str1->bytes, str2->bytes, sz);
 }
 
-int string_word_delete (char *str, char *word) {
+int string_word_delete (char *str, char *word)
+{
     char *p, *space;
     
     p = strstr(str, word);
@@ -112,7 +131,8 @@ int string_word_delete (char *str, char *word) {
 }
 
 // separate a string in its column components
-char** string_get_columns (char *str, int len, int nColumns) {
+char** string_get_columns (char *str, int len, int nColumns)
+{
     // multiple len and rest len
     int mLen, rLen;
     // indexes
@@ -152,7 +172,8 @@ char** string_get_columns (char *str, int len, int nColumns) {
 }
 
 // normalize string to ascii (no accent, etc)
-char *normalize_str (char *str, int szStr) {
+char *normalize_str (char *str, int szStr)
+{
     int idxStr, idxNew;
     // normalized string
     char *normalized = NULL;

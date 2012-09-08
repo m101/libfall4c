@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "dictionnary.h"
+#include "data/dictionnary.h"
 
 int main(int argc, char *argv[])
 {

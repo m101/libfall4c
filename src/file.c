@@ -13,108 +13,89 @@
 
     You should have received a copy of the GNU Lesser General Public License
     along with fall4c.  If not, see <http://www.gnu.org/licenses/>.
-*/
+    */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 /*! @brief                    Fonction copiant un fichier en mode texte
-*   @param   dest             Fichier de copie
-*   @param   src              Fichier a copier
-*/
+ *   @param   dest             Fichier de copie
+ *   @param   src              Fichier a copier
+ */
 void file_copy (char *dest, char *src)
 {
-    FILE *fileRead = fopen(src, "r");
-    FILE *fileCopy = fopen(dest, "w");
-    char character = 0;
+    FILE *file_src = fopen(src, "r");
+    FILE *file_dst = fopen(dest, "w");
+    int character;
 
-    if (fileRead != NULL)
-    {
-        if (fileCopy != NULL)
-        {
-            while ((character = fgetc(fileRead)) != EOF)
-                fputc(character, fileCopy);
-            fclose(fileCopy);
-        }
-        else
-            printf("La copie de fichier a echoue\n");
-        fclose(fileRead);
-    }
-    else
-        printf("La copie de fichier a echoue\n");
+    if (!file_src || !file_dst)
+        return;
+
+    while ((character = fgetc(file_src)) != EOF)
+        fputc(character, file_dst);
+    fclose(file_dst);
+    fclose(file_src);
 }
 
 /*! @brief                    Fonction récupérant une ligne de texte à partir d'un flux
-*   @param   stream           Flux ou récupérer la ligne de texte
-*   @param   pLine            Ligne à récupérer
-*   @return                   Adresse de la chaîne récupéré
-*/
-char* fgetl(FILE *stream, char *pLine)
+ *   @param   stream           Flux ou récupérer la ligne de texte
+ *   @return                   Adresse de la chaîne récupéré
+ */
+char *fgetl (FILE *stream)
 {
-    unsigned int length = 100;
-    size_t i = 0;
-    pLine = malloc(sizeof(*pLine) * length);
-    if (pLine == NULL)
+    unsigned int length = 128;
+    char *line;
+    size_t idx_line = 0;
+
+    line = malloc(sizeof(*line) * length);
+    if (!line)
         return NULL;
 
-    do {
-        if (i >= length)
-        {
+    while (line[idx_line] != '\n') {
+        if (idx_line >= length) {
             length = length * 2;
-            pLine = realloc(pLine, length * sizeof(*pLine));
+            line = realloc(line, length * sizeof(*line));
         }
 
-        pLine[i] = fgetc(stream);
-    } while (pLine[i++] != '\n');
-    pLine[--i] = '\0';
+        line[idx_line] = fgetc(stream);
+        idx_line++;
+    }
+    line[--idx_line] = '\0';
 
-    return pLine;
-}
-
-/*! @brief                    Fonction récupérant une ligne de texte à partir d'un fichier
-*   @param   line             Ligne à récupérer
-*   @param   max              Taille du buffer à récupérer
-*   @return                   La longueur de la ligne
-*/
-long getLine (char *line, long max)
-{
-    if (fgets(line, max, stdin) == NULL)
-        return 0;
-    else
-        return strlen(line);
+    return line;
 }
 
 /*! @brief                    Fonction pour se déplacer de lignes en lignes
-*   @param   stream           Flux à parcourir
-*   @param   lineNumber       Ligne à atteindre
-*   @return                   Position du curseur dans le flux
-*/
-long fgotol (FILE *stream, long lineNumber)
+ *   @param   stream           Flux à parcourir
+ *   @param   lineNumber       Ligne à atteindre
+ *   @return                   Position du curseur dans le flux
+ */
+long fgotol (FILE *stream, long idx_line)
 {
-    char *pLine = NULL;
-    while (lineNumber != 0)
-    {
-        fgetl(stream, pLine);
-        lineNumber--;
+    int c;
+
+    fseek(stream, 0, SEEK_SET);
+
+    while (idx_line > 0 && c != EOF) {
+        c = fgetc(stream);
+        if (c == '\n')
+            idx_line--;
     }
 
     return ftell(stream);
 }
 
-long fgotoc (FILE *stream, long characterNumber)
+long fgotoc (FILE *stream, long offset)
 {
-    while (characterNumber != 0)
-    {
-        fgetc(stream);
-        characterNumber--;
-    }
+    fseek(stream, offset, SEEK_SET);
 
     return ftell(stream);
 }
 
 // get filesize
-int get_filesize(FILE *fp) {
+int file_get_size (FILE *fp)
+{
     int offset, sz;
 
     if (!fp)
@@ -126,5 +107,26 @@ int get_filesize(FILE *fp) {
     fseek(fp, offset, SEEK_SET);
 
     return sz;
+}
+
+int file_count_line (char *filename)
+{
+    unsigned long count_line;
+    int c;
+    FILE *fp;
+
+    fp = fopen(filename, "r");
+    if (!fp)
+        return -1;
+
+    count_line = 0;
+    while ((c = fgetc(fp)) != EOF) {
+        if (c == '\n')
+            count_line++;
+    }
+
+    fclose(fp);
+
+    return count_line;
 }
 

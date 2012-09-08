@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-#include "math_complex_numbers.h"
+#include "math/math_complex_numbers.h"
 
 // get a new complex number
 struct complex_t* complex_new (double im, double r) {

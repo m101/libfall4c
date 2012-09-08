@@ -3,7 +3,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "array_manipulation.h"
+#include "data/array_manipulation.h"
 
 long* num2array (long number, long *array, size_t *i)
 {
@@ -37,7 +37,8 @@ long* num2array (long number, long *array, size_t *i)
 }
 
 // generic bubble sort
-void sort_bubble (void *array, size_t nmemb, size_t size, int(*compar)(const void *, const void *)) {
+void sort_bubble (void *array, size_t nmemb, size_t size, int(*compar)(const void *, const void *))
+{
     void *temp = NULL;
     int i, j;
     int check;

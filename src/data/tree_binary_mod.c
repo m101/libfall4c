@@ -20,21 +20,23 @@
 
 #include <assert.h>
 
-#include "tree_binary.h"
+#include "data/tree_binary.h"
 
 
 /* @brief   Add data to tree
- */
-struct tree_t* binary_search_tree_add (struct tree_t *bst, void *data) {
+*/
+struct tree_t* bst_add (struct tree_t *bst, void *data)
+{
     // pointers check
     if (!bst || !data)
         return NULL;
-    return binary_search_tree_add_stub (bst, &(bst->root), data);
+    return bst_add_stub (bst, &(bst->root), data);
 }
 
 /* @brief   Add node to tree
- */
-struct tree_node_t* binary_search_tree_add_stub (struct tree_t *bst, struct tree_node_t **node, void *data) {
+*/
+struct tree_node_t* bst_add_stub (struct tree_t *bst, struct tree_node_t **node, void *data)
+{
     // pointers check
     if (!bst || !data || !node)
         return NULL;
@@ -50,11 +52,11 @@ struct tree_node_t* binary_search_tree_add_stub (struct tree_t *bst, struct tree
         // if smaller
         // then we go left
         else if (bst->comparator(data, (*node)->data) < 0)
-            return binary_search_tree_add_stub (bst, &((*node)->left), data);
+            return bst_add_stub (bst, &((*node)->left), data);
         // if bigger
         // then we go right
         else if (bst->comparator(data, (*node)->data) > 0)
-            return binary_search_tree_add_stub (bst, &((*node)->right), data);
+            return bst_add_stub (bst, &((*node)->right), data);
         else
             (*node)->weight++;
     }
@@ -62,7 +64,8 @@ struct tree_node_t* binary_search_tree_add_stub (struct tree_t *bst, struct tree
 
 /* @brief   Display whole tree
 */
-void binary_search_tree_display (struct tree_t *root) {
+void bst_display (struct tree_t *root)
+{
     if (root != NULL) {
         binary_tree_display (root->next);
         printf("%4ld\n", *(long *)root->data);
@@ -72,7 +75,8 @@ void binary_search_tree_display (struct tree_t *root) {
 
 /* @brief   Display right children
 */
-void binary_search_tree_display_right (struct tree_t *root) {
+void bst_display_right (struct tree_t *root)
+{
     if (root != NULL) {
         printf("%4ld\n", *(long *)root->data);
         binary_tree_display_right (root->prev);
@@ -81,7 +85,8 @@ void binary_search_tree_display_right (struct tree_t *root) {
 
 /* @brief   Display right children
 */
-void binary_search_tree_display_left (struct tree_t *root) {
+void bst_display_left (struct tree_t *root)
+{
     if (root != NULL) {
         printf("%4ld\n", *(long *)root->data);
         binary_tree_display_left (root->prev);
@@ -89,19 +94,21 @@ void binary_search_tree_display_left (struct tree_t *root) {
 }
 
 // AVL
-    void binary_search_tree_sort (struct tree_t *bst) {
-        if (bst)
-            binary_search_sort_stub (bst, bst->root);
-    }
+void bst_sort (struct tree_t *bst)
+{
+    if (bst)
+        binary_search_sort_stub (bst, bst->root);
+}
 
-void binary_search_tree_sort_stub (struct tree_t *bst, struct tree_node_t *node) {
+void bst_sort_stub (struct tree_t *bst, struct tree_node_t *node)
+{
     struct tree_t *leftOld = NULL, *rightOld = NULL;
 
     // pointer check
     if (!bst || !node)
         return;
 
-    binary_search_tree_sort_stub (node->prev);
+    bst_sort_stub (node->prev);
 
     // 
     if ( node->left && node->right )
@@ -113,22 +120,22 @@ void binary_search_tree_sort_stub (struct tree_t *bst, struct tree_node_t *node)
         }
     }
 
-    binary_search_tree_sort_stub (node->right);
+    bst_sort_stub (node->right);
 }
 
 /*! @brief Recursive stub for binary tree searching
 */
-struct tree_node_t* binary_search_tree_search_stub (struct tree_t *bst, struct tree_node_t *node,
-        void *data) {
+struct tree_node_t* bst_search_stub (struct tree_t *bst, struct tree_node_t *node, void *data)
+{
     // key not found
     if (!bst || !node || !data)
         return NULL;
     // below
     if (bst->comparator (data, node->data) < 0)
-        return binary_search_tree_search_stub (bst, node->left, data);
+        return bst_search_stub (bst, node->left, data);
     // if upper
     else if(bst->comparator (data, node->data) > 0)
-        return binary_search_tree_search_stub (bst, node->right, data);
+        return bst_search_stub (bst, node->right, data);
     // if equal
     // then we found it
     else 
@@ -137,14 +144,16 @@ struct tree_node_t* binary_search_tree_search_stub (struct tree_t *bst, struct t
 
 /*! @brief Search tree for specified data
 */
-    struct tree_node_t* binary_search_tree_search (struct tree_t *bst, void *data) {
-        if (!bst || !data)
-            return NULL;
+struct tree_node_t* bst_search (struct tree_t *bst, void *data)
+{
+    if (!bst || !data)
+        return NULL;
 
-        return binary_search_tree_search_stub (bst, bst->root, data);
-    }
+    return bst_search_stub (bst, bst->root, data);
+}
 
-struct tree_node_t* tree_delete_node (struct tree_t *bst, struct tree_node_t **node) {
+struct tree_node_t* tree_delete_node (struct tree_t *bst, struct tree_node_t **node)
+{
     struct tree_node_t *pNode;
 
     if (!bst || !node)

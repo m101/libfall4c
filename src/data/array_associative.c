@@ -20,21 +20,24 @@
 
 #include <string.h>
 
-#include "array_associative.h"
-#include "tree_binary.h"
+#include "data/array_associative.h"
+#include "data/tree_binary.h"
 
 // compare 2 elements in a hashtable
-int hashtable_comparator (void *elt1, void *elt2) {
+int hashtable_comparator (void *elt1, void *elt2)
+{
     return strcmp ( ((struct aarray_elt_t *)elt1)->key, ((struct aarray_elt_t *)elt2)->key );
 }
 
 // size of an associative array element
-size_t hashtable_elt_size (void *elt) {
+size_t hashtable_elt_size (void *elt) 
+{
     return sizeof(struct aarray_elt_t);
 }
 
 // set a value
-struct hashtable_t* set_value (struct hashtable_t **hashtable, char *key, void *value) {
+struct hashtable_t* set_value (struct hashtable_t **hashtable, char *key, void *value)
+{
     struct aarray_elt_t *elt;
 
     // pointer check
@@ -59,7 +62,8 @@ struct hashtable_t* set_value (struct hashtable_t **hashtable, char *key, void *
 }
 
 // get a value
-void *get_value (struct hashtable_t *hashtable, char *key) {
+void *get_value (struct hashtable_t *hashtable, char *key)
+{
     struct tree_t *node;
     struct aarray_elt_t elt = { key, NULL };
 

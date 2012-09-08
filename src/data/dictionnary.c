@@ -19,7 +19,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "dictionnary.h"
+#include "data/dictionnary.h"
 
 #define BUFFER_SIZE 1000
 
@@ -455,7 +455,8 @@ struct dict_elt_t *dict_search_highest_occurrences (struct dict_t *dict) {
 }
 
 // show dictionnary (stub)
-void dict_show_stub (struct dict_elt_t *node) {
+void dict_show_stub (struct dict_elt_t *node) 
+{
     int idxStr;
 
     // check ptr
@@ -473,7 +474,8 @@ void dict_show_stub (struct dict_elt_t *node) {
 }
 
 // show dictionnary
-void dict_show (struct dict_t *dict) {
+void dict_show (struct dict_t *dict) 
+{
     if (!dict)
         return;
 
@@ -482,8 +484,9 @@ void dict_show (struct dict_t *dict) {
 }
 
 // compare count
-int dict_compare_count (void *dict1, void *dict2) {
-    struct dict_elt *pDict1, *pDict2;
+int dict_compare_count (void *dict1, void *dict2)
+{
+    struct dict_elt_t *pDict1, *pDict2;
     int check;
 
     if (!dict1 || !dict2)
@@ -491,7 +494,6 @@ int dict_compare_count (void *dict1, void *dict2) {
 
     pDict1 = dict1;
     pDict2 = dict2;
-
 
     if (pDict1->count == pDict2->count)
         check = dict_compare_str (dict1, dict2);
