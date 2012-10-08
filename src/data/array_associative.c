@@ -26,67 +26,113 @@
 // compare 2 elements in a hashtable
 int hashtable_comparator (void *elt1, void *elt2)
 {
-    return strcmp ( ((struct aarray_elt_t *)elt1)->key, ((struct aarray_elt_t *)elt2)->key );
+    if (elt1 && elt2)
+        return strcmp ( ((struct hashtable_node *)elt1)->key, ((struct hashtable_node *)elt2)->key );
+    else
+        return elt1 - elt2;
 }
 
 // size of an associative array element
-size_t hashtable_elt_size (void *elt) 
+size_t hashtable_elt_size (void *elt)
 {
-    return sizeof(struct aarray_elt_t);
+    return sizeof(struct hashtable_node);
+}
+
+int _hashtable_init_callbacks (struct hashtable_t *htable)
+{
+    if (!htable || !htable->array)
+        return -1;
+
+    tree_set_callback (htable->array, TREE_CALLBACK_COMPARATOR, hashtable_comparator);
+    tree_set_callback (htable->array, TREE_CALLBACK_GET_DATA_SIZE, hashtable_elt_size);
+    tree_set_callback (htable->array, TREE_CALLBACK_DESTROY_DATA, hashtable_destroy);
+
+    return 0;
+}
+
+struct hashtable_t *hashtable_new (void)
+{
+    int rc;
+    struct hashtable_t *htable;
+
+    htable = calloc (1, sizeof(*htable));
+    if (!htable)
+        return NULL;
+    // htable->array = tree_new (hashtable_comparator, hashtable_elt_size);
+    htable->array = tree_new ();
+
+    rc = _hashtable_init_callbacks (htable);
+    if (rc < 0) {
+        hashtable_destroy(&htable);
+        return NULL;
+    }
+
+    return htable;
+}
+
+void hashtable_destroy (struct hashtable_t **htable)
+{
+    if (!htable || !*htable)
+        return;
+
+    tree_free((*htable)->array);
+    free(*htable);
+    *htable = NULL;
 }
 
 // set a value
-struct hashtable_t* set_value (struct hashtable_t **hashtable, char *key, void *value)
+struct hashtable_t* hashtable_set_value (struct hashtable_t **htable, char *key, void *value)
 {
-    struct aarray_elt_t *elt;
+    struct hashtable_node *elt;
 
     // pointer check
-    if (!hashtable)
+    if (!htable || !key || !value)
         return NULL;
-
-    // create array if it doesn't exist
-    if (!*hashtable) {
-        *hashtable = calloc (1, sizeof(**hashtable));
-        (*hashtable)->array = tree_new (hashtable_comparator, hashtable_elt_size);
-    }
 
     // create array element
     elt = calloc (1, sizeof(*elt));
+    if (!elt)
+        return NULL;
     elt->key = key;
     elt->value = value;
 
-    // add value in tree
-    binary_search_tree_add ((*hashtable)->array, elt);
+    // create array if it doesn't exist
+    if (!*htable)
+        *htable = hashtable_new();
 
-    return *hashtable;
+    // add value in tree
+    bst_add ((*htable)->array, elt);
+
+    return *htable;
 }
 
 // get a value
-void *get_value (struct hashtable_t *hashtable, char *key)
+void *hashtable_get_value (struct hashtable_t *htable, char *key)
 {
-    struct tree_t *node;
-    struct aarray_elt_t elt = { key, NULL };
+    int rc;
+    struct tree_node_t *node;
+    struct hashtable_node elt = { key, NULL }, *helt;
 
     // pointer check
-    if (!hashtable)
+    if (!htable || !key)
+        return NULL;
+
+    rc = _hashtable_init_callbacks (htable);
+    if (rc < 0)
         return NULL;
 
     // search element in tree
-    node = binary_search_tree_search (hashtable->array, &elt);
-
-    // if we didn't find the key
+    node = bst_search (htable->array, &elt);
     if (!node)
         return NULL;
-    // else
-    // we found it
-    else {
-        /*
-        if (node->data)
-            return ((struct array_elt_t *)(node->data))->value;
-        //*/
-    }
 
-    // return node->data;
-    return NULL;
+    // return found data
+    helt = node->data;
+    if (helt)
+        return helt->value;
+    else {
+        // _tree_destroy_node(&node); // data is NULL so useless node
+        return NULL;
+    }
 }
 

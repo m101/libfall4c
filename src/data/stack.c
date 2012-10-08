@@ -21,11 +21,22 @@
 #include "data/stack.h"
 
 // INTERNAL
+
+// stack element
+struct stack_node_t {
+    // data stored
+    char *data;
+    // size of data
+    size_t size;
+    // next and previous element
+    struct stack_node_t *next, *prev;
+};
+
 // allocate stack element
-struct stack_element_t *stack_element_new (void)
+struct stack_node_t *_stack_element_new (void)
 {
-    struct stack_element_t elt = {0};
-    struct stack_element_t *node = NULL;
+    struct stack_node_t elt = {0};
+    struct stack_node_t *node = NULL;
 
     node = malloc(sizeof(elt));
     *node = elt;
@@ -38,13 +49,13 @@ struct stack_element_t *stack_element_new (void)
 // push data on the stack
 struct stack_t *stack_push (struct stack_t **p, void *data)
 {
-    struct stack_element_t *elt;
+    struct stack_node_t *elt;
 
     // pointer check
 	if (!p)
 		return NULL;
 	
-    elt = stack_element_new();
+    elt = _stack_element_new();
     // was stack allocated?
 	if (!(*p)) {
 		*p = stack_new();
@@ -60,7 +71,7 @@ struct stack_t *stack_push (struct stack_t **p, void *data)
     // update stack pointer
     (*p)->top = elt;
     // update counter
-    (*p)->szStack++;
+    (*p)->sz_stack++;
 	
 	return *p;
 }
@@ -69,7 +80,7 @@ struct stack_t *stack_push (struct stack_t **p, void *data)
 void *stack_pop (struct stack_t **p)
 {
     void *data;
-	struct stack_element_t *elt = NULL;
+	struct stack_node_t *elt = NULL;
 	
     // pointers check
 	if (!p)
@@ -96,7 +107,7 @@ void *stack_pop (struct stack_t **p)
     elt->prev = NULL;
     elt->next = NULL;
     // get correct count
-    (*p)->szStack--;
+    (*p)->sz_stack--;
     // get data
     data = elt->data;
 
@@ -121,7 +132,7 @@ struct stack_t *stack_new (void)
 // destroy a stack
 void stack_destroy (struct stack_t **stack)
 {
-    struct stack_element_t *elt, *next;
+    struct stack_node_t *elt, *next;
     // pointers check
     if (!stack)
         return;

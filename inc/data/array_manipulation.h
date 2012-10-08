@@ -6,7 +6,9 @@ extern "C"
 {
 #endif
 
-long* num2array (long number, long array[], size_t *i);
+#include <stdlib.h>
+
+long *num2array (long number, long *array, size_t *i);
 // generic bubble sort
 void sort_bubble (void *array, size_t nmemb, size_t size, int(*compar)(const void *, const void *));
 

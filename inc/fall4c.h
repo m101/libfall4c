@@ -5,15 +5,15 @@
 #include <stdio.h>
 
 #include "ctype_extended.h"
-#include "dictionnary.h"
 #include "file.h"
-#include "fileBrowse.h"
-#include "list.h"
-#include "queue.h"
-#include "stack.h"
+#include "file_browse.h"
 #include "string_ext.h"
-#include "tree_avl.h"
-#include "tree_binary.h"
-#include "tree_common.h"
+#include "data/tree_avl.h"
+#include "data/tree_binary.h"
+#include "data/tree_common.h"
+#include "data/dictionnary.h"
+#include "data/list.h"
+#include "data/queue.h"
+#include "data/stack.h"
 
 #endif /* _FALL4C_DEFINE_ */

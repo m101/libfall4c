@@ -25,6 +25,8 @@ extern "C"
 {
 #endif
 
+#include <stdint.h>
+
     struct string_t {
         // string
         char *bytes;
@@ -44,6 +46,7 @@ extern "C"
     char** string_get_columns (char *str, int len, int nColumns);
     // normalize string to ascii (no accent, etc)
     char *normalize_str (char *str, int szStr);
+    unsigned long str_hash(unsigned char *str, int len);
 
     void clean(char *chaine);
     void purger(void);
@@ -53,6 +56,7 @@ extern "C"
                 	register const char *delim _AND
                 	char **lasts);
     */
+    uint8_t *binstr_to_bin (char *binstr, int len_binstr);
 #ifdef __cplusplus
 }
 #endif

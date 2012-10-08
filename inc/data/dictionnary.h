@@ -30,18 +30,18 @@ struct dict_t {
     //
     int count;
     //
-    struct dict_elt_t *root;
-    struct dict_elt_t *nodes;
+    struct dict_node_t *root;
+    struct dict_node_t *nodes;
     // base str
     char *str;
-    long szStr;
+    long sz_str;
 };
 
-struct dict_elt_t {
+struct dict_node_t {
     int count;
     //
     char *str;
-    int szStr;
+    int sz_str;
     //
     unsigned long base;
     int *offsets;
@@ -52,30 +52,31 @@ struct dict_elt_t {
 
     union {
         struct {
-            struct dict_elt_t *left, *right;
+            struct dict_node_t *left, *right;
         };
         struct {
-            struct dict_elt_t *prev, *next;
+            struct dict_node_t *prev, *next;
         };
     };
 };
 
+struct dict_t *dict_load (char *filename);
 // default dict constructor
-struct dict_t* dict_new (struct dict_t **dict);
+struct dict_t *dict_new (struct dict_t **dict);
 // destroy dictionnary recursively
 void dict_destroy (struct dict_t **dict);
 // dictionnary : insert a word
-int dict_insert_word (struct dict_t *dict, char *word, int szWord);
+int dict_insert_word (struct dict_t *dict, char *word, int sz_word);
 // search a word in the dictionnary
-struct dict_elt_t* dict_search_word (struct dict_t *dict, char *word, int szWord);
+struct dict_node_t *dict_search_word (struct dict_t *dict, char *word, int sz_word);
 // find and destroy duplicates
-struct dict_t* dict_destroy_dupes (struct dict_t *dict);
+struct dict_t *dict_destroy_dupes (struct dict_t *dict);
 // build a dictionnary from a sequence of characters
-struct dict_t* dict_build_from_str_static_size (struct dict_t *dict, char *str, int szStr, int szToken);
+struct dict_t *dict_build_from_str_static_size (struct dict_t *dict, char *str, int sz_str, int szToken);
 // build a dictionnary from a sequence of characters
-struct dict_t* dict_build_from_str (struct dict_t *dict, char *str, int szStr, int szTokenMax);
+struct dict_t *dict_build_from_str (struct dict_t *dict, char *str, int sz_str, int szTokenMax);
 // build a dictionnary from a sequence of characters
-struct dict_t* dict_build_from_str_kasiski (struct dict_t *dict, char *str, int szStr, int szTokenMax);
+struct dict_t *dict_build_from_str_kasiski (struct dict_t *dict, char *str, int sz_str, int szTokenMax);
 // compute distance between equal words
 struct dict_t *dict_distance (struct dict_t *dict);
 // count number of offsets
@@ -83,9 +84,9 @@ int dict_offsets_count (struct dict_t *dict);
 // count number of nodes
 int dict_nodes_count (struct dict_t *dict);
 // load a dictionnary file
-// struct dict_elt_t *dict_load (char *dict_filename);
+// struct dict_node_t *dict_load (char *dict_filename);
 // dictionnary : save to a file
-// int dict_save (char *dict_file, struct dict_elt_t *dict);
+// int dict_save (char *dict_file, struct dict_node_t *dict);
 // show dictionnary
 void dict_show (struct dict_t *dict);
 

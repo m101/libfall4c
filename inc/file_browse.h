@@ -27,8 +27,9 @@ extern "C"
 #include <stdio.h>
 
 // show directory entry 1st level
-void dirls (char *dirname, void (*function)(char *));
-void dirwalk (char *dirname);
+int dirwalk (char *dirname, int (*function)(char *, void **), void **data, int depth);
+int dirls (char *dirname, int depth);
+struct list_simple *dir_list (char *dirname, int depth);
 
 #ifdef __cplusplus
 }

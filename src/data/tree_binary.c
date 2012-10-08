@@ -13,33 +13,23 @@
 
     You should have received a copy of the GNU Lesser General Public License
     along with fall4c.  If not, see <http://www.gnu.org/licenses/>.
-    */
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <assert.h>
-
 #include "data/tree_binary.h"
-
-
-/* @brief   Add data to tree
-*/
-struct tree_t* bst_add (struct tree_t *bst, void *data) 
-{
-    // pointers check
-    if (!bst || !data)
-        return NULL;
-    bst_add_stub (bst, &(bst->root), data);
-}
 
 /* @brief   Add node to tree
 */
-struct tree_node_t* bst_add_stub (struct tree_t *bst, struct tree_node_t **node, void *data)
+struct tree_node_t *_bst_add (struct tree_t *bst, struct tree_node_t **node, void *data)
 {
+    int result;
+
     // pointers check
     if (!bst || !data || !node)
         return NULL;
+
     // if we found a leaf
     // then we insert data
     if (!(*node)) {
@@ -47,137 +37,152 @@ struct tree_node_t* bst_add_stub (struct tree_t *bst, struct tree_node_t **node,
         (*node)->data = data;
         return *node;
     }
-    else {
-        // we don't check equality since we don't want dupes
-        // if smaller
-        // then we go left
-        if (bst->comparator(data, (*node)->data) < 0)
-            return bst_add_stub (bst, &((*node)->left), data);
-        // if bigger
-        // then we go right
-        else if (bst->comparator(data, (*node)->data) > 0)
-            return bst_add_stub (bst, &((*node)->right), data);
-        else
-            (*node)->weight++;
-    }
+
+    // we don't check equality since we don't want dupes
+    // if smaller
+    // then we go left
+    result = bst->comparator((*node)->data, data);
+    if (result < 0)
+        return _bst_add (bst, &((*node)->left), data);
+    // if bigger
+    // then we go right
+    else if (result > 0)
+        return _bst_add (bst, &((*node)->right), data);
+    else
+        (*node)->weight++;
+}
+
+/* @brief   Add data to tree
+*/
+struct tree_t *bst_add (struct tree_t *bst, void *data)
+{
+    // pointers check
+    if (!bst || !data)
+        return NULL;
+
+    if (_bst_add (bst, &(bst->root), data))
+       return bst;
+    else
+        return NULL;
 }
 
 /* @brief   Display whole tree
 */
-void bst_display (struct tree_t *bst)
+struct tree_t *_bst_show (struct tree_t *bst, struct tree_node_t *node)
 {
-    // null pointer check
-    if (!bst)
-        return;
+    if (!bst || !node)
+        return NULL;
 
-    // bst is non null
-    binary_tree_display (bst->next);
-    printf("%4ld\n", *(long *)bst->data);
-    binary_tree_display (bst->prev);
+    _bst_show (bst, node->next);
+    bst->show (node->data);
+    _bst_show (bst, node->prev);
+
+    return bst;
 }
 
-/* @brief   Display right children
-*/
-void bst_display_right (struct tree_t *bst)
+struct tree_t *bst_show (struct tree_t *bst)
 {
-    if (bst != NULL) {
-        printf("%4ld\n", *(long *)bst->data);
-        binary_tree_display_right (bst->prev);
-    }
+    return _bst_show (bst, bst->root);
 }
 
-/* @brief   Display right children
-*/
-void bst_display_left (struct tree_t *bst)
+struct tree_t *_bst_sort (struct tree_t *bst, struct tree_node_t *node)
 {
-    if (bst != NULL) {
-        printf("%4ld\n", *(long *)bst->data);
-        binary_tree_display_left (bst->prev);
-    }
-}
-
-// AVL
-void bst_sort (struct tree_t *bst)
-{
-    if (bst)
-        binary_search_sort_stub (bst, bst->root);
-}
-
-void bst_sort_stub (struct tree_t *bst, struct tree_node_t *node)
-{
-    struct tree_t *leftOld = NULL, *rightOld = NULL;
+    /*
+    struct tree_t *left_old = NULL, *right_old = NULL;
 
     // pointer check
     if (!bst || !node)
         return;
 
-    bst_sort_stub (node->prev);
+    _bst_sort (bst, node->prev);
 
     // 
     if ( node->left && node->right )
     {
         if ( node->comparator (node->left->data, node->right->data) < 0 )
         {
-            rightOld = node->right;
+            right_old = node->right;
             node->right = node;
         }
     }
 
-    bst_sort_stub (node->right);
+    _bst_sort (node->right);
+    //*/
+}
+
+// AVL
+struct tree_t *bst_sort (struct tree_t *bst)
+{
+    if (!bst)
+        return NULL;
+    return _bst_sort (bst, bst->root);
 }
 
 /*! @brief Recursive stub for binary tree searching
 */
-struct tree_node_t* bst_search_stub (struct tree_t *bst, struct tree_node_t *node, void *data)
+struct tree_node_t *_bst_search (struct tree_t *bst, struct tree_node_t *node, void *data)
 {
+    int result;
+
     // key not found
     if (!bst || !node || !data)
         return NULL;
-    // below
-    if (bst->comparator (data, node->data) < 0)
-        return bst_search_stub (bst, node->left, data);
-    // if upper
-    else if(bst->comparator (data, node->data) > 0)
-        return bst_search_stub (bst, node->right, data);
+
+    result = bst->comparator (node->data, data);
+
     // if equal
     // then we found it
-    else 
+    if (result == 0)
         return node;
+    // below
+    else if (result < 0)
+        return _bst_search (bst, node->left, data);
+    // if upper
+    else if (result > 0)
+        return _bst_search (bst, node->right, data);
 }
 
 /*! @brief Search tree for specified data
 */
-struct tree_node_t* bst_search (struct tree_t *bst, void *data)
+struct tree_t *bst_search (struct tree_t *bst, void *data)
 {
     if (!bst || !data)
         return NULL;
 
-    return bst_search_stub (bst, bst->root, data);
+    if (_bst_search (bst, bst->root, data))
+        return bst;
+    else
+        return NULL;
+
+    return 0;
 }
 
-struct tree_node_t* tree_delete_node (struct tree_t *bst, struct tree_node_t **node)
+struct tree_t *_tree_destroy_node (struct tree_t *bst, struct tree_node_t **node, void *data)
 {
-    struct tree_node_t *pNode;
+    int result;
 
-    if (!bst || !node)
+    if (!bst ||  !node || !*node || !data)
         return NULL;
-    if (!*node)
-        return NULL;
-    // no children
-    if ((*node)->left == NULL && (*node)->right == NULL)
-        tree_node_free (*node);
-    // one child
-    else if ((*node)->left || (*node)->right) {
-        if ((*node)->left)
-            pNode = (*node)->left;
-        else if ((*node)->right)
-            pNode = (*node)->right;
-        bst->destroy_data((*node)->data);
+
+    result = bst->comparator((*node)->data, data);
+    if (result == 0) {
+        bst->destroy_data(&((*node)->data));
         free(*node);
-        *node = pNode;
+        *node = NULL;
+        /* TODO: Fix rotation and such (losing childrens)
+        */
+        return bst;
     }
-    // two children
-    else if ((*node)->left && (*node)->right) {
-    }
+    else if (result < 0)
+        _tree_destroy_node (bst, &((*node)->left), data);
+    else if (result > 0)
+        _tree_destroy_node (bst, &((*node)->right), data);
+}
+
+struct tree_t *bst_del (struct tree_t *bst, void *data)
+{
+    if (!bst ||  !data)
+        return -1;
+    return _tree_destroy_node (bst, &(bst->root), data);
 }
 

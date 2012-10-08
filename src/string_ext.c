@@ -18,12 +18,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <ctype.h>
 
 // depedencies
 #include <unac.h>
 
 #include "string_ext.h"
+#include "ctype_extended.h"
 
 struct string_t *string_init (struct string_t **str)
 {
@@ -103,6 +105,9 @@ int string_cmp (struct string_t *str1, struct string_t *str2)
 {
     int sz;
 
+    if (!str1 || !str2)
+        return -1;
+
     // get the smaller size
     if (str1->size > str2->size)
         sz = str2->size;
@@ -111,6 +116,26 @@ int string_cmp (struct string_t *str1, struct string_t *str2)
 
     return strncmp (str1->bytes, str2->bytes, sz);
 }
+
+/* hash string to an integer value */
+unsigned long str_hash(unsigned char *str, int len)/*{{{*/
+{
+    int idx_str;
+    unsigned long hash = 5381;
+    int c;
+
+    idx_str = 0;
+    /*
+    while (c = str[idx_str] && idx_str < len) {
+        hash ^= (((hash << 5) + hash) + c); /* hash * 33 + c */
+    //*/
+    while (idx_str < len) {
+        hash ^= (((hash << 5) + hash) + str[idx_str]); /* hash * 33 + c */
+        idx_str++;
+    }
+
+    return hash;
+}/*}}}*/
 
 int string_word_delete (char *str, char *word)
 {
@@ -260,8 +285,7 @@ char *str_reverse (char *str)
   head = str;
   tail = str + strlen(str) - 1;
 
-  while (head < tail)
-  {
+  while (head < tail) {
     *head = *tail;
     head++;
     tail--;
@@ -269,3 +293,49 @@ char *str_reverse (char *str)
 
   return str;
 }
+
+/* @desc    convert binstr to binary
+ */
+uint8_t *binstr_to_bin (char *binstr, int len_binstr)
+{
+    int idx_binstr, idx_bin;
+    uint8_t hexnum, hexdigit;
+    uint8_t *bin;
+
+    bin = calloc(len_binstr, sizeof(*bin));
+    if (!bin) {
+        fprintf(stderr, "error: failed to allocated memory for binary\n");
+        return NULL;
+    }
+
+    /* convert binstr to bin and ignore unwanted chars */
+    hexnum = 0;
+    hexdigit = 0;
+    for (idx_binstr = 0, idx_bin = 0; idx_binstr < len_binstr; idx_binstr++) {
+        if (!isxdigit(binstr[idx_binstr]))
+            continue;
+
+        // get decimal digit
+        hexdigit = toupper(binstr[idx_binstr]) - '0';
+        // get hex digit
+        if (hexdigit >= 0xa)
+            hexdigit -= 7;
+        hexnum |= hexdigit;
+
+        // store hex byte
+        if (((idx_binstr+1) % 2) == 0 || (idx_binstr == len_binstr - 1)) {
+            // if last hex digit and odd number of digits
+            // then shift left
+            if ((idx_binstr % 2) == 0 && (idx_binstr == len_binstr - 1))
+                hexnum <<= 4;
+            bin[idx_bin] = hexnum;
+            ++idx_bin;
+            hexnum = 0;
+        }
+
+        hexnum <<= 4;
+    }
+
+    return bin;
+}
+

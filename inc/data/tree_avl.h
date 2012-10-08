@@ -23,7 +23,7 @@ extern "C"
 {
 #endif
 
-#include "data/tree_common.h"
+#include "tree_common.h"
 
 #ifdef __cplusplus
 }

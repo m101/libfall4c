@@ -25,29 +25,36 @@
 
 // internal functions
 // insert a word (stub)
-int dict_insert_word_stub (struct dict_elt_t **node, char *word, int szWord);
+int _dict_insert_word (struct dict_node_t **node, char *word, int sz_word);
 // get word with highest occurence (stub)
-struct dict_elt_t *dict_search_highest_occurrences_stub (struct dict_elt_t *node, struct dict_elt_t **accu);
+struct dict_node_t *_dict_search_highest_occurrences (struct dict_node_t *node, struct dict_node_t **accu);
 // count number of offsets (stub)
-int dict_offsets_count_stub (struct dict_elt_t *node, int total);
+int _dict_offsets_count (struct dict_node_t *node, int total);
+
+struct dict_t *dict_load (char *filename)
+{
+    return NULL;
+}
 
 // default dict constructor
-struct dict_t* dict_new (struct dict_t **dict) {
-    struct dict_t *pDict;
+struct dict_t *dict_new (struct dict_t **dict)
+{
+    struct dict_t *a_dic;
 
-    pDict = calloc(1, sizeof(**dict));
+    a_dic = calloc(1, sizeof(**dict));
     if (dict)
-        *dict = pDict;
+        *dict = a_dic;
     
-    return pDict;
+    return a_dic;
 }
 
 // destroy dictionnary recursively (stub)
-void dict_destroy_stub (struct dict_elt_t **node) {
+void _dict_destroy (struct dict_node_t **node)
+{
     if (node != NULL && *node != NULL) {
         // traverse nodes
-        dict_destroy_stub ( &((*node)->left) );
-        dict_destroy_stub ( &((*node)->right) );
+        _dict_destroy ( &((*node)->left) );
+        _dict_destroy ( &((*node)->right) );
         // free fields
         free ((*node)->description);
         free ((*node)->offsets);
@@ -57,20 +64,25 @@ void dict_destroy_stub (struct dict_elt_t **node) {
 }
 
 // destroy dictionnary
-void dict_destroy (struct dict_t **dict) {
+void dict_destroy (struct dict_t **dict)
+{
+    if (!dict || !*dict)
+        return;
+
     free((*dict)->str);
-    dict_destroy_stub(&((*dict)->root));
-    dict_destroy_stub(&((*dict)->nodes));
+    _dict_destroy(&((*dict)->root));
+    _dict_destroy(&((*dict)->nodes));
     free(*dict);
     *dict = NULL;
 }
 
 // insert a word (stub)
-int dict_insert_word_stub (struct dict_elt_t **node, char *word, int szWord) {
+int _dict_insert_word (struct dict_node_t **node, char *word, int sz_word)
+{
     int check;
 
     // check for wording validity
-    if (!word || szWord <= 0)
+    if (!word || sz_word <= 0)
         return 0;
     // check for nodeionnary double pointer validity
     if (!node)
@@ -83,7 +95,7 @@ int dict_insert_word_stub (struct dict_elt_t **node, char *word, int szWord) {
         *node = calloc(1, sizeof(**node));
         (*node)->str = word;
         // we initialize all variable to ensure correct behavior
-        (*node)->szStr = szWord;
+        (*node)->sz_str = sz_word;
         (*node)->count = 1;
         (*node)->right = NULL;
         (*node)->left = NULL;
@@ -96,20 +108,20 @@ int dict_insert_word_stub (struct dict_elt_t **node, char *word, int szWord) {
     }
 
     // compare words
-    if ( (*node)->szStr != szWord )
-        check = (*node)->szStr - szWord;
+    if ( (*node)->sz_str != sz_word )
+        check = (*node)->sz_str - sz_word;
     else
-        check = memcmp((*node)->str, word, szWord);
+        check = memcmp((*node)->str, word, sz_word);
 
     // insertion
     if ( check > 0 )
-        return dict_insert_word_stub ( &((*node)->right), word, szWord);
+        return _dict_insert_word ( &((*node)->right), word, sz_word);
     else if ( check < 0 )
-        return dict_insert_word_stub ( &((*node)->left), word, szWord);
+        return _dict_insert_word ( &((*node)->left), word, sz_word);
     else {
         // if same ptr or size not equal
         // then do not count it
-        if ((word == (*node)->str) && (szWord == (*node)->szStr))
+        if ((word == (*node)->str) && (sz_word == (*node)->sz_str))
             return 0;
 
         // count number of occurrences of the word
@@ -129,50 +141,54 @@ int dict_insert_word_stub (struct dict_elt_t **node, char *word, int szWord) {
 }
 
 // insert a word
-int dict_insert_word (struct dict_t *dict, char *word, int szWord) {
-    return dict_insert_word_stub(&(dict->root), word, szWord);
+int dict_insert_word (struct dict_t *dict, char *word, int sz_word)
+{
+    return _dict_insert_word(&(dict->root), word, sz_word);
 }
 
 // search a word in the dictionnary
-struct dict_elt_t* dict_search_word_stub (struct dict_elt_t *node, char *word, int szWord) {
+struct dict_node_t *_dict_search_word (struct dict_node_t *node, char *word, int sz_word)
+{
     int check;
 
     if (!node)
         return NULL;
 
-    check = memcmp (node->str, word, szWord);
+    check = memcmp (node->str, word, sz_word);
     // found
     if (check == 0)
         return node;
     else if (check < 0)
-        return dict_search_word_stub (node->left, word, szWord);
+        return _dict_search_word (node->left, word, sz_word);
     else
-        return dict_search_word_stub (node->right, word, szWord);
+        return _dict_search_word (node->right, word, sz_word);
 }
 
 // search a word in the dictionnary
-struct dict_elt_t* dict_search_word (struct dict_t *dict, char *word, int szWord) {
-    if (!dict || !word || szWord < 0)
+struct dict_node_t *dict_search_word (struct dict_t *dict, char *word, int sz_word)
+{
+    if (!dict || !word || sz_word < 0)
         return NULL;
-    return dict_search_word_stub(dict->root, word, szWord);
+    return _dict_search_word(dict->root, word, sz_word);
 }
 
 // search if there is at least one dupe
-struct dict_elt_t* dict_find_dupe (struct dict_elt_t **node1, struct dict_elt_t **dict, struct dict_elt_t **dupes) {
+struct dict_node_t *dict_find_dupe (struct dict_node_t **node1, struct dict_node_t **dict, struct dict_node_t **dupes)
+{
     int check;
-    struct dict_elt_t *ret;
+    struct dict_node_t *ret;
 
     //
     if (node1 && dict && dupes) {
         if (!*dict || !*node1)
             return NULL;
         // check
-        if ((*node1)->szStr == (*dict)->szStr) {
+        if ((*node1)->sz_str == (*dict)->sz_str) {
             // small optimisation
             check = *((*node1)->str) - *((*dict)->str);
             // full check
             if (!check)
-                check = memcmp ((*node1)->str, (*dict)->str, (*node1)->szStr);
+                check = memcmp ((*node1)->str, (*dict)->str, (*node1)->sz_str);
             // found dupe
             if (!check) {
                 /*
@@ -198,28 +214,31 @@ struct dict_elt_t* dict_find_dupe (struct dict_elt_t **node1, struct dict_elt_t 
 }
 
 // destroy dupes by agregation
-struct dict_t* dict_destroy_dupes_stub (struct dict_t **dict) {
+struct dict_t *_dict_destroy_dupes (struct dict_t **dict)
+{
     return NULL;
 }
 
 // destroy dupes by agregation
-struct dict_t* dict_destroy_dupes (struct dict_t *dict) {
+struct dict_t *dict_destroy_dupes (struct dict_t *dict)
+{
     return NULL;
 }
 
 // build a dictionnary from a sequence of characters
 // usefull to study frequency analysis
-struct dict_t* dict_build_from_str_static_size (struct dict_t *dict, char *str, int szStr, int szToken) {
+struct dict_t *dict_build_from_str_static_size (struct dict_t *dict, char *str, int sz_str, int sz_token)
+{
     char *pStr;
 
     // check string validity
-    if (!dict || !str || (szStr <= 0) || !szToken)
+    if (!dict || !str || (sz_str <= 0) || sz_token <= 0)
         return NULL;
 
     // we construct dictionary
     pStr = str;
-    while (pStr + szToken < str + szStr) {
-        dict_insert_word(dict, pStr, szToken);
+    while (pStr + sz_token < str + sz_str) {
+        dict_insert_word(dict, pStr, sz_token);
         pStr++;
     }
 
@@ -227,38 +246,40 @@ struct dict_t* dict_build_from_str_static_size (struct dict_t *dict, char *str, 
 }
 
 // build a dictionnary from a sequence of characters
-struct dict_t* dict_build_from_str (struct dict_t *dict, char *str, int szStr, int szTokenMax) {
-    int szToken;
+struct dict_t *dict_build_from_str (struct dict_t *dict, char *str, int sz_str, int sz_token_max)
+{
+    int sz_token;
 
     // check string validity
-    if (!dict || !str || (szStr <= 0) || !szTokenMax)
+    if (!dict || !str || (sz_str <= 0) || !sz_token_max)
         return NULL;
 
-    for (szToken = 1; szToken <= szTokenMax; szToken++)
-        dict_build_from_str_static_size (dict, str, szStr, szToken);
+    for (sz_token = 1; sz_token <= sz_token_max; sz_token++)
+        dict_build_from_str_static_size (dict, str, sz_str, sz_token);
 
     return dict;
 }
 
 // build a dictionnary from a sequence of characters
 // usefull to study frequency analysis
-struct dict_t* dict_build_from_str_static_size_kasiski (struct dict_t *dict, char *str, int szStr, int szToken) {
+struct dict_t *dict_build_from_str_static_size_kasiski (struct dict_t *dict, char *str, int sz_str, int sz_token)
+{
     char *pStr1, *pStr2;
     int check;
     int dupe;
 
     // check string validity
-    if (!dict || !str || (szStr <= 0) || !szToken)
+    if (!dict || !str || (sz_str <= 0) || !sz_token)
         return NULL;
 
     // we construct dictionary
     pStr1 = str;
-    while (pStr1 + szToken < str + szStr) {
+    while (pStr1 + sz_token < str + sz_str) {
         // check if token appear more than once
         dupe = 0;
         pStr2 = str;
-        while (pStr2 < str + szStr) {
-            check = memcmp(pStr1, pStr2, szToken);
+        while (pStr2 < str + sz_str) {
+            check = memcmp(pStr1, pStr2, sz_token);
             if (check == 0) {
                 dupe++;
                 if (dupe > 1)
@@ -270,7 +291,7 @@ struct dict_t* dict_build_from_str_static_size_kasiski (struct dict_t *dict, cha
         // if it appear more than once
         // then we are interested in it
         if (dupe > 1)
-            dict_insert_word(dict, pStr1, szToken);
+            dict_insert_word(dict, pStr1, sz_token);
         pStr1++;
     }
 
@@ -278,30 +299,34 @@ struct dict_t* dict_build_from_str_static_size_kasiski (struct dict_t *dict, cha
 }
 
 // build a dictionnary from a sequence of characters
-struct dict_t* dict_build_from_str_kasiski (struct dict_t *dict, char *str, int szStr, int szTokenMax) {
-    int szToken;
+struct dict_t *dict_build_from_str_kasiski (struct dict_t *dict, char *str, int sz_str, int sz_token_max) 
+{
+    int sz_token;
 
     // check string validity
-    if (!dict || !str || (szStr <= 0) || !szTokenMax)
+    if (!dict || !str || (sz_str <= 0) || !sz_token_max)
         return NULL;
 
-    for (szToken = 1; szToken <= szTokenMax; szToken++) {
-        dict_build_from_str_static_size_kasiski (dict, str, szStr, szToken);
+    for (sz_token = 1; sz_token <= sz_token_max; sz_token++) {
+        dict_build_from_str_static_size_kasiski (dict, str, sz_str, sz_token);
     }
 
     return dict;
 }
 
-int compare_ulong (const void *a, const void *b) {
+int compare_ulong (const void *a, const void *b)
+{
     return *(unsigned long *)a - *(unsigned long *)b;
 }
 
-int compare_int (const void *a, const void *b) {
+int compare_int (const void *a, const void *b)
+{
     return *(int *)a - *(int *)b;
 }
 
 // compute distance between equal words
-struct dict_elt_t *dict_distance_stub (struct dict_elt_t *node) {
+struct dict_node_t *_dist_distance (struct dict_node_t *node)
+{
     int i;
 
     // check pointer
@@ -321,67 +346,73 @@ struct dict_elt_t *dict_distance_stub (struct dict_elt_t *node) {
                 node->offsets[i] = abs (node->offsets[i] - node->base);
         }
     }
-    dict_distance_stub (node->left);
-    dict_distance_stub (node->right);
+    _dist_distance (node->left);
+    _dist_distance (node->right);
 
     return node;
 }
 
 // get distance between 2 same word in a file
-struct dict_t *dict_distance (struct dict_t *dict) {
+struct dict_t *dict_distance (struct dict_t *dict)
+{
     if (!dict)
         return NULL;
 
-    dict_distance_stub (dict->root);
+    _dist_distance (dict->root);
 
     return dict;
 }
 
 // count number of nodes (stub)
-int dict_nodes_count_stub (struct dict_elt_t *node, int total) {
+int _dict_nodes_count (struct dict_node_t *node, int total)
+{
     if (!node)
         return total;
     else {
         total++;
-        total = dict_nodes_count_stub(node->left, total);
-        total = dict_nodes_count_stub(node->right, total);
+        total = _dict_nodes_count(node->left, total);
+        total = _dict_nodes_count(node->right, total);
     }
 
     return total;
 }
 
 // count number of nodes
-int dict_nodes_count (struct dict_t *dict) {
+int dict_nodes_count (struct dict_t *dict)
+{
     if (!dict)
         return -1;
 
-    return dict_nodes_count_stub (dict->root, 0);
+    return _dict_nodes_count (dict->root, 0);
 }
 
 // count number of offsets (stub)
-int dict_offsets_count_stub (struct dict_elt_t *node, int total) {
+int _dict_offsets_count (struct dict_node_t *node, int total)
+{
     if (!node)
         return total;
     else {
         // printf("[%p] node->count: %lu - word: %s\n", node, node->count, node->str);
         total += node->count;
-        total = dict_offsets_count_stub(node->left, total);
-        total = dict_offsets_count_stub(node->right, total);
+        total = _dict_offsets_count(node->left, total);
+        total = _dict_offsets_count(node->right, total);
     }
 
     return total;
 }
 
 // count number of offsets
-int dict_offsets_count (struct dict_t *dict) {
+int dict_offsets_count (struct dict_t *dict)
+{
     if (!dict)
         return -1;
 
-    return dict_offsets_count_stub (dict->root, 0);
+    return _dict_offsets_count (dict->root, 0);
 }
 
 // get word with highest occurence (stub)
-struct dict_elt_t *dict_search_highest_occurrences_stub (struct dict_elt_t *node, struct dict_elt_t **accu) {
+struct dict_node_t *_dict_search_highest_occurrences (struct dict_node_t *node, struct dict_node_t **accu)
+{
     int check;
 
     // if invalid accu pointer given
@@ -405,7 +436,7 @@ struct dict_elt_t *dict_search_highest_occurrences_stub (struct dict_elt_t *node
         // then we update the actual accu according to alphabetical order
         else if (node->right->count == (*accu)->count) {
             // get order
-            check = memcmp(node->right->str, (*accu)->str, (*accu)->szStr);
+            check = memcmp(node->right->str, (*accu)->str, (*accu)->sz_str);
 
             // if right accu is before actual accu
             // then we update actual accu
@@ -414,7 +445,7 @@ struct dict_elt_t *dict_search_highest_occurrences_stub (struct dict_elt_t *node
         }
 
         // we go right
-        return dict_search_highest_occurrences_stub(node->right, accu);
+        return _dict_search_highest_occurrences(node->right, accu);
     }
 
     // left side
@@ -427,7 +458,7 @@ struct dict_elt_t *dict_search_highest_occurrences_stub (struct dict_elt_t *node
         // then we update the actual accu according to alphabetical order
         else if (node->left->count == (*accu)->count) {
             // get order
-            check = memcmp(node->left->str, (*accu)->str, (*accu)->szStr);
+            check = memcmp(node->left->str, (*accu)->str, (*accu)->sz_str);
 
             // if left accu is before actual accu
             // then we update actual accu
@@ -436,41 +467,42 @@ struct dict_elt_t *dict_search_highest_occurrences_stub (struct dict_elt_t *node
         }
 
         // we go left
-        return dict_search_highest_occurrences_stub(node->left, accu);
+        return _dict_search_highest_occurrences(node->left, accu);
     }
 
     return *accu;
 }
 
 // get word with highest occurence (wrapper)
-struct dict_elt_t *dict_search_highest_occurrences (struct dict_t *dict) {
-    struct dict_elt_t *node;
+struct dict_node_t *dict_search_highest_occurrences (struct dict_t *dict)
+{
+    struct dict_node_t *node;
 
     if (!dict)
         return NULL;
 
-    dict_search_highest_occurrences_stub (dict->root, &node);
+    _dict_search_highest_occurrences (dict->root, &node);
 
     return node;
 }
 
 // show dictionnary (stub)
-void dict_show_stub (struct dict_elt_t *node) 
+void _dict_show (struct dict_node_t *node) 
 {
-    int idxStr;
+    int idx_str;
 
     // check ptr
     if (!node)
         return;
 
     if (node->str) {
-        for (idxStr = 0; idxStr < node->szStr; idxStr++)
-            putchar(node->str[idxStr]);
+        for (idx_str = 0; idx_str < node->sz_str; idx_str++)
+            putchar(node->str[idx_str]);
         putchar('\n');
     }
 
-    dict_show_stub (node->right);
-    dict_show_stub (node->left);
+    _dict_show (node->right);
+    _dict_show (node->left);
 }
 
 // show dictionnary
@@ -479,26 +511,28 @@ void dict_show (struct dict_t *dict)
     if (!dict)
         return;
 
-    dict_distance(dict);
-    dict_show_stub(dict->root);
+    dict_distance (dict);
+    _dict_show (dict->root);
 }
 
 // compare count
-int dict_compare_count (void *dict1, void *dict2)
+int dict_compare_count (void *data1, void *data2)
 {
-    struct dict_elt_t *pDict1, *pDict2;
+    struct dict_node_t *dict1, *dict2;
     int check;
 
-    if (!dict1 || !dict2)
+    if (!data1 || !data2)
         return -1;
 
-    pDict1 = dict1;
-    pDict2 = dict2;
+    dict1 = data1;
+    dict2 = data2;
 
-    if (pDict1->count == pDict2->count)
-        check = dict_compare_str (dict1, dict2);
+    if (dict1->count == dict2->count)
+        // check = dict_compare_str (data1, data2);
+        check = strcmp (data1, data2);
     else
-        check = pDict1->count - pDict2->count;
+        check = dict1->count - dict2->count;
 
     return check;
 }
+

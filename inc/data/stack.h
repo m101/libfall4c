@@ -26,31 +26,21 @@ extern "C"
 // stack
 struct stack_t {
     // elements of the stack
-    struct stack_element_t *elements;
+    struct stack_node_t *elements;
     // stack pointer
-    struct stack_element_t *top;
+    struct stack_node_t *top;
     // base pointer
-    struct stack_element_t *base;
+    struct stack_node_t *base;
     // number of elements in the stack
-    size_t szStack;
-};
-
-// stack element
-struct stack_element_t {
-    // data stored
-    char *data;
-    // size of data
-    size_t size;
-    // next and previous element
-    struct stack_element_t *next, *prev;
+    size_t sz_stack;
 };
 
 // push data on the stack
-struct stack_t* stack_push (struct stack_t **p, void *data);
+struct stack_t *stack_push (struct stack_t **p, void *data);
 // get last data added to the stack
-void* stack_pop (struct stack_t **p);
+void *stack_pop (struct stack_t **p);
 // allocate a new stack
-struct stack_t* stack_new (void);
+struct stack_t *stack_new (void);
 // destroy a stack
 void stack_destroy (struct stack_t **stack);
 

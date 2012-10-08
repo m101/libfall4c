@@ -26,7 +26,7 @@ extern "C"
 #include "tree_common.h"
 
 // associative array element
-struct aarray_elt_t {
+struct hashtable_node {
     char *key;
     void *value;
 };
@@ -36,10 +36,12 @@ struct hashtable_t {
     struct tree_t *array;
 };
 
+struct hashtable_t *hashtable_new (void);
+void hashtable_destroy (struct hashtable_t **htable);
 // set a value
-struct hashtable_t* set_value (struct hashtable_t **array, char *key, void *value);
+struct hashtable_t* hashtable_set_value (struct hashtable_t **htable, char *key, void *value);
 // get a value
-void *get_value (struct hashtable_t *array, char *key);
+void *hashtable_get_value (struct hashtable_t *htable, char *key);
 
 #ifdef __cplusplus
 }

@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 #include <ctype.h>
 
@@ -39,16 +40,20 @@ long l_round (double value)
 *   @param   string      Chaine à convertir
 *   @return              Renvoi l'adresse de la chaine convertie
 */
-char* stringtoupper (char *string)
+char *str_toupper (char *string)
 {
-    char *ptr = string;
+    char *str = strdup(string);
+    char *ptr = str;
 
-    while (*string) {
-        *string = toupper(*string);
-        string++;
+    if (!str)
+        return NULL;
+
+    while (*ptr) {
+        *ptr = toupper(*ptr);
+        ptr++;
     }
 
-    return ptr;
+    return str;
 }
 
 /*! @brief               Convertit une chaine en minuscule
@@ -56,15 +61,19 @@ char* stringtoupper (char *string)
 *   @param   string      Chaine à convertir
 *   @return              Renvoi l'adresse de la chaine convertie
 */
-char* stringtolower (char *string)
+char *str_tolower (char *string)
 {
-    char *ptr = string;
+    char *str = strdup(string);
+    char *ptr = str;
 
-    while (*string) {
-        *string = tolower(*string);
-        string++;
+    if (!str)
+        return NULL;
+
+    while (*ptr) {
+        *ptr = tolower(*ptr);
+        ptr++;
     }
 
-    return ptr;
+    return str;
 }
 

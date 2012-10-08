@@ -1,11 +1,15 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 2.8.9)
 project (libfall4c)
 
 set (CMAKE_BUILD_TYPE Debug)
 
+ENABLE_TESTING()
+SET (CMAKE_CXX_FLAGS        "-g -O0 -Wall -W -Wshadow -Wunused-variable -Wunused-parameter -Wunused-function -Wunused -Wno-system-headers -Wno-deprecated -Woverloaded-virtual -Wwrite-strings -fprofile-arcs -ftest-coverage")
+SET (CMAKE_C_FLAGS          "-g -O0 -Wall -W -fprofile-arcs -ftest-coverage")
+
 # The version number.
-set (fall4c_VERSION_MAJOR 1)
-set (fall4c_VERSION_MINOR 0)
+set (FALL4C_VERSION_MAJOR 1)
+set (FALL4C_VERSION_MINOR 0)
 
 # configure a header file to pass some of the CMake settings
 # to the source code
@@ -22,22 +26,23 @@ include_directories("${PROJECT_SOURCE_DIR}/inc")
 # add the executable
 add_library(
     fall4c
+    SHARED
+    src/escape.c
     src/file.c
+    src/filemap.c
     src/string_ext.c
     src/file_browse.c
     src/data/dictionnary.c
     src/data/list.c
     src/data/queue.c
     src/data/stack.c
-    # src/data/dictionnary_example.c
     # src/data/tree_avl.c
-    # src/data/tree_common.c
-    # src/data/tree_binary_mod.c
-    # src/data/tree_redblack.c
-    # src/data/tree_binary.c
-    # src/data/tree_sparse.c
+    src/data/tree_redblack.c
+    src/data/tree_common.c
+    src/data/tree_binary.c
+    src/data/tree_sparse.c
     # src/reed_solomon.c
-    # src/collision.c
+    src/collision.c
     # src/pathfinding.c
     src/data/array_manipulation.c
     src/data/array_associative.c
@@ -58,6 +63,33 @@ add_library(
     src/util/debug.c
     src/ctype_extended.c
     )
+target_link_libraries (fall4c
+    unac
+    m
+    gcov
+    )
+
+# executable testing dictionnary
+add_executable (dictionnary_example
+    src/data/dictionnary_example.c
+    )
+target_link_libraries (dictionnary_example
+    fall4c
+    gcov
+    )
+# test: coverage
+add_test(NAME dictionnary_example COMMAND dictionnary_example)
+
+# executable testing dictionnary
+add_executable (binstr_to_bin
+    tests/binstr_to_bin.c
+    )
+target_link_libraries (binstr_to_bin
+    fall4c
+    gcov
+    )
+# test: coverage
+add_test(NAME binstr_to_bin COMMAND binstr_to_bin)
 
 install (TARGETS fall4c DESTINATION lib)
 file (

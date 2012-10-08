@@ -48,11 +48,11 @@ char *fgetl (FILE *stream)
     char *line;
     size_t idx_line = 0;
 
-    line = malloc(sizeof(*line) * length);
+    line = calloc(length, sizeof(*line));
     if (!line)
         return NULL;
 
-    while (line[idx_line] != '\n') {
+    while (line[idx_line] != '\n' && !feof(stream)) {
         if (idx_line >= length) {
             length = length * 2;
             line = realloc(line, length * sizeof(*line));
@@ -74,6 +74,9 @@ char *fgetl (FILE *stream)
 long fgotol (FILE *stream, long idx_line)
 {
     int c;
+
+    if (idx_line < 0)
+        return -1;
 
     fseek(stream, 0, SEEK_SET);
 
@@ -129,4 +132,72 @@ int file_count_line (char *filename)
 
     return count_line;
 }
+
+/*! @brief Read a line from file
+ *  @param  fd       File descriptor where to read from
+ *  @param  buffer   Pointer of buffer where to store data
+ *  @param  bufsize  Pointer of buffer size
+ *  @ret Pointer to buffer
+ */
+//char *file_fgetl ( char **buffer, size_t *bufsize, int fd)
+char *file_fgetl ( char **buffer, size_t *bufsize, FILE *stream) {
+    char *buf, *realbuf;
+    int character;
+    //  FILE *stream;
+
+    // If pointer passed is invalid
+    // Then we do nothing
+    if (!buffer || !bufsize ) {
+        fprintf(stderr, "fgetl: Failed fetching data\n");
+        return NULL;
+    }
+
+    // If pointer is valid but no buffer allocated
+    // Then we allocate it correctly
+    if ( !*buffer || !*bufsize ) {
+        *bufsize = 1024;
+        *buffer = calloc( *bufsize, sizeof(char) );
+    }
+
+    // We open a stream corresponding to the file descriptor passed
+    // stream = fdopen(fd, "r");
+    if (!stream) {
+        fprintf(stderr, "fgetl: Invalid stream\n");
+        return NULL;
+    }
+
+    realbuf = *buffer;
+    buf = realbuf;
+
+    // We check for data availability
+    /*
+       if (data_read_time_out (fd, 2, 0) == -1)
+       {
+       fprintf(stderr, "file_fgetl: Read timeout\n");
+       return NULL;
+       }
+       */
+
+    // We read data until we reach a linefeed or the end of file
+    while ( (character = fgetc(stream)) != '\n' && character != EOF ) {     
+        if (  (size_t) (buf - realbuf) >= *bufsize ) {
+            *bufsize *= 2;
+            realbuf = realloc (realbuf, *bufsize);
+            buf = realbuf + (buf - (char *)*buffer);
+            *buffer = realbuf;
+        }
+        *buf = character;
+        buf++;
+        printf("file_fgetl: c : %d | %x\n", character, character);
+    }
+    printf("file_fgetl: c : %d | %x\n", character, character);
+    *buf = '\0';
+
+    if (strlen(realbuf) == 0)
+        return NULL;
+
+    return *buffer;
+}
+
+
 

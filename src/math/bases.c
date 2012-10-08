@@ -7,7 +7,8 @@
 #include "math/bases.h"
 
 // concat bits
-long bincat (long *binaire, long i) {
+long bincat (long *binaire, long i)
+{
     double nombreBinaire = 0;
     long j = 0;
 
@@ -18,7 +19,8 @@ long bincat (long *binaire, long i) {
 }
 
 // Converti le binaire en decimal
-long bin2dec(long *bit, long nombreDeBit) {
+long bin2dec(long *bit, long nombreDeBit)
+{
     long valeurDecimale = 0;
     long i = 0, j = 0;
 
@@ -31,7 +33,8 @@ long bin2dec(long *bit, long nombreDeBit) {
 }
 
 // Convertit le decimal en binaire
-long dec2bin(long decimal) {
+long dec2bin (long decimal)
+{
     long modulo = 0;
     long binaire = 0;
     short int i = 0;
@@ -51,7 +54,8 @@ long dec2bin(long decimal) {
 }
 
 // 
-char* num2binstr (unsigned long n) {
+char *num2binstr (unsigned long n)
+{
     unsigned short int bit;
     int idxBuf;
     char *buf, *str;
@@ -104,10 +108,11 @@ unsigned long hex2dec (char *hex, int hexlen) {
     return dec;
 }
 
-long* bin2bits (long bin, long *bits) {
+long *bin2bits (long bin, long *bits) {
     size_t i = 0;
     size_t length = sizeof(bin) * 8;
     char *buffer = malloc (sizeof(*buffer) * length);
+
     bits = realloc (bits, sizeof(*bits) * length);
 
     if ((buffer != NULL) && (bits != NULL)) {

@@ -18,7 +18,7 @@
 #ifndef _PATHFINDING_H
 #define _PATHFINDING_H
 
-#include "list.h"
+#include "data/list.h"
 #include "math/geometry_space.h"
 
 struct path_node

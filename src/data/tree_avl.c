@@ -20,117 +20,111 @@
 
 #include "data/tree_avl.h"
 
-void avl_tree_balance (struct tree_t *root)
+void avl_tree_balance (struct tree_t *bst)
 {
+    int result;
     struct tree_t *balanced;
+    struct tree_node_t *root;
     
     // pointer check
+    if (!bst)
+        return;
+    root = bst->root;
     if (!root)
         return;
 
-    balanced = root;
-
-    if (balanced != NULL)
-    {
-        if (balanced->root)
-        {
-            if (root->comparator(balanced->root->next->data) > root->comparator(sorted->root->prev->data))
-                avl_tree_rotate_right (balanced);
-            else
-                avl_tree_rotate_left (balanced);
-        }
-    }
+    result = bst->comparator(root->next->data, sorted->root->prev->data);
+    if (result)
+        tree_rotate_right (balanced);
+    else
+        tree_rotate_left (balanced);
 }
 
-struct tree_t* avl_tree_rotate_left (struct tree_t *A)
+struct tree_t *_tree_rotate_left (struct tree_node_t **node)
 {
-    struct tree_t *B = NULL;
+    struct tree_node_t *node1, *node2;
     int a = 0, b = 0;
 
-    if ( A != NULL )
-    {
-        // Rotate left
-        // B = A->right branch
-        B = A->right;
-        // A->left branch = A->right->left branch
-        A->right = B->left;
-        // A->right->left branch = A branch
-        B->left = A;
-        // Balance
-        a = A->balance;
-        b = B->balance;
-        A->balance = a - max ("%ld%ld", b, 0) - 1;
-        B->balance = min ("%ld%ld%ld", a - 2, a + b - 2, b - 1);
+    if (!node || !*node) {
+        fprintf(stderr, "error: _tree_rotate_left(): Tree branch is empty\n");
+        return NULL;
     }
-    else
-        fprintf(stderr, "Error: Tree branch is empty\n");
+
+    // Rotate left
+    node1 = (*node)->right;
+    (*node)->right = (*node)->right->left;
+    (*node)->right->left = *node;
+    *node = node1;
+    // Balance
+    a = bst->balance;
+    b = B->balance;
+    bst->balance = a - max ("%ld%ld", b, 0) - 1;
+    B->balance = min ("%ld%ld%ld", a - 2, a + b - 2, b - 1);
 
     return B;
 }
 
-struct tree_t* avl_tree_rotate_right (struct tree_t *A)
+struct tree_t *_tree_rotate_right (struct tree_node_t **node)
 {
-    struct tree_t *B = NULL;
+    struct tree_node_t *node1, *node2;
     int a = 0, b = 0;
 
-    if ( B != NULL )
-    {
-        // Rotate right
-        // B = A->left branch
-        B = A->left;
-        // A->left branch = B->left->right branch
-        A->left = B->right;
-        // B->left->right branch = A branch
-        B->right = A;
-        // Balance
-        a = A->balance;
-        b = B->balance;
-        A->balance = a - min ("%ld%ld", b, 0) + 1;
-        B->balance = max ("%ld%ld%ld", a + 2, a + b + 2, b + 1);
+    if (!node || !*node) {
+        fprintf(stderr, "error: _tree_rotate_left(): Tree branch is empty\n");
+        return NULL;
     }
-    else
-        fprintf(stderr, "Error: Tree branch is empty\n");
+
+    // Rotate left
+    node1 = (*node)->right;
+    (*node)->right = (*node)->right->left;
+    (*node)->right->left = *node;
+    *node = node1;
+    // Balance
+    a = bst->balance;
+    b = B->balance;
+    bst->balance = a - max ("%ld%ld", b, 0) - 1;
+    B->balance = min ("%ld%ld%ld", a - 2, a + b - 2, b - 1);
 
     return B;
 }
 
-struct tree_t* avl_tree_rotate_left_double (struct tree_t *A)
+struct tree_t *tree_rotate_left_double (struct tree_t *A)
 {
     if ( A != NULL )
-        A->right = avl_tree_rotate_right (A->right);
+        A->right = tree_rotate_right (A->right);
     else
         fprintf(stderr, "Error: Tree branch is empty\n");
 
-    return avl_tree_rotate_left (A);
+    return tree_rotate_left (A);
 }
 
-struct tree_t* avl_tree_equilibrate(struct tree_t* A)
+struct tree_t *avl_tree_equilibrate(struct tree_t *A)
 {
     if (A->balance == 2)
     {
         if (A->right->balance >= 0)
-            return avl_tree_rotate_left(A);
+            return tree_rotate_left(A);
         else
         {
-            A->right = avl_tree_rotate_right(A->right);
-            return avl_tree_rotate_left(A);
+            A->right = tree_rotate_right(A->right);
+            return tree_rotate_left(A);
         }
     }
     else if (A->balance == -2)
     {
         if (A->left->balance <= 0)
-            return avl_tree_rotate_right(A);
+            return tree_rotate_right(A);
         else
         {
-            A->left = avl_tree_rotate_left(A->left);
-            return avl_tree_rotate_right(A);
+            A->left = tree_rotate_left(A->left);
+            return tree_rotate_right(A);
         }
     }
     else
         return A;
 }
 
-struct tree_t* avl_tree_add (struct tree_t* root, struct tree_t* Node, int h, int (*f)(void *) )
+struct tree_t *avl_tree_add (struct tree_t *root, struct tree_t *Node, int h, int (*f)(void *) )
 {
     int x = f(root), y = f(Node);
 

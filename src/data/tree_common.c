@@ -18,19 +18,76 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <assert.h>
+
 #include "data/tree_common.h"
+
+// Create a tree node
+struct tree_node_t* _tree_node_new (void);
+
+int _tree_default_comparator (void *data1, void *data2)
+{
+    return 0;
+}
+
+int _tree_default_destroy_data (void **data)
+{
+    return 0;
+}
+
+int _tree_default_get_data_size (void *data)
+{
+    return 0;
+}
+
+struct tree_t *_tree_init_callbacks (struct tree_t *tree)
+{
+    tree_set_callback (tree, TREE_CALLBACK_COMPARATOR, _tree_default_comparator);
+    tree_set_callback (tree, TREE_CALLBACK_DESTROY_DATA, _tree_default_destroy_data);
+    tree_set_callback (tree, TREE_CALLBACK_GET_DATA_SIZE, _tree_default_get_data_size);
+
+    return 0;
+}
 
 /*  @brief  Create new tree
 */
-struct tree_t* tree_new (int (*comparator)(void *, void *), size_t (*get_data_size)(void *))
+struct tree_t* tree_new (void)
 {
     struct tree_t *tree_table;
 
     tree_table = calloc (1, sizeof(*tree_table));
     assert (tree_table != NULL);
     tree_table->root = calloc (1, sizeof(*(tree_table->root)));
-    tree_table->comparator = comparator;
-    tree_table->get_data_size = get_data_size;
+    _tree_init_callbacks (tree_table);
+}
+
+struct tree_t *tree_set_callback (struct tree_t *tree, int id_callback, void (*callback)())
+{
+    if (!tree)
+        return NULL;
+
+    switch (id_callback) {
+        case TREE_CALLBACK_COMPARATOR:
+            tree->callbacks[TREE_CALLBACK_COMPARATOR] = callback;
+            tree->comparator = callback;
+            break;
+
+        case TREE_CALLBACK_DESTROY_DATA:
+            tree->callbacks[TREE_CALLBACK_DESTROY_DATA] = callback;
+            tree->destroy_data = callback;
+            break;
+
+        case TREE_CALLBACK_GET_DATA_SIZE:
+            tree->callbacks[TREE_CALLBACK_GET_DATA_SIZE] = callback;
+            tree->get_data_size = callback;
+            break;
+
+        default:
+            fprintf(stderr, "error: callback was not defined\n");
+            break;
+    }
+
+    return tree;
 }
 
 /*!  @brief Add new callback using an id
@@ -46,30 +103,32 @@ struct tree_t* tree_add_callback_from_name (char *name, void (*callback)(void *,
 {
 }
 
-/*!  @brief  Destroy tree
-*/
-void tree_free (struct tree_t *root)
+// recursively traverse nodes to free them
+struct tree_t *_tree_free (struct tree_node_t *node)
 {
-    if (root) {
-        tree_free_stub (root->root);
-        free (root);
-    }
+    if (!node)
+        return NULL;
+
+    _tree_free (node->left);
+    _tree_free (node->right);
+    free (node);
 }
 
-// recursively traverse nodes to free them
-void tree_free_stub (struct tree_node_t *node)
+/*!  @brief  Destroy tree
+*/
+struct tree_t *tree_free (struct tree_t *tree)
 {
-    if (node) {
-        tree_free_stub (node->left);
-        tree_free_stub (node->right);
-        free (node);
-    }
+    if (!tree)
+        return NULL;
+
+    _tree_free (tree->root);
+    free (tree);
 }
 
 /*! @brief Create a tree node
  *
  */
-struct tree_node_t* tree_node_new (void)
+struct tree_node_t* _tree_node_new (void)
 {
     struct tree_node_t *node;
 
@@ -77,3 +136,8 @@ struct tree_node_t* tree_node_new (void)
 
     return node;
 }
+
+int tree_rotate (struct tree_t *bst, struct tree_node_t *node)
+{
+}
+

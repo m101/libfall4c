@@ -5,18 +5,23 @@
 
 #include "data/array_manipulation.h"
 
-long* num2array (long number, long *array, size_t *i)
+int num_count (int num)
+{
+    return 0;
+}
+
+long *num2array (long number, long *array, size_t *i)
 {
     long i_temp = 0, j = 0, temp1 = 0;
     double temp2 = number;
-    *i = numCount(number);
+
+    *i = num_count(number);
     i_temp = *i;
     printf("i_temp initial : %ld et *i : %d\n\n", i_temp, *i);
+
     array = malloc(sizeof(*array) * i_temp);
-    if (array == NULL)
-    {
+    if (!array)
         exit(EXIT_FAILURE);
-    }
 
     for (j = 0; j < *i; j++)
     {
