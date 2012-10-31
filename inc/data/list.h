@@ -57,7 +57,7 @@ struct list_simple {
     // remove data from existing list
     int list_remove_data (struct list_simple *list, void *data);
     // get data at specified node position
-    void *list_get_data_at_pos (struct list_simple **list, size_t pos);
+    void *list_get_data_at_pos (struct list_simple *list, size_t pos);
     // show all elements of the list
     void list_show_all (struct list_simple *list);
     struct list_simple *list_has_data (struct list_simple *list, void *data, int (*compare)(void *data1, void* data2));

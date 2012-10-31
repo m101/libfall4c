@@ -339,30 +339,36 @@ int _list_remove_node_at_pos (struct list_simple **list, size_t pos)
 }
 
 // get data at specified node position
-void* list_get_data_at_pos (struct list_simple **list, size_t pos)
+void* list_get_data_at_pos (struct list_simple *list, size_t pos)
 {
-    struct list_node *node;
-    size_t i;
+    struct list_node *iter;
+    size_t idx_iter;
+    void *data;
 
     // check list and node validity
-    if (!list)
+    if (!list) {
+        fprintf (stderr, "error: list_get_data_at_pos(): list not initialized\n");
         return NULL;
-    if (!*list)
-        *list = list_new();
+    }
 
     // we check if position specified is in range
-    if (pos > (*list)->size)
+    if (pos >= list->size) {
+        fprintf (stderr, "error: list_get_data_at_pos(): Bad pos\n");
         return NULL;
+    }
 
     // we traverse the linked list
-    for (node = (*list)->head, i = 0; node != NULL; node = node->next, i++) {
+    idx_iter = 0;
+    list_for_each (list, iter, data) {
         // if we found the specified node
         // then we return the data
-        if (i == pos)
-            return node->data;
+        if (idx_iter == pos)
+            return data;
+        ++idx_iter;
     }
 
     // failed to get the data at the specified location
+    fprintf (stderr, "error: list_get_data_at_pos(): Data was not found\n");
     return NULL;
 }
 
