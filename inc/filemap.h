@@ -24,11 +24,11 @@
 struct filemap_t
 {
     char *filename;
-	size_t szFilename;
+	size_t sz_filename;
     FILE *fp;
     // filemap
     unsigned char *map;
-    size_t szMap;
+    size_t sz_map;
 };
 
 // create filemap

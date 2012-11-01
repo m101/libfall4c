@@ -27,7 +27,7 @@ static struct filemap_list_t *filemaps = NULL;
 // create filemap
 struct filemap_t* filemap_create (FILE *fp) {
     struct filemap_t *filemap;
-    size_t foffset, szMap;
+    size_t foffset, sz_map;
 
     // check filemap existence
     filemap = filemap_exist (fp);
@@ -43,12 +43,12 @@ struct filemap_t* filemap_create (FILE *fp) {
     foffset = ftell(fp);
     fseek (fp, 0, SEEK_END);
     // file size
-    szMap = ftell(fp);
-    filemap->map = malloc (szMap);
-    filemap->szMap = szMap;
+    sz_map = ftell(fp);
+    filemap->map = malloc (sz_map);
+    filemap->sz_map = sz_map;
     // map file
     fseek (fp, 0, SEEK_SET);
-    fread (filemap->map, filemap->szMap, 1, fp);
+    fread (filemap->map, filemap->sz_map, 1, fp);
     // restore original file offset
     fseek (fp, foffset, SEEK_SET);
 
