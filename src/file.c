@@ -46,22 +46,29 @@ char *fgetl (FILE *stream)
 {
     unsigned int length = 128;
     char *line;
-    size_t idx_line = 0;
+    int byte;
+    size_t idx_line;
 
     line = calloc(length, sizeof(*line));
     if (!line)
         return NULL;
 
-    while (line[idx_line] != '\n' && !feof(stream)) {
+    byte = 0;
+    idx_line = 0;
+    while (!feof(stream)) {
+        byte = fgetc(stream);
+
+        if (byte == '\r' || byte == '\n' || byte == EOF)
+            break;
+
         if (idx_line >= length) {
             length = length * 2;
             line = realloc(line, length * sizeof(*line));
         }
 
-        line[idx_line] = fgetc(stream);
+        line[idx_line] = byte;
         idx_line++;
     }
-    line[--idx_line] = '\0';
 
     return line;
 }

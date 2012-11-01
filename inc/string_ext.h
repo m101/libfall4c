@@ -56,6 +56,7 @@ extern "C"
                 	register const char *delim _AND
                 	char **lasts);
     */
+    int binstr_count_digits (char *binstr, int len_binstr);
     uint8_t *binstr_to_bin (char *binstr, int len_binstr);
 #ifdef __cplusplus
 }

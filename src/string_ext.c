@@ -214,7 +214,7 @@ char *normalize_str (char *str, int szStr)
     // ISO646-US === ASCII
     rc = unac_string("ISO646-US", str, szStr, &normalized, &sznormalized);
     if (rc < 0)
-        fatal("normalize_str():Error: Failed removing accents\n");
+        fatal("error: normalize_str(): Failed removing accents\n");
     // printf("normalize_str():normalized: '%s'\n", normalized);
 
     // toupper string
@@ -294,23 +294,47 @@ char *str_reverse (char *str)
   return str;
 }
 
+int binstr_count_digits (char *binstr, int len_binstr)
+{
+    int idx_binstr, max_bin;
+
+    if (!binstr || len_binstr <= 0) {
+        fprintf(stderr, "error: binstr_count_digits(): bad parameter(s)\n");
+        return -1;
+    }
+
+    for (idx_binstr = 0, max_bin = 0; idx_binstr < len_binstr; idx_binstr++) {
+        if (isxdigit(binstr[idx_binstr]))
+            max_bin++;
+    }
+
+    return max_bin;
+}
+
 /* @desc    convert binstr to binary
  */
 uint8_t *binstr_to_bin (char *binstr, int len_binstr)
 {
-    int idx_binstr, idx_bin;
+    int idx_binstr, idx_digit, idx_bin, max_bin;
     uint8_t hexnum, hexdigit;
     uint8_t *bin;
 
-    bin = calloc(len_binstr, sizeof(*bin));
+    max_bin = binstr_count_digits (binstr, len_binstr);
+    if (max_bin <= 0) {
+        fprintf(stderr, "error: binstr_to_bin(): count is 0\n");
+        return NULL;
+    }
+
+    bin = calloc(max_bin, sizeof(*bin));
     if (!bin) {
-        fprintf(stderr, "error: failed to allocated memory for binary\n");
+        fprintf(stderr, "error: binstr_to_bin(): failed to allocated memory for binary\n");
         return NULL;
     }
 
     /* convert binstr to bin and ignore unwanted chars */
     hexnum = 0;
     hexdigit = 0;
+    idx_digit = 0;
     for (idx_binstr = 0, idx_bin = 0; idx_binstr < len_binstr; idx_binstr++) {
         if (!isxdigit(binstr[idx_binstr]))
             continue;
@@ -323,10 +347,10 @@ uint8_t *binstr_to_bin (char *binstr, int len_binstr)
         hexnum |= hexdigit;
 
         // store hex byte
-        if (((idx_binstr+1) % 2) == 0 || (idx_binstr == len_binstr - 1)) {
+        if (((idx_digit+1) % 2) == 0 || (idx_digit == max_bin - 1)) {
             // if last hex digit and odd number of digits
             // then shift left
-            if ((idx_binstr % 2) == 0 && (idx_binstr == len_binstr - 1))
+            if ((idx_bin % 2) == 0 && (idx_bin == max_bin - 1))
                 hexnum <<= 4;
             bin[idx_bin] = hexnum;
             ++idx_bin;
@@ -334,6 +358,8 @@ uint8_t *binstr_to_bin (char *binstr, int len_binstr)
         }
 
         hexnum <<= 4;
+
+        idx_digit++;
     }
 
     return bin;
