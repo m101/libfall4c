@@ -63,6 +63,14 @@ int list_destroy (struct list_simple **list, void (*destroy_data)(void *))
     return 0;
 }
 
+// only free list structure not all nodes
+int list_free (struct list_simple *list)
+{
+    free (list);
+}
+
+/*  TODO: Take into account circular lists as well
+ */
 int list_count_nodes(struct list_simple *list)
 {
     struct list_node *node;
@@ -76,15 +84,34 @@ int list_count_nodes(struct list_simple *list)
     return count;
 }
 
-int list_merge(struct list_simple *list1, struct list_simple *list2)
+// merge two list in one, no dupes checks, return new list
+struct list_simple *list_merge (struct list_simple **list1, struct list_simple **list2)
 {
-    if (!list1 || !list2)
+    if (!list1 || !list2 || !*list2)
         return -1;
 
-    _list_append_node(&list1, list_begin(list2));
-    list1->size = list_count_nodes(list1);
+#ifdef DEBUG
+    printf ("list_merge(): number of nodes in list1: %d (before)\n", list_count_nodes(*list1));
+    if (*list1) {
+        printf ("   list1->head = %p\n", (*list1)->head);
+        printf ("   list1->tail = %p\n", (*list1)->tail);
+    }
+    printf ("   list2->head = %p\n", (*list2)->head);
+    printf ("   list2->tail = %p\n", (*list2)->tail);
+    printf ("list_merge(): number of nodes in list2: %d (before)\n", list_count_nodes(*list2));
+#endif
 
-    return 0;
+    _list_append_node(list1, list_begin(*list2));
+    (*list1)->size = list_count_nodes(*list1);
+
+    free (*list2);
+    *list2 = NULL;
+
+#ifdef DEBUG
+    printf ("list_merge: number of nodes in list: %d (after)\n", list_count_nodes(*list1));
+#endif
+
+    return *list1;
 }
 
 int list_check(struct list_simple *list)
@@ -137,20 +164,54 @@ int _list_node_destroy (struct list_node **node, void (*destroy_data)(void *))
 // append a node to existing list
 int _list_append_node (struct list_simple **list, struct list_node *node)
 {
+    struct list_simple *w_list;
+    struct list_node *iter;
+    void *data;
+
     if (!list || !node)
         return -1;
     if (!*list)
         *list = list_new();
 
-    if (!(*list)->head)
-        (*list)->head = node;
-    if ((*list)->tail)
-        (*list)->tail->next = node;
+    if ((*list)->tail == node)
+        return NULL;
 
+    /*
+    printf ("=====\n");
+    printf ("node         : %p\n", node);
+    printf ("(*list)->head: %p\n", (*list)->head);
+    printf ("(*list)->tail: %p\n", (*list)->tail);
+    //*/
+
+    if (!(*list)->head) {
+        (*list)->head = node;
+        // printf ("   new head: %p\n", (*list)->head);
+    }
+
+    if ((*list)->tail) {
+        (*list)->tail->next = node;
+        (*list)->size++;
+        /*
+        printf ("   (*list)->tail->prev: %p\n", (*list)->tail->prev);
+        printf ("   (*list)->tail->next: %p\n", (*list)->tail->next);
+        //*/
+    }
     node->prev = (*list)->tail;
-    node->next = NULL;
-    (*list)->tail = node;
-    (*list)->size++;
+
+    w_list = list_new();
+    w_list->size = 1;
+    w_list->head = node;
+    w_list->tail = node;
+    list_for_each (w_list, iter, data) {
+        (*list)->tail = iter;
+    }
+    /*
+    printf ("   new tail: %p\n", (*list)->tail);
+    printf ("(*list)->size: %d\n", (*list)->size);
+    printf ("=====\n");
+    //*/
+    
+    free (w_list);
 
     return 0;
 }
@@ -162,8 +223,9 @@ int list_append_data (struct list_simple **list, void *data)
     struct list_node *node;
 
     node = _list_node_new (data);
+    if (!node)
+        return -1;
     rc = _list_append_node (list, node);
-
     if (rc)
         _list_node_destroy (&node, NULL);
 
@@ -173,6 +235,9 @@ int list_append_data (struct list_simple **list, void *data)
 // prepend a node to existing list
 int _list_prepend_node (struct list_simple **list, struct list_node *node)
 {
+    struct list_node *iter;
+    void *data;
+
     if (!list || !node)
         return -1;
     if (!*list)
@@ -180,12 +245,16 @@ int _list_prepend_node (struct list_simple **list, struct list_node *node)
 
     if ((*list)->head)
         (*list)->head->prev = node;
-    if (!(*list)->tail)
-        (*list)->tail = node;
 
-    node->prev = NULL;
     node->next = (*list)->head;
     (*list)->head = node;
+
+    if (!(*list)->tail) {
+        list_for_each (*list, iter, data) {
+            (*list)->tail = iter;
+        }
+    }
+
     (*list)->size++;
 
     return 0;
@@ -353,7 +422,7 @@ void* list_get_data_at_pos (struct list_simple *list, size_t pos)
 
     // we check if position specified is in range
     if (pos >= list->size) {
-        fprintf (stderr, "error: list_get_data_at_pos(): Bad pos\n");
+        fprintf (stderr, "error: list_get_data_at_pos(): Bad pos %lu\n", pos);
         return NULL;
     }
 

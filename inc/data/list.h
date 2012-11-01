@@ -41,7 +41,8 @@ struct list_simple {
 #define list_begin(list) (list ? (list)->head : NULL)
 #define list_end(list) (list ? (list)->tail : NULL)
 
-#define list_for_each(list, it, _data)   if (list) for (it = list->head, _data = it->data; it != NULL; it = it->next, _data = (it ? it->data : NULL))
+#define list_for_each(list, it, _data)   if (list) for (it = (list)->head, _data = it->data; it != NULL; it = it->next, _data = (it ? it->data : NULL))
+#define list_for_each_backward(list, it, _data)   if (list) for (it = (list)->tail, _data = it->data; it != NULL; it = it->prev, _data = (it ? it->data : NULL))
 
     // default constructor for list
     struct list_simple *list_new (void);
@@ -61,6 +62,9 @@ struct list_simple {
     // show all elements of the list
     void list_show_all (struct list_simple *list);
     struct list_simple *list_has_data (struct list_simple *list, void *data, int (*compare)(void *data1, void* data2));
+
+    // merge two list in one, no dupes checks, return new list
+    struct list_simple *list_merge (struct list_simple **list1, struct list_simple **list2);
 
 #ifdef __cplusplus
 }
