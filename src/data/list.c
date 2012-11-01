@@ -81,6 +81,8 @@ int list_count_nodes(struct list_simple *list)
 
     for (node = list_begin(list), count = 0; node != NULL; node = node->next, count++);
 
+    printf ("list->size (count): %d\n", list->size);
+
     return count;
 }
 
@@ -190,7 +192,6 @@ int _list_append_node (struct list_simple **list, struct list_node *node)
 
     if ((*list)->tail) {
         (*list)->tail->next = node;
-        (*list)->size++;
         /*
         printf ("   (*list)->tail->prev: %p\n", (*list)->tail->prev);
         printf ("   (*list)->tail->next: %p\n", (*list)->tail->next);
@@ -202,9 +203,12 @@ int _list_append_node (struct list_simple **list, struct list_node *node)
     w_list->size = 1;
     w_list->head = node;
     w_list->tail = node;
+
+    // freaking slow, should optimize out this!
     list_for_each (w_list, iter, data) {
         (*list)->tail = iter;
     }
+    (*list)->size++;
     /*
     printf ("   new tail: %p\n", (*list)->tail);
     printf ("(*list)->size: %d\n", (*list)->size);
