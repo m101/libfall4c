@@ -28,7 +28,7 @@ int main (int argc, char *argv[])
     }
 
     printf("original: '%s'\n", binstr);
-    dump(bin, len_binstr, 16);
+    dump(bin, binstr_count_digits(binstr, len_binstr), 16);
 
     free(binstr);
 
