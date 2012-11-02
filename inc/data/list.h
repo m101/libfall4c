@@ -1,11 +1,3 @@
-#ifndef _LIST_H_
-#define _LIST_H_
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
 /*
     This file is part of fall4c.
 
@@ -22,6 +14,14 @@ extern "C"
     You should have received a copy of the GNU Lesser General Public License
     along with fall4c.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#ifndef _LIST_H_
+#define _LIST_H_
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
 #include <stdio.h>
 
