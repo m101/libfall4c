@@ -64,7 +64,7 @@ struct list_simple {
     struct list_simple *list_has_data (struct list_simple *list, void *data, int (*compare)(void *data1, void* data2));
 
     // merge two list in one, no dupes checks, return new list
-    struct list_simple *list_merge (struct list_simple **list1, struct list_simple **list2);
+    struct list_simple *list_append_list (struct list_simple **list1, struct list_simple **list2);
 
 #ifdef __cplusplus
 }

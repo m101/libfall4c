@@ -81,13 +81,13 @@ int list_count_nodes(struct list_simple *list)
 
     for (node = list_begin(list), count = 0; node != NULL; node = node->next, count++);
 
-    printf ("list->size (count): %d\n", list->size);
-
     return count;
 }
 
-// merge two list in one, no dupes checks, return new list
-struct list_simple *list_merge (struct list_simple **list1, struct list_simple **list2)
+// merge two list in one, no dupes checks
+// destroy list2
+// return new list
+struct list_simple *list_append_list (struct list_simple **list1, struct list_simple **list2)
 {
     if (!list1 || !list2 || !*list2)
         return -1;
@@ -103,8 +103,9 @@ struct list_simple *list_merge (struct list_simple **list1, struct list_simple *
     printf ("list_merge(): number of nodes in list2: %d (before)\n", list_count_nodes(*list2));
 #endif
 
-    _list_append_node(list1, list_begin(*list2));
-    (*list1)->size = list_count_nodes(*list1);
+    (*list1)->tail->next = (*list2)->head;
+    (*list2)->head->prev = (*list1)->tail;
+    (*list1)->size = (*list1)->size + (*list2)->size;
 
     free (*list2);
     *list2 = NULL;
@@ -166,9 +167,8 @@ int _list_node_destroy (struct list_node **node, void (*destroy_data)(void *))
 // append a node to existing list
 int _list_append_node (struct list_simple **list, struct list_node *node)
 {
-    struct list_simple *w_list;
-    struct list_node *iter;
     void *data;
+    struct list_node *prev, *next;
 
     if (!list || !node)
         return -1;
@@ -197,25 +197,38 @@ int _list_append_node (struct list_simple **list, struct list_node *node)
         printf ("   (*list)->tail->next: %p\n", (*list)->tail->next);
         //*/
     }
+    
+    // append_node, we only want 1 node (and avoid circular references)
+    prev = node->prev;
+    next = node->next;
+    if (node->prev)
+        node->prev->next = node->next;
+    if (node->next)
+        node->next->prev = node->prev;
+
     node->prev = (*list)->tail;
+    node->next = NULL;
 
-    w_list = list_new();
-    w_list->size = 1;
-    w_list->head = node;
-    w_list->tail = node;
-
-    // freaking slow, should optimize out this!
-    list_for_each (w_list, iter, data) {
-        (*list)->tail = iter;
-    }
+    // we don't care about correct tail
+    // we care about speed ... so developers just need to correctly use the lib
+    // this is append_node and not append list!
+    (*list)->tail = node;
     (*list)->size++;
     /*
     printf ("   new tail: %p\n", (*list)->tail);
     printf ("(*list)->size: %d\n", (*list)->size);
     printf ("=====\n");
     //*/
-    
-    free (w_list);
+
+    // corruption check
+    if (prev && node != prev->next) {
+        fprintf (stderr, "error: Link corruption detected\n");
+        exit (1);
+    }
+    if (next && node != next->prev) {
+        fprintf (stderr, "error: Link corruption detected\n");
+        exit (1);
+    }
 
     return 0;
 }
