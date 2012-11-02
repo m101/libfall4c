@@ -176,7 +176,7 @@ int _list_append_node (struct list_simple **list, struct list_node *node)
         *list = list_new();
 
     if ((*list)->tail == node)
-        return NULL;
+        return -1;
 
     /*
     printf ("=====\n");
@@ -239,11 +239,14 @@ int list_append_data (struct list_simple **list, void *data)
     int rc;
     struct list_node *node;
 
+    if (!list || !data)
+        return -1;
+
     node = _list_node_new (data);
     if (!node)
         return -1;
     rc = _list_append_node (list, node);
-    if (rc)
+    if (rc < 0)
         _list_node_destroy (&node, NULL);
 
     return rc;
