@@ -177,6 +177,20 @@ int _list_append_node (struct list_simple **list, struct list_node *node)
 
     if ((*list)->tail == node)
         return -1;
+    
+    // append_node, we only want 1 node (and avoid circular references)
+    prev = node->prev;
+    next = node->next;
+
+    // corruption check
+    if (prev && node != prev->next) {
+        fprintf (stderr, "error: Link corruption detected\n");
+        exit (1);
+    }
+    if (next && node != next->prev) {
+        fprintf (stderr, "error: Link corruption detected\n");
+        exit (1);
+    }
 
     /*
     printf ("=====\n");
@@ -197,10 +211,7 @@ int _list_append_node (struct list_simple **list, struct list_node *node)
         printf ("   (*list)->tail->next: %p\n", (*list)->tail->next);
         //*/
     }
-    
-    // append_node, we only want 1 node (and avoid circular references)
-    prev = node->prev;
-    next = node->next;
+
     if (node->prev)
         node->prev->next = node->next;
     if (node->next)
@@ -219,16 +230,6 @@ int _list_append_node (struct list_simple **list, struct list_node *node)
     printf ("(*list)->size: %d\n", (*list)->size);
     printf ("=====\n");
     //*/
-
-    // corruption check
-    if (prev && node != prev->next) {
-        fprintf (stderr, "error: Link corruption detected\n");
-        exit (1);
-    }
-    if (next && node != next->prev) {
-        fprintf (stderr, "error: Link corruption detected\n");
-        exit (1);
-    }
 
     return 0;
 }
@@ -255,26 +256,54 @@ int list_append_data (struct list_simple **list, void *data)
 // prepend a node to existing list
 int _list_prepend_node (struct list_simple **list, struct list_node *node)
 {
-    struct list_node *iter;
     void *data;
+    struct list_node *prev, *next;
 
     if (!list || !node)
         return -1;
     if (!*list)
         *list = list_new();
 
+    if ((*list)->head == node)
+        return -1;
+    
+    // prepend node, we only want 1 node (and avoid circular references)
+    prev = node->prev;
+    next = node->next;
+
+    // corruption check
+    if (prev && node != prev->next) {
+        fprintf (stderr, "error: Link corruption detected\n");
+        exit (1);
+    }
+    if (next && node != next->prev) {
+        fprintf (stderr, "error: Link corruption detected\n");
+        exit (1);
+    }
+
+    /*
+    printf ("=====\n");
+    printf ("node         : %p\n", node);
+    printf ("(*list)->head: %p\n", (*list)->head);
+    printf ("(*list)->tail: %p\n", (*list)->tail);
+    //*/
+
+    if (!(*list)->head)
+        (*list)->head = node;
+
     if ((*list)->head)
         (*list)->head->prev = node;
 
+    if (node->prev)
+        node->prev->next = node->next;
+    if (node->next)
+        node->next->prev = node->prev;
+
+    node->prev = NULL;
     node->next = (*list)->head;
+
+    // this is prepend_node and not append list!
     (*list)->head = node;
-
-    if (!(*list)->tail) {
-        list_for_each (*list, iter, data) {
-            (*list)->tail = iter;
-        }
-    }
-
     (*list)->size++;
 
     return 0;
