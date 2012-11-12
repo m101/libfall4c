@@ -95,6 +95,7 @@ int _dict_insert_word (struct dict_node_t **node, char *word, int sz_word)
     if (!*node) {
         // we allocate a node
         *node = calloc(1, sizeof(**node));
+        (*node)->hash = fnv_hash (word, sz_word);
         (*node)->str = word;
         // we initialize all variable to ensure correct behavior
         (*node)->sz_str = sz_word;
@@ -102,7 +103,7 @@ int _dict_insert_word (struct dict_node_t **node, char *word, int sz_word)
         (*node)->right = NULL;
         (*node)->left = NULL;
         //
-        (*node)->szOffsets = POINTERS_NB;
+        (*node)->sz_offsets = POINTERS_NB;
         (*node)->offsets = calloc(POINTERS_NB, sizeof(*(*node)->offsets));
         (*node)->offsets[0] = (unsigned long) word;
 
@@ -130,9 +131,9 @@ int _dict_insert_word (struct dict_node_t **node, char *word, int sz_word)
         (*node)->count++;
 
         // keep track of pointers
-        if ((*node)->count >= (*node)->szOffsets) {
-            (*node)->szOffsets *= 2;
-            (*node)->offsets = realloc ( (*node)->offsets, (*node)->szOffsets * sizeof(*(*node)->offsets));
+        if ((*node)->count >= (*node)->sz_offsets) {
+            (*node)->sz_offsets *= 2;
+            (*node)->offsets = realloc ( (*node)->offsets, (*node)->sz_offsets * sizeof(*(*node)->offsets));
         }
         (*node)->offsets[(*node)->count-1] = (unsigned long) word;
 
@@ -149,29 +150,33 @@ int dict_insert_word (struct dict_t *dict, char *word, int sz_word)
 }
 
 // search a word in the dictionnary
-struct dict_node_t *_dict_search_word (struct dict_node_t *node, char *word, int sz_word)
+struct dict_node_t *_dict_search_word (struct dict_node_t *node, uint64_t hash)
 {
     int check;
 
     if (!node)
         return NULL;
 
-    check = memcmp (node->str, word, sz_word);
+    check = node->hash - hash;
     // found
     if (check == 0)
         return node;
     else if (check < 0)
-        return _dict_search_word (node->left, word, sz_word);
+        return _dict_search_word (node->left, hash);
     else
-        return _dict_search_word (node->right, word, sz_word);
+        return _dict_search_word (node->right, hash);
 }
 
 // search a word in the dictionnary
 struct dict_node_t *dict_search_word (struct dict_t *dict, char *word, int sz_word)
 {
-    if (!dict || !word || sz_word < 0)
+    uint64_t hash;
+
+    if (!dict || !word || sz_word <= 0)
         return NULL;
-    return _dict_search_word(dict->root, word, sz_word);
+    hash = fnv_hash (word, sz_word);
+
+    return _dict_search_word (dict->root, hash);
 }
 
 // search if there is at least one dupe
@@ -231,17 +236,17 @@ struct dict_t *dict_destroy_dupes (struct dict_t *dict)
 // usefull to study frequency analysis
 struct dict_t *dict_build_from_str_static_size (struct dict_t *dict, char *str, int sz_str, int sz_token)
 {
-    char *pStr;
+    char *p_str;
 
     // check string validity
     if (!dict || !str || (sz_str <= 0) || sz_token <= 0)
         return NULL;
 
     // we construct dictionary
-    pStr = str;
-    while (pStr + sz_token < str + sz_str) {
-        dict_insert_word(dict, pStr, sz_token);
-        pStr++;
+    p_str = str;
+    while (p_str + sz_token < str + sz_str) {
+        dict_insert_word(dict, p_str, sz_token);
+        p_str++;
     }
 
     return dict;
@@ -266,7 +271,7 @@ struct dict_t *dict_build_from_str (struct dict_t *dict, char *str, int sz_str, 
 // usefull to study frequency analysis
 struct dict_t *dict_build_from_str_static_size_kasiski (struct dict_t *dict, char *str, int sz_str, int sz_token)
 {
-    char *pStr1, *pStr2;
+    char *p_str1, *p_str2;
     int check;
     int dupe;
 
@@ -275,26 +280,26 @@ struct dict_t *dict_build_from_str_static_size_kasiski (struct dict_t *dict, cha
         return NULL;
 
     // we construct dictionary
-    pStr1 = str;
-    while (pStr1 + sz_token < str + sz_str) {
+    p_str1 = str;
+    while (p_str1 + sz_token < str + sz_str) {
         // check if token appear more than once
         dupe = 0;
-        pStr2 = str;
-        while (pStr2 < str + sz_str) {
-            check = memcmp(pStr1, pStr2, sz_token);
+        p_str2 = str;
+        while (p_str2 < str + sz_str) {
+            check = memcmp(p_str1, p_str2, sz_token);
             if (check == 0) {
                 dupe++;
                 if (dupe > 1)
                     break;
             }
-            pStr2++;
+            p_str2++;
         }
 
         // if it appear more than once
         // then we are interested in it
         if (dupe > 1)
-            dict_insert_word(dict, pStr1, sz_token);
-        pStr1++;
+            dict_insert_word(dict, p_str1, sz_token);
+        p_str1++;
     }
 
     return dict;

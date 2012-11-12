@@ -42,15 +42,16 @@ struct dict_t {
 struct dict_node_t {
     int count;
     //
+    uint64_t hash;
     char *str;
     int sz_str;
     //
     unsigned long base;
     int *offsets;
-    int szOffsets;
+    int sz_offsets;
     //
     char *description;
-    int szDescription;
+    int sz_description;
 
     union {
         struct {
