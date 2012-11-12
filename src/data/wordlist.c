@@ -21,42 +21,42 @@
 #include <string.h>
 #include <math.h>
 
-#include "data/dictionnary.h"
+#include "data/wordlist.h"
 
 #define BUFFER_SIZE 1000
 
 // internal functions
 // insert a word (stub)
-int _dict_insert_word (struct dict_node_t **node, char *word, int sz_word);
+int _wlist_insert_word (struct wlist_node_t **node, char *word, int sz_word);
 // get word with highest occurence (stub)
-struct dict_node_t *_dict_search_highest_occurrences (struct dict_node_t *node, struct dict_node_t **accu);
+struct wlist_node_t *_wlist_search_highest_occurrences (struct wlist_node_t *node, struct wlist_node_t **accu);
 // count number of offsets (stub)
-int _dict_offsets_count (struct dict_node_t *node, int total);
+int _wlist_offsets_count (struct wlist_node_t *node, int total);
 
-struct dict_t *dict_load (char *filename)
+struct wlist_t *wlist_load (char *filename)
 {
     return NULL;
 }
 
-// default dict constructor
-struct dict_t *dict_new (struct dict_t **dict)
+// default wlist constructor
+struct wlist_t *wlist_new (struct wlist_t **wlist)
 {
-    struct dict_t *a_dic;
+    struct wlist_t *a_dic;
 
-    a_dic = calloc(1, sizeof(**dict));
-    if (dict)
-        *dict = a_dic;
+    a_dic = calloc(1, sizeof(**wlist));
+    if (wlist)
+        *wlist = a_dic;
     
     return a_dic;
 }
 
-// destroy dictionnary recursively (stub)
-void _dict_destroy (struct dict_node_t **node)
+// destroy wordlist recursively (stub)
+void _wlist_destroy (struct wlist_node_t **node)
 {
     if (node != NULL && *node != NULL) {
         // traverse nodes
-        _dict_destroy ( &((*node)->left) );
-        _dict_destroy ( &((*node)->right) );
+        _wlist_destroy ( &((*node)->left) );
+        _wlist_destroy ( &((*node)->right) );
         // free fields
         free ((*node)->description);
         free ((*node)->offsets);
@@ -65,21 +65,21 @@ void _dict_destroy (struct dict_node_t **node)
     }
 }
 
-// destroy dictionnary
-void dict_destroy (struct dict_t **dict)
+// destroy wordlist
+void wlist_destroy (struct wlist_t **wlist)
 {
-    if (!dict || !*dict)
+    if (!wlist || !*wlist)
         return;
 
-    free((*dict)->str);
-    _dict_destroy(&((*dict)->root));
-    _dict_destroy(&((*dict)->nodes));
-    free(*dict);
-    *dict = NULL;
+    free((*wlist)->str);
+    _wlist_destroy(&((*wlist)->root));
+    _wlist_destroy(&((*wlist)->nodes));
+    free(*wlist);
+    *wlist = NULL;
 }
 
 // insert a word (stub)
-int _dict_insert_word (struct dict_node_t **node, char *word, int sz_word)
+int _wlist_insert_word (struct wlist_node_t **node, char *word, int sz_word)
 {
     int check;
 
@@ -118,9 +118,9 @@ int _dict_insert_word (struct dict_node_t **node, char *word, int sz_word)
 
     // insertion
     if ( check > 0 )
-        return _dict_insert_word ( &((*node)->right), word, sz_word);
+        return _wlist_insert_word ( &((*node)->right), word, sz_word);
     else if ( check < 0 )
-        return _dict_insert_word ( &((*node)->left), word, sz_word);
+        return _wlist_insert_word ( &((*node)->left), word, sz_word);
     else {
         // if same ptr or size not equal
         // then do not count it
@@ -144,13 +144,13 @@ int _dict_insert_word (struct dict_node_t **node, char *word, int sz_word)
 }
 
 // insert a word
-int dict_insert_word (struct dict_t *dict, char *word, int sz_word)
+int wlist_insert_word (struct wlist_t *wlist, char *word, int sz_word)
 {
-    return _dict_insert_word(&(dict->root), word, sz_word);
+    return _wlist_insert_word(&(wlist->root), word, sz_word);
 }
 
-// search a word in the dictionnary
-struct dict_node_t *_dict_search_word (struct dict_node_t *node, uint64_t hash)
+// search a word in the wordlist
+struct wlist_node_t *_wlist_search_word (struct wlist_node_t *node, uint64_t hash)
 {
     int check;
 
@@ -162,57 +162,57 @@ struct dict_node_t *_dict_search_word (struct dict_node_t *node, uint64_t hash)
     if (check == 0)
         return node;
     else if (check < 0)
-        return _dict_search_word (node->left, hash);
+        return _wlist_search_word (node->left, hash);
     else
-        return _dict_search_word (node->right, hash);
+        return _wlist_search_word (node->right, hash);
 }
 
-// search a word in the dictionnary
-struct dict_node_t *dict_search_word (struct dict_t *dict, char *word, int sz_word)
+// search a word in the wordlist
+struct wlist_node_t *wlist_search_word (struct wlist_t *wlist, char *word, int sz_word)
 {
     uint64_t hash;
 
-    if (!dict || !word || sz_word <= 0)
+    if (!wlist || !word || sz_word <= 0)
         return NULL;
     hash = fnv_hash (word, sz_word);
 
-    return _dict_search_word (dict->root, hash);
+    return _wlist_search_word (wlist->root, hash);
 }
 
 // search if there is at least one dupe
-struct dict_node_t *dict_find_dupe (struct dict_node_t **node1, struct dict_node_t **dict, struct dict_node_t **dupes)
+struct wlist_node_t *wlist_find_dupe (struct wlist_node_t **node1, struct wlist_node_t **wlist, struct wlist_node_t **dupes)
 {
     int check;
-    struct dict_node_t *ret;
+    struct wlist_node_t *ret;
 
     //
-    if (node1 && dict && dupes) {
-        if (!*dict || !*node1)
+    if (node1 && wlist && dupes) {
+        if (!*wlist || !*node1)
             return NULL;
         // check
-        if ((*node1)->sz_str == (*dict)->sz_str) {
+        if ((*node1)->sz_str == (*wlist)->sz_str) {
             // small optimisation
-            check = *((*node1)->str) - *((*dict)->str);
+            check = *((*node1)->str) - *((*wlist)->str);
             // full check
             if (!check)
-                check = memcmp ((*node1)->str, (*dict)->str, (*node1)->sz_str);
+                check = memcmp ((*node1)->str, (*wlist)->str, (*node1)->sz_str);
             // found dupe
             if (!check) {
                 /*
                    if (!*dupes)
-                 *dupes = dict_new(dupes);
+                 *dupes = wlist_new(dupes);
                  (*dupes)->count++;
-                 (*dupes)->next = *dict;
-                 (*dupes) = *dict;
-                 return *dict;
+                 (*dupes)->next = *wlist;
+                 (*dupes) = *wlist;
+                 return *wlist;
                 //*/
             }
         }
 
-        ret = dict_find_dupe (&((*dict)->left), node1, dupes);
+        ret = wlist_find_dupe (&((*wlist)->left), node1, dupes);
         if (ret)
             return ret;
-        ret = dict_find_dupe (&((*dict)->right), node1, dupes);
+        ret = wlist_find_dupe (&((*wlist)->right), node1, dupes);
         if (ret)
             return ret;
     }
@@ -221,65 +221,65 @@ struct dict_node_t *dict_find_dupe (struct dict_node_t **node1, struct dict_node
 }
 
 // destroy dupes by agregation
-struct dict_t *_dict_destroy_dupes (struct dict_t **dict)
+struct wlist_t *_wlist_destroy_dupes (struct wlist_t **wlist)
 {
     return NULL;
 }
 
 // destroy dupes by agregation
-struct dict_t *dict_destroy_dupes (struct dict_t *dict)
+struct wlist_t *wlist_destroy_dupes (struct wlist_t *wlist)
 {
     return NULL;
 }
 
-// build a dictionnary from a sequence of characters
+// build a wordlist from a sequence of characters
 // usefull to study frequency analysis
-struct dict_t *dict_build_from_str_static_size (struct dict_t *dict, char *str, int sz_str, int sz_token)
+struct wlist_t *wlist_build_from_str_static_size (struct wlist_t *wlist, char *str, int sz_str, int sz_token)
 {
     char *p_str;
 
     // check string validity
-    if (!dict || !str || (sz_str <= 0) || sz_token <= 0)
+    if (!wlist || !str || (sz_str <= 0) || sz_token <= 0)
         return NULL;
 
-    // we construct dictionary
+    // we construct wordlist
     p_str = str;
     while (p_str + sz_token < str + sz_str) {
-        dict_insert_word(dict, p_str, sz_token);
+        wlist_insert_word(wlist, p_str, sz_token);
         p_str++;
     }
 
-    return dict;
+    return wlist;
 }
 
-// build a dictionnary from a sequence of characters
-struct dict_t *dict_build_from_str (struct dict_t *dict, char *str, int sz_str, int sz_token_max)
+// build a wordlist from a sequence of characters
+struct wlist_t *wlist_build_from_str (struct wlist_t *wlist, char *str, int sz_str, int sz_token_max)
 {
     int sz_token;
 
     // check string validity
-    if (!dict || !str || (sz_str <= 0) || !sz_token_max)
+    if (!wlist || !str || (sz_str <= 0) || !sz_token_max)
         return NULL;
 
     for (sz_token = 1; sz_token <= sz_token_max; sz_token++)
-        dict_build_from_str_static_size (dict, str, sz_str, sz_token);
+        wlist_build_from_str_static_size (wlist, str, sz_str, sz_token);
 
-    return dict;
+    return wlist;
 }
 
-// build a dictionnary from a sequence of characters
+// build a wordlist from a sequence of characters
 // usefull to study frequency analysis
-struct dict_t *dict_build_from_str_static_size_kasiski (struct dict_t *dict, char *str, int sz_str, int sz_token)
+struct wlist_t *wlist_build_from_str_static_size_kasiski (struct wlist_t *wlist, char *str, int sz_str, int sz_token)
 {
     char *p_str1, *p_str2;
     int check;
     int dupe;
 
     // check string validity
-    if (!dict || !str || (sz_str <= 0) || !sz_token)
+    if (!wlist || !str || (sz_str <= 0) || !sz_token)
         return NULL;
 
-    // we construct dictionary
+    // we construct wordlist
     p_str1 = str;
     while (p_str1 + sz_token < str + sz_str) {
         // check if token appear more than once
@@ -298,27 +298,27 @@ struct dict_t *dict_build_from_str_static_size_kasiski (struct dict_t *dict, cha
         // if it appear more than once
         // then we are interested in it
         if (dupe > 1)
-            dict_insert_word(dict, p_str1, sz_token);
+            wlist_insert_word(wlist, p_str1, sz_token);
         p_str1++;
     }
 
-    return dict;
+    return wlist;
 }
 
-// build a dictionnary from a sequence of characters
-struct dict_t *dict_build_from_str_kasiski (struct dict_t *dict, char *str, int sz_str, int sz_token_max) 
+// build a wordlist from a sequence of characters
+struct wlist_t *wlist_build_from_str_kasiski (struct wlist_t *wlist, char *str, int sz_str, int sz_token_max) 
 {
     int sz_token;
 
     // check string validity
-    if (!dict || !str || (sz_str <= 0) || !sz_token_max)
+    if (!wlist || !str || (sz_str <= 0) || !sz_token_max)
         return NULL;
 
     for (sz_token = 1; sz_token <= sz_token_max; sz_token++) {
-        dict_build_from_str_static_size_kasiski (dict, str, sz_str, sz_token);
+        wlist_build_from_str_static_size_kasiski (wlist, str, sz_str, sz_token);
     }
 
-    return dict;
+    return wlist;
 }
 
 int compare_ulong (const void *a, const void *b)
@@ -332,7 +332,7 @@ int compare_int (const void *a, const void *b)
 }
 
 // compute distance between equal words
-struct dict_node_t *_dist_distance (struct dict_node_t *node)
+struct wlist_node_t *_dist_distance (struct wlist_node_t *node)
 {
     int i;
 
@@ -360,65 +360,65 @@ struct dict_node_t *_dist_distance (struct dict_node_t *node)
 }
 
 // get distance between 2 same word in a file
-struct dict_t *dict_distance (struct dict_t *dict)
+struct wlist_t *wlist_distance (struct wlist_t *wlist)
 {
-    if (!dict)
+    if (!wlist)
         return NULL;
 
-    _dist_distance (dict->root);
+    _dist_distance (wlist->root);
 
-    return dict;
+    return wlist;
 }
 
 // count number of nodes (stub)
-int _dict_nodes_count (struct dict_node_t *node, int total)
+int _wlist_nodes_count (struct wlist_node_t *node, int total)
 {
     if (!node)
         return total;
     else {
         total++;
-        total = _dict_nodes_count(node->left, total);
-        total = _dict_nodes_count(node->right, total);
+        total = _wlist_nodes_count(node->left, total);
+        total = _wlist_nodes_count(node->right, total);
     }
 
     return total;
 }
 
 // count number of nodes
-int dict_nodes_count (struct dict_t *dict)
+int wlist_nodes_count (struct wlist_t *wlist)
 {
-    if (!dict)
+    if (!wlist)
         return -1;
 
-    return _dict_nodes_count (dict->root, 0);
+    return _wlist_nodes_count (wlist->root, 0);
 }
 
 // count number of offsets (stub)
-int _dict_offsets_count (struct dict_node_t *node, int total)
+int _wlist_offsets_count (struct wlist_node_t *node, int total)
 {
     if (!node)
         return total;
     else {
         // printf("[%p] node->count: %lu - word: %s\n", node, node->count, node->str);
         total += node->count;
-        total = _dict_offsets_count(node->left, total);
-        total = _dict_offsets_count(node->right, total);
+        total = _wlist_offsets_count(node->left, total);
+        total = _wlist_offsets_count(node->right, total);
     }
 
     return total;
 }
 
 // count number of offsets
-int dict_offsets_count (struct dict_t *dict)
+int wlist_offsets_count (struct wlist_t *wlist)
 {
-    if (!dict)
+    if (!wlist)
         return -1;
 
-    return _dict_offsets_count (dict->root, 0);
+    return _wlist_offsets_count (wlist->root, 0);
 }
 
 // get word with highest occurence (stub)
-struct dict_node_t *_dict_search_highest_occurrences (struct dict_node_t *node, struct dict_node_t **accu)
+struct wlist_node_t *_wlist_search_highest_occurrences (struct wlist_node_t *node, struct wlist_node_t **accu)
 {
     int check;
 
@@ -452,7 +452,7 @@ struct dict_node_t *_dict_search_highest_occurrences (struct dict_node_t *node, 
         }
 
         // we go right
-        return _dict_search_highest_occurrences(node->right, accu);
+        return _wlist_search_highest_occurrences(node->right, accu);
     }
 
     // left side
@@ -474,27 +474,27 @@ struct dict_node_t *_dict_search_highest_occurrences (struct dict_node_t *node, 
         }
 
         // we go left
-        return _dict_search_highest_occurrences(node->left, accu);
+        return _wlist_search_highest_occurrences(node->left, accu);
     }
 
     return *accu;
 }
 
 // get word with highest occurence (wrapper)
-struct dict_node_t *dict_search_highest_occurrences (struct dict_t *dict)
+struct wlist_node_t *wlist_search_highest_occurrences (struct wlist_t *wlist)
 {
-    struct dict_node_t *node;
+    struct wlist_node_t *node;
 
-    if (!dict)
+    if (!wlist)
         return NULL;
 
-    _dict_search_highest_occurrences (dict->root, &node);
+    _wlist_search_highest_occurrences (wlist->root, &node);
 
     return node;
 }
 
-// show dictionnary (stub)
-void _dict_show (struct dict_node_t *node) 
+// show wordlist (stub)
+void _wlist_show (struct wlist_node_t *node) 
 {
     int idx_str;
 
@@ -508,37 +508,37 @@ void _dict_show (struct dict_node_t *node)
         putchar('\n');
     }
 
-    _dict_show (node->right);
-    _dict_show (node->left);
+    _wlist_show (node->right);
+    _wlist_show (node->left);
 }
 
-// show dictionnary
-void dict_show (struct dict_t *dict) 
+// show wordlist
+void wlist_show (struct wlist_t *wlist) 
 {
-    if (!dict)
+    if (!wlist)
         return;
 
-    dict_distance (dict);
-    _dict_show (dict->root);
+    wlist_distance (wlist);
+    _wlist_show (wlist->root);
 }
 
 // compare count
-int dict_compare_count (void *data1, void *data2)
+int wlist_compare_count (void *data1, void *data2)
 {
-    struct dict_node_t *dict1, *dict2;
+    struct wlist_node_t *wlist1, *wlist2;
     int check;
 
     if (!data1 || !data2)
         return -1;
 
-    dict1 = data1;
-    dict2 = data2;
+    wlist1 = data1;
+    wlist2 = data2;
 
-    if (dict1->count == dict2->count)
-        // check = dict_compare_str (data1, data2);
+    if (wlist1->count == wlist2->count)
+        // check = wlist_compare_str (data1, data2);
         check = strcmp (data1, data2);
     else
-        check = dict1->count - dict2->count;
+        check = wlist1->count - wlist2->count;
 
     return check;
 }

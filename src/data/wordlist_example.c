@@ -18,20 +18,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "data/dictionnary.h"
+#include "data/wordlist.h"
 
-#define DICTIONNARY_NAME    "dictionnaire.txt"
+#define WORDLIST_NAME    "wordlist.txt"
 
 int main(int argc, char *argv[])
 {
-    struct dict_t *dict = NULL;
+    struct wlist_t *wlist = NULL;
 
-    dict = dict_load (DICTIONNARY_NAME);
-    if (!dict) {
-        fprintf(stderr, "error: Failed to load dictionnary '%s'\n", DICTIONNARY_NAME);
+    wlist = wlist_load (WORDLIST_NAME);
+    if (!wlist) {
+        fprintf(stderr, "error: Failed to load wordlist '%s'\n", WORDLIST_NAME);
     }
 
-    dict_show (dict);
+    wlist_show (wlist);
 
     return 0;
 }

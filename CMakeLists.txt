@@ -32,7 +32,7 @@ add_library(
     src/filemap.c
     src/string_ext.c
     src/file_browse.c
-    src/data/dictionnary.c
+    src/data/wordlist.c
     src/data/list.c
     src/data/queue.c
     src/data/stack.c
@@ -69,18 +69,18 @@ target_link_libraries (fall4c
     gcov
     )
 
-# executable testing dictionnary
-add_executable (dictionnary_example
-    src/data/dictionnary_example.c
+# executable testing wordlist
+add_executable (wordlist_example
+    src/data/wordlist_example.c
     )
-target_link_libraries (dictionnary_example
+target_link_libraries (wordlist_example
     fall4c
     gcov
     )
 # test: coverage
-add_test(NAME dictionnary_example COMMAND dictionnary_example)
+add_test(NAME wordlist_example COMMAND wordlist_example)
 
-# executable testing dictionnary
+# executable testing wordlist
 add_executable (binstr_to_bin
     tests/binstr_to_bin.c
     )
