@@ -46,7 +46,12 @@ extern "C"
     char** string_get_columns (char *str, int len, int nColumns);
     // normalize string to ascii (no accent, etc)
     char *normalize_str (char *str, int szStr);
+    
+    // hashing functions
+    // djb2 hashing algorithm
     unsigned long str_hash(unsigned char *str, int len);
+    // FNV-1a hashing algorithm
+    uint64_t fnv_hash (uint8_t *str, int len);
 
     void clean(char *chaine);
     void purger(void);

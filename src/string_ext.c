@@ -137,6 +137,22 @@ unsigned long str_hash(unsigned char *str, int len)/*{{{*/
     return hash;
 }/*}}}*/
 
+// alternative FNV hash has better avalanche characteritics
+uint64_t fnv_hash (uint8_t *str, int len)
+{
+    uint64_t hash;
+    int idx_str;
+
+    // offset basis
+    hash = 14695981039346656037;
+    for (idx_str = 0; idx_str < len; idx_str++) {
+        hash ^= str[idx_str];
+        hash *= 1099511628211;
+    }
+
+    return hash;
+}
+
 int string_word_delete (char *str, char *word)
 {
     char *p, *space;
