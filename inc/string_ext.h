@@ -57,7 +57,9 @@ extern "C"
                 	char **lasts);
     */
     int binstr_count_digits (char *binstr, int len_binstr);
-    uint8_t *binstr_to_bin (char *binstr, int len_binstr);
+    // uint8_t *binstr_to_bin (char *binstr, int len_binstr);
+    uint8_t *hexstr_to_bin (char *hexstr, int len_hexstr);
+    uint8_t *bin_to_hexstr (char *bin, int len_bin);
 #ifdef __cplusplus
 }
 #endif

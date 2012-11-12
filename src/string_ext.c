@@ -313,13 +313,13 @@ int binstr_count_digits (char *binstr, int len_binstr)
 
 /* @desc    convert binstr to binary
  */
-uint8_t *binstr_to_bin (char *binstr, int len_binstr)
+uint8_t *hexstr_to_bin (char *hexstr, int len_hexstr)
 {
-    int idx_binstr, idx_digit, idx_bin, max_bin;
+    int idx_hexstr, idx_digit, idx_bin, max_bin;
     uint8_t hexnum, hexdigit;
     uint8_t *bin;
 
-    max_bin = binstr_count_digits (binstr, len_binstr);
+    max_bin = binstr_count_digits (hexstr, len_hexstr);
     if (max_bin <= 0) {
         fprintf(stderr, "error: binstr_to_bin(): count is 0\n");
         return NULL;
@@ -331,16 +331,16 @@ uint8_t *binstr_to_bin (char *binstr, int len_binstr)
         return NULL;
     }
 
-    /* convert binstr to bin and ignore unwanted chars */
+    /* convert hexstr to bin and ignore unwanted chars */
     hexnum = 0;
     hexdigit = 0;
     idx_digit = 0;
-    for (idx_binstr = 0, idx_bin = 0; idx_binstr < len_binstr; idx_binstr++) {
-        if (!isxdigit(binstr[idx_binstr]))
+    for (idx_hexstr = 0, idx_bin = 0; idx_hexstr < len_hexstr; idx_hexstr++) {
+        if (!isxdigit(hexstr[idx_hexstr]))
             continue;
 
         // get decimal digit
-        hexdigit = toupper(binstr[idx_binstr]) - '0';
+        hexdigit = toupper(hexstr[idx_hexstr]) - '0';
         // get hex digit
         if (hexdigit >= 0xa)
             hexdigit -= 7;
@@ -363,5 +363,34 @@ uint8_t *binstr_to_bin (char *binstr, int len_binstr)
     }
 
     return bin;
+}
+
+uint8_t *bin_to_hexstr (char *bin, int len_bin)
+{
+    uint8_t hexdigit;
+    int idx_bin, idx_hexstr;
+    uint8_t *hexstr, *p_hexstr;
+
+    if (!bin || len_bin <= 0) {
+        fprintf (stderr, "error: bin_to_hexstr(): Bad parameters\n");
+        return NULL;
+    }
+
+    hexstr = calloc (2 * len_bin + 1, sizeof(*hexstr));
+    if (!hexstr) {
+        fprintf (stderr, "error: bin_to_hexstr(): Failed allocating hex string\n");
+        return NULL;
+    }
+
+    printf ("hexstr (before): '%s'\n", hexstr);
+    p_hexstr = hexstr;
+    for (idx_bin = 0; idx_bin < len_bin; idx_bin++) {
+        hexdigit = bin[idx_bin];
+        snprintf(p_hexstr, 3, "%02x", hexdigit & 0xff);
+        p_hexstr += 2;
+    }
+    printf ("hexstr (after) : '%s'\n", hexstr);
+
+    return hexstr;
 }
 

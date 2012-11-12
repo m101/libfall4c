@@ -44,7 +44,7 @@ int main (int argc, char *argv[])
 
     binstr = strdup(argv[1]);
     len_binstr = strlen(binstr);
-    bin = binstr_to_bin(binstr, len_binstr);
+    bin = hexstr_to_bin(binstr, len_binstr);
     if (!bin) {
         fprintf(stderr, "error: Failed to convert\n");
         exit(1);
