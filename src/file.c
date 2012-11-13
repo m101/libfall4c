@@ -70,6 +70,11 @@ char *fgetl (FILE *stream)
         idx_line++;
     }
 
+    if (feof(stream)) {
+        free (line);
+        return NULL;
+    }
+
     return line;
 }
 
