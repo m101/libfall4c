@@ -19,162 +19,254 @@
 #include <stdio.h>
 
 #include "data/tree_avl.h"
+#include "math/math_basic.h"
 
-void avl_tree_balance (struct tree_t *bst)
+struct tree_node_t *_tree_rotate_left (struct tree_node_t **node)
 {
-    int result;
-    struct tree_t *balanced;
-    struct tree_node_t *root;
-    
-    // pointer check
-    if (!bst)
-        return;
-    root = bst->root;
-    if (!root)
-        return;
-
-    result = bst->comparator(root->next->data, sorted->root->prev->data);
-    if (result)
-        tree_rotate_right (balanced);
-    else
-        tree_rotate_left (balanced);
-}
-
-struct tree_t *_tree_rotate_left (struct tree_node_t **node)
-{
-    struct tree_node_t *node1, *node2;
-    int a = 0, b = 0;
+    struct tree_node_t *new_root;
 
     if (!node || !*node) {
         fprintf(stderr, "error: _tree_rotate_left(): Tree branch is empty\n");
         return NULL;
     }
 
-    // Rotate left
-    node1 = (*node)->right;
-    (*node)->right = (*node)->right->left;
-    (*node)->right->left = *node;
-    *node = node1;
-    // Balance
-    a = bst->balance;
-    b = B->balance;
-    bst->balance = a - max ("%ld%ld", b, 0) - 1;
-    B->balance = min ("%ld%ld%ld", a - 2, a + b - 2, b - 1);
+    new_root = (*node)->right;
+    printf ("left new_root: %p\n", new_root);
 
-    return B;
+    // update depth
+    new_root->depth--;
+    (*node)->depth++;
+
+    // rotate left
+    (*node)->right = new_root->left;
+    new_root->left = *node;
+    *node = new_root;
+
+    return new_root;
 }
 
-struct tree_t *_tree_rotate_right (struct tree_node_t **node)
+struct tree_node_t *_tree_rotate_right (struct tree_node_t **node)
 {
-    struct tree_node_t *node1, *node2;
-    int a = 0, b = 0;
+    struct tree_node_t *new_root;
 
     if (!node || !*node) {
-        fprintf(stderr, "error: _tree_rotate_left(): Tree branch is empty\n");
+        fprintf(stderr, "error: _tree_rotate_right(): Tree branch is empty\n");
         return NULL;
     }
 
-    // Rotate left
-    node1 = (*node)->right;
-    (*node)->right = (*node)->right->left;
-    (*node)->right->left = *node;
-    *node = node1;
-    // Balance
-    a = bst->balance;
-    b = B->balance;
-    bst->balance = a - max ("%ld%ld", b, 0) - 1;
-    B->balance = min ("%ld%ld%ld", a - 2, a + b - 2, b - 1);
+    new_root = (*node)->left;
 
-    return B;
+    // update depth
+    new_root->depth--;
+    (*node)->depth++;
+
+    // rotate right
+    printf ("right new_root: %p\n", new_root);
+    (*node)->left = new_root->right;
+    new_root->right = *node;
+    *node = new_root;
+
+    return new_root;
 }
 
-struct tree_t *tree_rotate_left_double (struct tree_t *A)
+struct tree_node_t *_tree_rotate_left_double (struct tree_node_t **node)
 {
-    if ( A != NULL )
-        A->right = tree_rotate_right (A->right);
-    else
-        fprintf(stderr, "Error: Tree branch is empty\n");
+    if (!node || !*node) {
+        fprintf(stderr, "error: _tree_rotate_left_double(): tree branch is empty\n");
+        return NULL;
+    }
 
-    return tree_rotate_left (A);
+    (*node)->right = _tree_rotate_right (&((*node)->right));
+
+    return _tree_rotate_left (node);
 }
 
-struct tree_t *avl_tree_equilibrate(struct tree_t *A)
+struct tree_node_t *_tree_rotate_right_double (struct tree_node_t **node)
 {
-    if (A->balance == 2)
-    {
-        if (A->right->balance >= 0)
-            return tree_rotate_left(A);
+    if (!node || !*node) {
+        fprintf(stderr, "error: _tree_rotate_right_double(): tree branch is empty\n");
+        return NULL;
+    }
+
+    (*node)->right = _tree_rotate_left (&((*node)->left));
+
+    return _tree_rotate_right (node);
+}
+
+struct tree_node_t *_avl_tree_balance (struct tree_node_t **node)
+{
+    if ((*node)->balance < RIGHT_HEAVY) {
+        if ((*node)->right && ((*node)->right->balance > LEFT_HEAVY))
+            return _tree_rotate_left_double (node);
         else
-        {
-            A->right = tree_rotate_right(A->right);
-            return tree_rotate_left(A);
+            return _tree_rotate_left (node);
+    }
+    else if ((*node)->balance > LEFT_HEAVY) {
+        if ((*node)->left && ((*node)->left->balance < RIGHT_HEAVY))
+            return _tree_rotate_right_double (node);
+        else
+            return _tree_rotate_right (node);
+    }
+
+    return *node;
+}
+
+struct tree_node_t *_avl_add (struct tree_t *bst, struct tree_node_t **parent, struct tree_node_t **node, void *data, int depth)
+{
+    int check;
+
+    // pointers check
+    if (!bst || !node || !data) {
+        fprintf (stderr, "error: _avl_add(): Bad parameters\n");
+        return NULL;
+    }
+
+    // if we found a leaf
+    // then we insert data
+    if (!(*node)) {
+        int left_depth, right_depth;
+        struct tree_node_t *left, *right;
+
+        *node = calloc (1, sizeof(**node));
+        if (!*node) {
+            fprintf (stderr, "error: _avl_add(): Failed allocating new node\n");
+            return NULL;
+        }
+        (*node)->data = data;
+        (*node)->depth = depth;
+
+        printf ("child          : %p\n", *node);
+        printf ("   depth = %d\n\n", depth);
+
+        if (!parent) {
+            fprintf (stderr, "info : _avl_add(): Parent is NULL\n");
+            return *node;
+        }
+
+        // for lisibility
+        left = (*parent)->left;
+        right = (*parent)->right;
+        // compute balance
+        left_depth = (left ? left->depth : 0);
+        right_depth = (right ? right->depth : 0);
+        (*parent)->balance = left_depth - right_depth;
+        // update depth of parent
+        (*parent)->depth = max("%ld%ld", left_depth, right_depth) + 1;
+
+        // balance tree
+        _avl_tree_balance (parent);
+
+        return *node;
+    }
+
+    // we don't check equality since we don't want dupes
+    // if smaller
+    // then we go left
+    // check = bst->comparator((*node)->data, data);
+    check = -1;
+    printf ("check          : %d\n", check);
+    if (parent)
+        printf ("parent         : %p\n", *parent);
+    else
+        printf ("parent         : %p\n", parent);
+    printf ("(*node)->left  : %p\n", (*node)->left);
+    printf ("(*node)->right : %p\n", (*node)->right);
+    if (check < 0)
+        return _avl_add (bst, node, &((*node)->left), data, depth + 1);
+    // if bigger
+    // then we go right
+    else if (check > 0)
+        return _avl_add (bst, node, &((*node)->right), data, depth + 1);
+    else
+        (*node)->weight++;
+}
+
+struct tree_t *avl_add (struct tree_t **bst, void *data)
+{
+    struct tree_node_t *node;
+
+    if (!bst) {
+        fprintf (stderr, "error: avl_add(): Bad parameter\n");
+        return NULL;
+    }
+
+    if (!*bst) {
+        *bst = calloc (1, sizeof(*bst));
+        if (!*bst) {
+            fprintf (stderr, "error: avl_add(): Couldn't allocate bst\n");
+            return NULL;
         }
     }
-    else if (A->balance == -2)
-    {
-        if (A->left->balance <= 0)
-            return tree_rotate_right(A);
-        else
-        {
-            A->left = tree_rotate_left(A->left);
-            return tree_rotate_right(A);
+
+    node = _avl_add (*bst, NULL, &((*bst)->root), data, 0);
+
+    return (node ? *bst : NULL);
+}
+
+struct tree_node_t *_avl_del (struct tree_t *bst, struct tree_node_t **parent, struct tree_node_t **node, void *data, int depth)
+{
+}
+
+struct tree_t *avl_del (struct tree_t **bst, void *data)
+{
+    struct tree_node_t *node;
+
+    if (!bst) {
+        fprintf (stderr, "error: avl_add(): Bad parameter\n");
+        return NULL;
+    }
+
+    if (!*bst) {
+        *bst = calloc (1, sizeof(*bst));
+        if (!*bst) {
+            fprintf (stderr, "error: avl_add(): Couldn't allocate bst\n");
+            return NULL;
         }
     }
-    else
-        return A;
+
+    node = _avl_del (*bst, NULL, &((*bst)->root), data, 0);
+
+    return (node ? *bst : NULL);
 }
 
-struct tree_t *avl_tree_add (struct tree_t *root, struct tree_t *Node, int h, int (*f)(void *) )
+void _avl_show (struct tree_node_t *node)
 {
-    int x = f(root), y = f(Node);
+    static int recsop=0; /* no of recs printed */
 
-    if (root == NULL)
-    {
-        //creer un nœud root;
-        root = malloc(sizeof(struct tree_t));
-        root->left = NULL;
-        root->right = NULL;
-        root->elt = x;
-        root->balance = 0;
-        root->h = 1;
-        return root;
-    }
-    else if ( x == y )
-    {
-        root->h = 0;
-        return root;
-    }
-    else if ( x > y )
-    {
-        root->right = avl_tree_add(Node, root->right, h, f);
-    }
-    else
-    {
-        root->left = avl_tree_add(Node, root->left, h, f);
-        h = -h;
+    if (!node) {
+        fprintf (stderr, "error: _avl_show(): Bad parameter\n");
+        return;
     }
 
-    if (h == 0)
-    {
-        root->h = 0;
-        return root;
-    }
+    /* print left subtree */
+    if(node->left)
+        _avl_show (node->left);
+    /* print data for current node */
+    if (node->left)
+        printf ("%p ", node->left->data);
     else
-    {
-        root->balance = root->balance + h;
-        root = avl_tree_equilibrate(root);
-    }
-    if (root->balance == 0)
-    {
-        root->h = 0;
-        return root;
-    }
+        printf("null    ");
+    printf ("%p ", node->data);
+    printf ("%d ", node->depth);
+    recsop++;
+    if (node->right)
+        printf ("%p ", node->right->data);
     else
-    {
-        root->h = 1;
-        return root;
-    }
-
-    return root;
+        printf("null    ");
+    if (recsop % 4 == 0)
+        printf("\n");
+    else
+        printf("    ");
+    /* print right subtree */
+    if(node->right)
+        _avl_show(node->right);
 }
 
+void avl_show (struct tree_t *bst)
+{
+    if (!bst) {
+        fprintf (stderr, "error: avl_show(): bst is null\n");
+        return;
+    }
+    _avl_show (bst->root);
+}

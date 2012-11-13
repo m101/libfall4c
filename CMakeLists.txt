@@ -36,7 +36,7 @@ add_library(
     src/data/list.c
     src/data/queue.c
     src/data/stack.c
-    # src/data/tree_avl.c
+    src/data/tree_avl.c
     src/data/tree_redblack.c
     src/data/tree_common.c
     src/data/tree_binary.c
@@ -90,6 +90,17 @@ target_link_libraries (binstr_to_bin
     )
 # test: coverage
 add_test(NAME binstr_to_bin COMMAND binstr_to_bin)
+
+# executable testing wordlist
+add_executable (avl_tree_test
+    tests/avl_tree.c
+    )
+target_link_libraries (avl_tree_test
+    fall4c
+    gcov
+    )
+# test: coverage
+add_test(NAME avl_tree_test COMMAND avl_tree_test)
 
 install (TARGETS fall4c DESTINATION lib)
 file (

@@ -25,6 +25,13 @@ extern "C"
 
 #include "tree_common.h"
 
+#define LEFT_HEAVY  1
+#define RIGHT_HEAVY -1
+
+struct tree_t *avl_add (struct tree_t **bst, void *data);
+struct tree_t *avl_del (struct tree_t **bst, void *data);
+void avl_show (struct tree_t *bst);
+
 #ifdef __cplusplus
 }
 #endif
