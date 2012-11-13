@@ -57,8 +57,9 @@ struct tree_t* tree_new (void)
 
     tree_table = calloc (1, sizeof(*tree_table));
     assert (tree_table != NULL);
-    tree_table->root = calloc (1, sizeof(*(tree_table->root)));
     _tree_init_callbacks (tree_table);
+
+    return tree_table;
 }
 
 struct tree_t *tree_set_callback (struct tree_t *tree, int id_callback, void (*callback)())
@@ -137,7 +138,16 @@ struct tree_node_t* _tree_node_new (void)
     return node;
 }
 
-int tree_rotate (struct tree_t *bst, struct tree_node_t *node)
+int _bst_depth (struct tree_node_t *node, int depth)
 {
+    if (node == NULL)
+        return depth;
+    else
+        return max ("%ld%ld", _bst_depth(node->left, depth + 1), _bst_depth(node->right, depth + 1));
+}
+
+int bst_depth (struct tree_t *bst)
+{
+    return _bst_depth (bst->root, 0);
 }
 

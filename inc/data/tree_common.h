@@ -46,10 +46,6 @@ struct tree_t
 {
     // root of the tree
     struct tree_node_t *root;
-    // balance of the tree
-    int balance;
-    // height of the tree
-    int height;
     // number of nodes
     size_t n;
 
@@ -69,6 +65,10 @@ struct tree_node_t
 {
     void *data;
     int weight;
+    // balance of the subtree
+    int balance;
+    // depth at which the node is located
+    int depth;
     //
     union
     {
@@ -102,6 +102,8 @@ void tree_set_get_data_size (size_t (*get_data_size)(void *));
 void tree_set_destroy (void (*destroy_data)(void *data));
 //
 void tree_set_show (void (*show)(void *data));
+// recursively compute height
+int bst_depth (struct tree_t *bst);
 
 #ifdef __cplusplus
 }
