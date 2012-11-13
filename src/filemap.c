@@ -18,21 +18,50 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "filemap.h"
 #include "filemap_internal.h"
+#include "string_ext.h"
 
 static struct filemap_list_t *filemaps = NULL;
 
 // create filemap
-struct filemap_t* filemap_create (FILE *fp) {
+struct filemap_t *filemap_create (char *filename)
+{
+    struct filemap_t *fmap;
+    FILE *fp;
+
+    if (!filename) {
+        fprintf (stderr, "error: filemap_create(): Bad parameters\n");
+        return NULL;
+    }
+
+    // check filemap existence
+    fmap = filemap_exist (filename);
+    if (fmap) {
+        fprintf (stderr, "info : filemap_create_from_fp(): Filemap already exist, borrowing it\n");
+        return fmap;
+    }
+
+    fp = fopen (filename, "r");
+    if (!fp) {
+        fprintf (stderr, "error: filemap_create(): Failed opening (r) %s\n", filename);
+        return NULL;
+    }
+
+    fmap = filemap_create_from_fp (fp);
+
+    fclose (fp);
+
+    return fmap;
+}
+
+struct filemap_t *filemap_create_from_fp (FILE *fp) {
     struct filemap_t *filemap;
     size_t foffset, sz_map;
 
-    // check filemap existence
-    filemap = filemap_exist (fp);
-    if (filemap)
-        return filemap;
+    // TODO: check filemap existence
 
     // add filemap
     filemap = malloc (sizeof(struct filemap_t));
@@ -51,6 +80,9 @@ struct filemap_t* filemap_create (FILE *fp) {
     fread (filemap->map, filemap->sz_map, 1, fp);
     // restore original file offset
     fseek (fp, foffset, SEEK_SET);
+
+    // hash
+    filemap->hash = fnv_hash (filemap->map, filemap->sz_map);
 
     // add filemap in binary tree
     filemap_add_fmap (&filemaps, filemap);
@@ -76,7 +108,7 @@ void filemap_destroy (struct filemap_t **filemap) {
 }
 
 // add filemap in tree
-struct filemap_t* filemap_add_fmap (struct filemap_list_t **root, struct filemap_t *filemap) {
+struct filemap_t *filemap_add_fmap (struct filemap_list_t **root, struct filemap_t *filemap) {
     if (!root || !filemap)
         return NULL;
     // if leaf node
@@ -90,9 +122,9 @@ struct filemap_t* filemap_add_fmap (struct filemap_list_t **root, struct filemap
     }
 
     // traverse tree
-    if (filemap->fp < (*root)->filemap->fp)
+    if (filemap->hash < (*root)->filemap->hash)
         return filemap_add_fmap (&((*root)->prev), filemap);
-    else if (filemap->fp > (*root)->filemap->fp)
+    else if (filemap->hash > (*root)->filemap->hash)
         return filemap_add_fmap (&((*root)->next), filemap);
     else
         return filemap;
@@ -120,37 +152,51 @@ void filemap_remove_fmap (struct filemap_list_t **root, struct filemap_t *filema
     }
 
     // traverse tree
-    if (filemap->fp < (*root)->filemap->fp)
+    if (filemap->hash < (*root)->filemap->hash)
         return filemap_remove_fmap (&((*root)->prev), filemap);
-    else if (filemap->fp > (*root)->filemap->fp)
+    else if (filemap->hash > (*root)->filemap->hash)
         return filemap_remove_fmap (&((*root)->next), filemap);
 }
 
 // search file pointer in tree
-struct filemap_t* filemap_search (struct filemap_list_t *root, FILE *fp) {
+struct filemap_t *_filemap_search (struct filemap_list_t *root, uint64_t hash)
+{
     // pointers check
     if (!root)
         return NULL;
     if (root->filemap == NULL)
         return NULL;
     // find it
-    if (root->filemap->fp == fp)
+    if (root->filemap->hash == hash)
         return root->filemap;
 
     // go through tree
-    if (fp <= root->filemap->fp)
-        filemap_search (root->prev, fp);
-    else if (fp > root->filemap->fp)
-        filemap_search (root->next, fp);
+    if (hash <= root->filemap->hash)
+        _filemap_search (root->prev, hash);
+    else if (hash > root->filemap->hash)
+        _filemap_search (root->next, hash);
+}
+
+struct filemap_t *filemap_search (struct filemap_list_t *root, char *filename)
+{
+    uint64_t hash;
+    struct filemap_t *fmap, *needle;
+
+    needle = filemap_create (filename);
+    hash = fnv_hash (needle->map, needle->sz_map);
+    fmap = _filemap_search (root, hash);
+    filemap_destroy (&needle);
+
+    return fmap;
 }
 
 // check if file was loaded in memory
-struct filemap_t* filemap_exist (FILE *fp) {
+struct filemap_t *filemap_exist (char *filename)
+{
     // if list doesn't exist then it isn't loaded
-    if (!filemaps)
+    if (!filemaps || !filename)
         return NULL;
 
-    return filemap_search (filemaps, fp);
+    return filemap_search (filemaps, filename);
 }
-
 

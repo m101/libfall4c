@@ -30,12 +30,12 @@ struct filemap_list_t
 };
 
 // add filemap in tree
-struct filemap_t* filemap_add_fmap (struct filemap_list_t **root, struct filemap_t *filemap);
+struct filemap_t *filemap_add_fmap (struct filemap_list_t **root, struct filemap_t *filemap);
 // remove filemap from tree
 void filemap_remove_fmap (struct filemap_list_t **root, struct filemap_t *filemap);
 // search file pointer in tree
-struct filemap_t* filemap_search (struct filemap_list_t *root, FILE *fp);
+struct filemap_t *filemap_search (struct filemap_list_t *root, char *filename);
 // check if file was loaded in memory
-struct filemap_t* filemap_exist (FILE *fp);
+struct filemap_t *filemap_exist (char *filename);
 
 #endif /* _FILEMAP_INTERNAL_H_ */

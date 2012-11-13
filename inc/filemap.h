@@ -20,9 +20,11 @@
 #define _FILEMAP_H_
 
 #include <stdlib.h>
+#include <stdint.h>
 
 struct filemap_t
 {
+    uint64_t hash;
     char *filename;
 	size_t sz_filename;
     FILE *fp;
@@ -32,7 +34,8 @@ struct filemap_t
 };
 
 // create filemap
-struct filemap_t* filemap_create (FILE *fp);
+struct filemap_t *filemap_create (char *filename);
+struct filemap_t *filemap_create_from_fp (FILE *fp);
 // destroy filemap
 void filemap_destroy (struct filemap_t **filemap);
 
