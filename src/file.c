@@ -44,7 +44,7 @@ void file_copy (char *dest, char *src)
  */
 char *fgetl (FILE *stream)
 {
-    unsigned int length = 128;
+    unsigned int length = 128, old_length;
     char *line;
     int byte;
     size_t idx_line;
@@ -56,19 +56,22 @@ char *fgetl (FILE *stream)
     byte = 0;
     idx_line = 0;
     while (!feof(stream)) {
+        if (idx_line >= length) {
+            old_length = length;
+            length = length * 2;
+            line = realloc(line, length * sizeof(*line));
+            memset (line + old_length, 0, old_length);
+        }
+
         byte = fgetc(stream);
 
         if (byte == '\r' || byte == '\n' || byte == EOF)
             break;
 
-        if (idx_line >= length) {
-            length = length * 2;
-            line = realloc(line, length * sizeof(*line));
-        }
-
         line[idx_line] = byte;
         idx_line++;
     }
+    line[idx_line] = '\0';
 
     if (feof(stream)) {
         free (line);
