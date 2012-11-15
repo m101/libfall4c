@@ -40,18 +40,20 @@ long l_round (double value)
 *   @param   string      Chaine à convertir
 *   @return              Renvoi l'adresse de la chaine convertie
 */
-char *str_toupper (char *string)
+char *str_toupper (char *string, int len)
 {
-    char *str = strdup(string);
-    char *ptr = str;
+    char *str;
+    int idx_str;
 
+    if (!string || len <= 0)
+        return NULL;
+
+    str = strdup(string);
     if (!str)
         return NULL;
 
-    while (*ptr) {
-        *ptr = toupper(*ptr);
-        ptr++;
-    }
+    for (idx_str = 0; idx_str < len && str[idx_str]; idx_str++)
+        str[idx_str] = toupper(str[idx_str]);
 
     return str;
 }
@@ -61,19 +63,55 @@ char *str_toupper (char *string)
 *   @param   string      Chaine à convertir
 *   @return              Renvoi l'adresse de la chaine convertie
 */
-char *str_tolower (char *string)
+char *str_tolower (char *string, int len)
 {
-    char *str = strdup(string);
-    char *ptr = str;
+    char *str;
+    int idx_str;
 
+    if (!string || len <= 0)
+        return NULL;
+
+    str = strdup(string);
     if (!str)
         return NULL;
 
-    while (*ptr) {
-        *ptr = tolower(*ptr);
-        ptr++;
-    }
+    for (idx_str = 0; idx_str < len && str[idx_str]; idx_str++)
+        str[idx_str] = toupper(str[idx_str]);
 
     return str;
+}
+
+int str_isalpha (char *str, int len)
+{
+    int idx_str;
+
+    if (!str || len <= 0) {
+        fprintf (stderr, "error: str_isalpha(): Bad parameters\n");
+        return 0;
+    }
+
+    for (idx_str = 0; idx_str < len; idx_str++) {
+        if (!isalpha (str[idx_str]))
+            return 0;
+    }
+
+    return 1;
+}
+
+int str_isprint (char *str, int len)
+{
+    int idx_str;
+
+    if (!str || len <= 0) {
+        fprintf (stderr, "error: str_isalpha(): Bad parameters\n");
+        return 0;
+    }
+
+    for (idx_str = 0; idx_str < len; idx_str++) {
+        if (!isprint (str[idx_str]))
+            return 0;
+    }
+
+    return 1;
 }
 

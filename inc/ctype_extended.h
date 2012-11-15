@@ -34,9 +34,11 @@ typedef unsigned char u8;
 
 long l_round (double value);
 // Convertit une chaine en majuscule
-char* str_toupper (char *string);
+char* str_toupper (char *string, int len);
 // Convertit une chaine en minuscule
-char* str_tolower (char *string);
+char* str_tolower (char *string, int len);
+int str_isalpha (char *str, int len);
+int str_isprint (char *str, int len);
 
 #ifdef __cplusplus
 }
