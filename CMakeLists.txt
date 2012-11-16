@@ -45,7 +45,7 @@ add_library(
     src/collision.c
     # src/pathfinding.c
     src/data/array_manipulation.c
-    src/data/array_associative.c
+    src/data/hashtable.c
     src/graph.c
     src/math/bases.c
     src/math/math_probability.c

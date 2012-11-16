@@ -20,7 +20,7 @@
 
 #include <string.h>
 
-#include "data/array_associative.h"
+#include "data/hashtable.h"
 #include "data/tree_binary.h"
 
 // compare 2 elements in a hashtable
@@ -83,11 +83,20 @@ void hashtable_destroy (struct hashtable_t **htable)
 // set a value
 struct hashtable_t* hashtable_set_value (struct hashtable_t **htable, char *key, void *value)
 {
+    int rc;
     struct hashtable_node *elt;
 
     // pointer check
     if (!htable || !key || !value)
         return NULL;
+
+    // create array if it doesn't exist
+    if (!*htable) {
+        *htable = hashtable_new();
+        rc = _hashtable_init_callbacks (*htable);
+        if (rc < 0)
+            return NULL;
+    }
 
     // create array element
     elt = calloc (1, sizeof(*elt));
@@ -95,10 +104,6 @@ struct hashtable_t* hashtable_set_value (struct hashtable_t **htable, char *key,
         return NULL;
     elt->key = key;
     elt->value = value;
-
-    // create array if it doesn't exist
-    if (!*htable)
-        *htable = hashtable_new();
 
     // add value in tree
     bst_add ((*htable)->array, elt);
