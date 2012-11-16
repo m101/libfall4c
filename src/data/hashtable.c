@@ -70,12 +70,26 @@ struct hashtable_t *hashtable_new (void)
     return htable;
 }
 
+void _hashtable_node_free (void *data)
+{
+    struct hashtable_node *hnode;
+
+    if (!data)
+        return;
+
+    hnode = data;
+
+    free (hnode->key);
+    free (hnode->value);
+    free (hnode);
+}
+
 void hashtable_destroy (struct hashtable_t **htable)
 {
     if (!htable || !*htable)
         return;
 
-    tree_free((*htable)->array);
+    tree_free((*htable)->array, _hashtable_node_free);
     free(*htable);
     *htable = NULL;
 }
