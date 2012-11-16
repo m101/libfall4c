@@ -90,7 +90,7 @@ struct tree_node_t
 // Create new tree
 struct tree_t *tree_new (void);
 // Destroy tree
-struct tree_t *tree_free (struct tree_t *tree);
+struct tree_t *tree_free (struct tree_t *tree, void *(*fct_free)(void *data));
 
 // setters
 struct tree_t *tree_set_callback (struct tree_t *tree, int id_callback, void (*callback)());

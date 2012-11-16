@@ -105,24 +105,26 @@ struct tree_t* tree_add_callback_from_name (char *name, void (*callback)(void *,
 }
 
 // recursively traverse nodes to free them
-struct tree_t *_tree_free (struct tree_node_t *node)
+struct tree_t *_tree_free (struct tree_node_t *node, void *(*fct_free)(void *data))
 {
     if (!node)
         return NULL;
 
-    _tree_free (node->left);
-    _tree_free (node->right);
+    _tree_free (node->left, fct_free);
+    _tree_free (node->right, fct_free);
     free (node);
+    if (fct_free)
+        fct_free (node->data);
 }
 
 /*!  @brief  Destroy tree
 */
-struct tree_t *tree_free (struct tree_t *tree)
+struct tree_t *tree_free (struct tree_t *tree, void *(*fct_free)(void *data))
 {
     if (!tree)
         return NULL;
 
-    _tree_free (tree->root);
+    _tree_free (tree->root, fct_free);
     free (tree);
 }
 
