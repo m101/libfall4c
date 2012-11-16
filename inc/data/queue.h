@@ -53,10 +53,8 @@ struct queue_element_t
 struct queue_t* queue_push (struct queue_t **p, void *data);
 // get last data added to the queue
 void* queue_pop (struct queue_t **p);
-// allocate a new queue
-struct queue_t* queue_new (void);
 // destroy a queue
-void queue_destroy (struct queue_t **queue);
+void queue_destroy (struct queue_t **queue, void *(*fct_free)(void *data));
 
 #ifdef __cplusplus
 }

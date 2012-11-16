@@ -20,22 +20,6 @@
 
 #include "data/queue.h"
 
-// INTERNAL
-// allocate queue element
-struct queue_element_t *queue_element_new(void)
-{
-    struct queue_element_t elt = {0};
-    struct queue_element_t *node = NULL;
-
-    node = malloc(sizeof(elt));
-    *node = elt;
-
-    return node;
-}
-
-
-
-// PUBLIC
 // push data on the queue
 struct queue_t* queue_push (struct queue_t **p, void *data)
 {
@@ -45,16 +29,18 @@ struct queue_t* queue_push (struct queue_t **p, void *data)
 	if (!p)
 		return NULL;
 	
-    // allocate element
-    elt = queue_element_new();
     // was queue allocated?
-	if (!(*p))
-    {
-		*p = queue_new(); 
+	if (!*p) {
+		*p = calloc (1, sizeof(*p));
         // update base pointer
         (*p)->front = elt;
     }
 
+    elt = calloc (1, sizeof(*elt));
+    if (!elt) {
+        fprintf (stderr, "error: queue_push(): Failed allocating node\n");
+        return NULL;
+    }
     // add data
     elt->data = data;
     // add element
@@ -83,8 +69,7 @@ void* queue_pop (struct queue_t **p)
 	
     // if no node elements
     // then destruct it
-    if ( (*p)->front == NULL )
-    {
+    if ( (*p)->front == NULL ) {
         free (*p), *p = NULL;
         return NULL;
     }
@@ -111,20 +96,8 @@ void* queue_pop (struct queue_t **p)
     return data;
 }
 
-// allocate a new queue
-struct queue_t *queue_new(void)
-{
-    struct queue_t elt = {0};
-    struct queue_t *node = NULL;
-
-    node = malloc(sizeof(elt));
-    *node = elt;
-
-    return node;
-}
-
 // destroy a queue
-void queue_destroy (struct queue_t **queue)
+void queue_destroy (struct queue_t **queue, void *(*fct_free)(void *data))
 {
     struct queue_element_t *elt, *next;
     // pointers check
@@ -135,9 +108,10 @@ void queue_destroy (struct queue_t **queue)
 
     // traverse queue and destroy each element
     elt = (*queue)->front;
-    while (elt)
-    {
+    while (elt) {
         next = elt->next;
+        if (fct_free)
+            fct_free (elt->data);
         free (elt);
         elt = next;
     }
