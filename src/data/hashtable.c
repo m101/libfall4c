@@ -25,7 +25,7 @@
 
 int hashtable_comparator (void *data1, void *data2)
 {
-    struct hashtable_node_t *node1 = data1, *node2 = data2;
+    struct hashtable_node *node1 = data1, *node2 = data2;
 
     if (!data1 || !data2) {
         fprintf (stderr, "error: hashtable_comparator(): Bad parameter(s)\n");
@@ -132,7 +132,7 @@ struct hashtable_t* hashtable_set_value (struct hashtable_t **htable, char *key,
     elt->hash_key = fnv_hash (key, elt->sz_key);
     // value
     elt->value = value;
-    node->sz_value = strlen(node->value);
+    elt->sz_value = strlen(elt->value);
 
     // add value in tree
     bst_add ((*htable)->bst, elt);
