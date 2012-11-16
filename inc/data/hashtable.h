@@ -27,13 +27,18 @@ extern "C"
 
 // associative array element
 struct hashtable_node {
+    // key
+    uint64_t hash_key;
+    int sz_key;
     char *key;
+    // value
+    int sz_value;
     void *value;
 };
 
 // associative array
 struct hashtable_t {
-    struct tree_t *array;
+    struct tree_t *bst;
 };
 
 struct hashtable_t *hashtable_new (void);

@@ -23,13 +23,16 @@
 #include "data/hashtable.h"
 #include "data/tree_binary.h"
 
-// compare 2 elements in a hashtable
-int hashtable_comparator (void *elt1, void *elt2)
+int hashtable_comparator (void *data1, void *data2)
 {
-    if (elt1 && elt2)
-        return strcmp ( ((struct hashtable_node *)elt1)->key, ((struct hashtable_node *)elt2)->key );
-    else
-        return elt1 - elt2;
+    struct hashtable_node_t *node1 = data1, *node2 = data2;
+
+    if (!data1 || !data2) {
+        fprintf (stderr, "error: hashtable_comparator(): Bad parameter(s)\n");
+        return data1 - data2;
+    }
+
+    return node1->hash_key - node2->hash_key;
 }
 
 // size of an associative array element
@@ -40,12 +43,12 @@ size_t hashtable_elt_size (void *elt)
 
 int _hashtable_init_callbacks (struct hashtable_t *htable)
 {
-    if (!htable || !htable->array)
+    if (!htable || !htable->bst)
         return -1;
 
-    tree_set_callback (htable->array, TREE_CALLBACK_COMPARATOR, hashtable_comparator);
-    tree_set_callback (htable->array, TREE_CALLBACK_GET_DATA_SIZE, hashtable_elt_size);
-    tree_set_callback (htable->array, TREE_CALLBACK_DESTROY_DATA, hashtable_destroy);
+    tree_set_callback (htable->bst, TREE_CALLBACK_COMPARATOR, hashtable_comparator);
+    tree_set_callback (htable->bst, TREE_CALLBACK_GET_DATA_SIZE, hashtable_elt_size);
+    tree_set_callback (htable->bst, TREE_CALLBACK_DESTROY_DATA, hashtable_destroy);
 
     return 0;
 }
@@ -58,8 +61,8 @@ struct hashtable_t *hashtable_new (void)
     htable = calloc (1, sizeof(*htable));
     if (!htable)
         return NULL;
-    // htable->array = tree_new (hashtable_comparator, hashtable_elt_size);
-    htable->array = tree_new ();
+    // htable->bst = tree_new (hashtable_comparator, hashtable_elt_size);
+    htable->bst = tree_new ();
 
     rc = _hashtable_init_callbacks (htable);
     if (rc < 0) {
@@ -70,18 +73,24 @@ struct hashtable_t *hashtable_new (void)
     return htable;
 }
 
+void hashtable_node_destroy_data (void **data)
+{
+    struct hashtable_node **node;
+
+    if (!node || !*node) {
+        fprintf (stderr, "error: dict_destroy_data(): Bad parameter(s)\n");
+        return;
+    }
+
+    free ((*node)->key);
+    free ((*node)->value);
+    free (*node);
+    *node = NULL;
+}
+
 void _hashtable_node_free (void *data)
 {
-    struct hashtable_node *hnode;
-
-    if (!data)
-        return;
-
-    hnode = data;
-
-    free (hnode->key);
-    free (hnode->value);
-    free (hnode);
+    hashtable_node_destroy_data (&data);
 }
 
 void hashtable_destroy (struct hashtable_t **htable)
@@ -89,7 +98,7 @@ void hashtable_destroy (struct hashtable_t **htable)
     if (!htable || !*htable)
         return;
 
-    tree_free((*htable)->array, _hashtable_node_free);
+    tree_free((*htable)->bst, _hashtable_node_free);
     free(*htable);
     *htable = NULL;
 }
@@ -107,20 +116,26 @@ struct hashtable_t* hashtable_set_value (struct hashtable_t **htable, char *key,
     // create array if it doesn't exist
     if (!*htable) {
         *htable = hashtable_new();
-        rc = _hashtable_init_callbacks (*htable);
-        if (rc < 0)
+        if (!*htable) {
+            fprintf (stderr, "error: hashtable_set_value(): Couldn't allocate hashtable\n");
             return NULL;
+        }
     }
 
     // create array element
     elt = calloc (1, sizeof(*elt));
     if (!elt)
         return NULL;
+    // key
     elt->key = key;
+    elt->sz_key = strlen (elt->key);
+    elt->hash_key = fnv_hash (key, elt->sz_key);
+    // value
     elt->value = value;
+    node->sz_value = strlen(node->value);
 
     // add value in tree
-    bst_add ((*htable)->array, elt);
+    bst_add ((*htable)->bst, elt);
 
     return *htable;
 }
@@ -141,7 +156,7 @@ void *hashtable_get_value (struct hashtable_t *htable, char *key)
         return NULL;
 
     // search element in tree
-    node = bst_search (htable->array, &elt);
+    node = bst_search (htable->bst, &elt);
     if (!node)
         return NULL;
 
