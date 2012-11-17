@@ -11,7 +11,7 @@
 #include "data/tree_avl.h"
 #include "data/tree_binary.h"
 #include "data/tree_common.h"
-#include "data/dictionnary.h"
+#include "data/hashtable.h"
 #include "data/list.h"
 #include "data/queue.h"
 #include "data/stack.h"
