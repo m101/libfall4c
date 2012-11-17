@@ -71,12 +71,16 @@ char *fgetl (FILE *stream)
         line[idx_line] = byte;
         idx_line++;
     }
-    line[idx_line] = '\0';
 
-    if (feof(stream)) {
+    if (idx_line == 0 && byte == EOF) {
         free (line);
         return NULL;
     }
+
+    // correctly end line
+    if (line[idx_line-1] == '\r' && line[idx_line] == '\n')
+        line[idx_line-1] = '\0';
+    line[idx_line] = '\0';
 
     return line;
 }
