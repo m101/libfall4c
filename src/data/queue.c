@@ -26,50 +26,53 @@ struct queue_t* queue_push (struct queue_t **p, void *data)
     struct queue_element_t *elt;
 
     // pointer check
-	if (!p)
-		return NULL;
-	
-    // was queue allocated?
-	if (!*p) {
-		*p = calloc (1, sizeof(*p));
-        // update base pointer
-        (*p)->front = elt;
-    }
+    if (!p || !data)
+        return NULL;
 
     elt = calloc (1, sizeof(*elt));
     if (!elt) {
         fprintf (stderr, "error: queue_push(): Failed allocating node\n");
         return NULL;
     }
+
+    // was queue allocated?
+    if (!*p) {
+        *p = calloc (1, sizeof(**p));
+        if (!*p)
+            return NULL;
+        // update base pointer
+        (*p)->front = elt;
+    }
+
     // add data
     elt->data = data;
     // add element
-	elt->prev = (*p)->back;
+    elt->prev = (*p)->back;
     if ((*p)->back)
-    	(*p)->back->next = elt;
+        (*p)->back->next = elt;
     // update queue pointer
     (*p)->back = elt;
     // update counter
     (*p)->size++;
-	
-	return *p;
+
+    return *p;
 }
 
 // get last data added to the queue
 void* queue_pop (struct queue_t **p)
 {
     void *data;
-	struct queue_element_t *elt = NULL;
-	
+    struct queue_element_t *elt = NULL;
+
     // pointers check
-	if (!p)
-		return NULL;
-	if (!(*p))
-		return NULL;
-	
+    if (!p)
+        return NULL;
+    if (!(*p))
+        return NULL;
+
     // if no node elements
     // then destruct it
-    if ( (*p)->front == NULL ) {
+    if ( (*p)->front == NULL || (*p)->size <= 0 ) {
         free (*p), *p = NULL;
         return NULL;
     }
@@ -97,21 +100,21 @@ void* queue_pop (struct queue_t **p)
 }
 
 // destroy a queue
-void queue_destroy (struct queue_t **queue, void *(*fct_free)(void *data))
+void queue_destroy (struct queue_t **queue, void (*fct_destroy)(void **data))
 {
     struct queue_element_t *elt, *next;
     // pointers check
     if (!queue)
         return;
-    if (!(*queue))
+    if (!*queue)
         return;
 
     // traverse queue and destroy each element
     elt = (*queue)->front;
     while (elt) {
         next = elt->next;
-        if (fct_free)
-            fct_free (elt->data);
+        if (fct_destroy)
+            fct_destroy (&(elt->data));
         free (elt);
         elt = next;
     }

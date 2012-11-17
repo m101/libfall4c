@@ -30,6 +30,8 @@ struct list_node {
     struct list_node *next, *prev;
     // data
     void *data;
+    // size of data
+    long size;
 };
 
 struct list_simple {

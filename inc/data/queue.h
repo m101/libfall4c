@@ -28,8 +28,6 @@ extern "C"
 // queue
 struct queue_t
 {
-    // elements of the queue
-    struct queue_element_t *elements;
     // front of the queue : first element
     struct queue_element_t *front;
     // back of the queue : last element
@@ -41,12 +39,12 @@ struct queue_t
 // queue element
 struct queue_element_t
 {
-    // data stored
-    char *data;
-    // size of data
-    long size;
     // next and previous element
     struct queue_element_t *next, *prev;
+    // data stored
+    void *data;
+    // size of data
+    long size;
 };
 
 // push data on the queue
@@ -54,7 +52,7 @@ struct queue_t* queue_push (struct queue_t **p, void *data);
 // get last data added to the queue
 void* queue_pop (struct queue_t **p);
 // destroy a queue
-void queue_destroy (struct queue_t **queue, void *(*fct_free)(void *data));
+void queue_destroy (struct queue_t **queue, void (*fct_destroy)(void **data));
 
 #ifdef __cplusplus
 }
