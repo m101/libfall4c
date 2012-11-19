@@ -199,7 +199,7 @@ int _list_append_node (struct list_simple **list, struct list_node *node)
     printf ("(*list)->tail: %p\n", (*list)->tail);
     //*/
 
-    if (!(*list)->head) {
+    if ((*list)->head == NULL) {
         (*list)->head = node;
         // printf ("   new head: %p\n", (*list)->head);
     }
@@ -288,8 +288,8 @@ int _list_prepend_node (struct list_simple **list, struct list_node *node)
     printf ("(*list)->tail: %p\n", (*list)->tail);
     //*/
 
-    if (!(*list)->head)
-        (*list)->head = node;
+    if ((*list)->tail == NULL)
+        (*list)->tail = node;
 
     if ((*list)->head)
         (*list)->head->prev = node;
