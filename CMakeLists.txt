@@ -32,6 +32,7 @@ add_library(
     src/filemap.c
     src/string_ext.c
     src/file_browse.c
+    src/data/cache.c
     src/data/wordlist.c
     src/data/list.c
     src/data/queue.c

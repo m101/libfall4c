@@ -8,6 +8,7 @@
 #include "file.h"
 #include "file_browse.h"
 #include "string_ext.h"
+#include "data/cache.h"
 #include "data/tree_avl.h"
 #include "data/tree_binary.h"
 #include "data/tree_common.h"
