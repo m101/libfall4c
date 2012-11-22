@@ -223,7 +223,8 @@ int cache_set_size (struct cache_t *cache, int size)
         return -ERR_CACHE_UNDEFINED;
     }
 
-    if (size < 0)
+    cache->used = size;
+    if (size <= 0)
         cache->used = 0;
     if (size > cache->capacity)
         cache->used = cache->capacity;
