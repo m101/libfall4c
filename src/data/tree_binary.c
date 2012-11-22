@@ -157,32 +157,86 @@ struct tree_t *bst_search (struct tree_t *bst, void *data)
     return 0;
 }
 
-struct tree_t *_tree_destroy_node (struct tree_t *bst, struct tree_node_t **node, void *data)
+struct tree_t *_bst_destroy_node (struct tree_t *bst, struct tree_node_t **node)
 {
     int result;
 
-    if (!bst ||  !node || !*node || !data)
+    if (!bst || !node || !*node)
         return NULL;
 
-    result = bst->comparator((*node)->data, data);
-    if (result == 0) {
-        bst->destroy_data(&((*node)->data));
-        free(*node);
-        *node = NULL;
-        /* TODO: Fix rotation and such (losing childrens)
-        */
+    bst->destroy_data(&((*node)->data));
+    free(*node);
+    *node = NULL;
+
+    return bst;
+}
+
+/*! @brief Recursive stub for binary tree deletion
+*/
+struct tree_node_t *_bst_del (struct tree_t *bst, struct tree_node_t **node, void *data)
+{
+    int result;
+    struct tree_node_t *node_holder;
+    void *data_holder;
+
+    // key not found
+    if (!bst || !node || !*node || !data)
+        return NULL;
+
+    result = bst->comparator ((*node)->data, data);
+
+    // if below
+    if (result < 0)
+        _bst_del (bst, &((*node)->left), data);
+    // if upper
+    else if (result > 0)
+        _bst_del (bst, &((*node)->right), data);
+
+    // if equal
+    // then we found the node to delete
+
+    // if leaf
+    if ((*node)->left == NULL && (*node)->right == NULL) {
+        _bst_destroy_node (bst, node);
+
         return bst;
     }
-    else if (result < 0)
-        _tree_destroy_node (bst, &((*node)->left), data);
-    else if (result > 0)
-        _tree_destroy_node (bst, &((*node)->right), data);
+    // if only right node
+    else if ((*node)->left == NULL && (*node)->right) {
+        node_holder = (*node)->right;
+        _bst_destroy_node (bst, node);
+        *node = node_holder;
+
+        return node_holder;
+    }
+    // if only left node
+    else if ((*node)->left && (*node)->right == NULL) {
+        node_holder = (*node)->left;
+        _bst_destroy_node (bst, node);
+        *node = node_holder;
+
+        return node_holder;
+    }
+    // if both nodes
+    else {
+        // we search for the left most node in our right subtree
+        node_holder = (*node)->right;
+        while (node_holder->left)
+            node_holder = node_holder->left;
+
+        // swap data pointers
+        data_holder = (*node)->data;
+        (*node)->data = node_holder->data;
+        node_holder->data = data_holder;
+        // remove node
+        _bst_del (bst, &node_holder, node_holder->data);
+    }
 }
 
 struct tree_t *bst_del (struct tree_t *bst, void *data)
 {
     if (!bst ||  !data)
         return -1;
-    return _tree_destroy_node (bst, &(bst->root), data);
+    return _bst_del (bst, &(bst->root), data);
 }
 
