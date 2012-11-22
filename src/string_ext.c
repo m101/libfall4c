@@ -398,14 +398,14 @@ uint8_t *bin_to_hexstr (char *bin, int len_bin)
         return NULL;
     }
 
-    printf ("hexstr (before): '%s'\n", hexstr);
+    printf ("info : bin_to_hexstr(): hexstr (before): '%s'\n", hexstr);
     p_hexstr = hexstr;
     for (idx_bin = 0; idx_bin < len_bin; idx_bin++) {
         hexdigit = bin[idx_bin];
         snprintf(p_hexstr, 3, "%02x", hexdigit & 0xff);
         p_hexstr += 2;
     }
-    printf ("hexstr (after) : '%s'\n", hexstr);
+    printf ("info : bin_to_hexstr(): hexstr (after) : '%s'\n", hexstr);
 
     return hexstr;
 }
