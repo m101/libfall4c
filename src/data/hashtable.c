@@ -114,25 +114,19 @@ struct hashtable_t* hashtable_set_value (struct hashtable_t **htable, char *key,
         return NULL;
 
     // create array if it doesn't exist
-    if (!*htable) {
+    if (!*htable)
         *htable = hashtable_new();
-        if (!*htable) {
-            fprintf (stderr, "error: hashtable_set_value(): Couldn't allocate hashtable\n");
-            return NULL;
-        }
-    }
 
     // create array element
     elt = calloc (1, sizeof(*elt));
     if (!elt)
         return NULL;
     // key
-    elt->key = key;
-    elt->sz_key = strlen (elt->key);
+    elt->key = strdup(key);
+    elt->sz_key = strlen (key);
     elt->hash_key = fnv_hash (key, elt->sz_key);
     // value
     elt->value = value;
-    elt->sz_value = strlen(elt->value);
 
     // add value in tree
     bst_add ((*htable)->bst, elt);
@@ -164,9 +158,8 @@ void *hashtable_get_value (struct hashtable_t *htable, char *key)
     helt = node->data;
     if (helt)
         return helt->value;
-    else {
-        // _tree_destroy_node(&node); // data is NULL so useless node
-        return NULL;
-    }
+
+    // _tree_destroy_node(&node); // data is NULL so useless node
+    return NULL;
 }
 
