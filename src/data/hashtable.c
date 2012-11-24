@@ -138,8 +138,7 @@ struct hashtable_t* hashtable_set_value (struct hashtable_t **htable, char *key,
 void *hashtable_get_value (struct hashtable_t *htable, char *key)
 {
     int rc;
-    struct tree_node_t *node;
-    struct hashtable_node elt = { key, NULL }, *helt;
+    struct hashtable_node elt, *helt;
 
     // pointer check
     if (!htable || !key)
@@ -150,16 +149,11 @@ void *hashtable_get_value (struct hashtable_t *htable, char *key)
         return NULL;
 
     // search element in tree
-    node = bst_search (htable->bst, &elt);
-    if (!node)
+    elt.hash_key = fnv_hash (key, strlen(key));
+    helt = bst_search (htable->bst, &elt);
+    if (!helt)
         return NULL;
 
-    // return found data
-    helt = node->data;
-    if (helt)
-        return helt->value;
-
-    // _tree_destroy_node(&node); // data is NULL so useless node
-    return NULL;
+    return helt->value;
 }
 
