@@ -31,7 +31,7 @@ extern "C"
 struct tree_t *bst_add (struct tree_t *bst, void *data);
 // struct tree_t *bst_sort (struct tree_t *bst);
 // Search tree for specified data
-struct tree_t *bst_search (struct tree_t *bst, void *data);
+void *bst_search (struct tree_t *bst, void *data);
 struct tree_t *bst_del (struct tree_t *bst, void *data);
 
 #ifdef __cplusplus

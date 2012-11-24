@@ -48,8 +48,10 @@ struct tree_node_t *_bst_add (struct tree_t *bst, struct tree_node_t **node, voi
     // then we go right
     else if (result > 0)
         return _bst_add (bst, &((*node)->right), data);
-    else
+    else {
         (*node)->weight++;
+        return *node;
+    }
 }
 
 /* @brief   Add data to tree
@@ -144,17 +146,18 @@ struct tree_node_t *_bst_search (struct tree_t *bst, struct tree_node_t *node, v
 
 /*! @brief Search tree for specified data
 */
-struct tree_t *bst_search (struct tree_t *bst, void *data)
+void *bst_search (struct tree_t *bst, void *data)
 {
+    struct tree_node_t *node;
+
     if (!bst || !data)
         return NULL;
 
-    if (_bst_search (bst, bst->root, data))
-        return bst;
-    else
-        return NULL;
+    node = _bst_search (bst, bst->root, data);
+    if (node)
+        return node->data;
 
-    return 0;
+    return NULL;
 }
 
 struct tree_t *_bst_destroy_node (struct tree_t *bst, struct tree_node_t **node)
