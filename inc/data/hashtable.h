@@ -39,6 +39,8 @@ struct hashtable_node {
 // associative array
 struct hashtable_t {
     struct tree_t *bst;
+    struct list_simple *keys;
+    struct list_simple *values;
 };
 
 struct hashtable_t *hashtable_new (void);
@@ -47,6 +49,10 @@ void hashtable_destroy (struct hashtable_t **htable);
 struct hashtable_t* hashtable_set_value (struct hashtable_t **htable, char *key, void *value);
 // get a value
 void *hashtable_get_value (struct hashtable_t *htable, char *key);
+// get list of keys
+struct list_simple *hashtable_get_keys (struct hashtable_t *htable);
+// get list of values
+struct list_simple *hashtable_get_values (struct hashtable_t *htable);
 
 #ifdef __cplusplus
 }

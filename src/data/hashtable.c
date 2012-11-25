@@ -127,6 +127,10 @@ struct hashtable_t* hashtable_set_value (struct hashtable_t **htable, char *key,
     elt->hash_key = fnv_hash (key, elt->sz_key);
     // value
     elt->value = value;
+    
+    // keep track of keys and values
+    list_append_data (&((*htable)->keys), key);
+    list_append_data (&((*htable)->values), value);
 
     // add value in tree
     bst_add ((*htable)->bst, elt);
@@ -155,5 +159,63 @@ void *hashtable_get_value (struct hashtable_t *htable, char *key)
         return NULL;
 
     return helt->value;
+}
+
+void *_hashtable_get_keys (struct tree_t *bst, struct tree_node_t *node, struct list_simple **keys)
+{
+    int result;
+    struct hashtable_node *hnode;
+
+    // key not found
+    if (!bst || !node || !keys)
+        return NULL;
+
+    _hashtable_get_keys (bst, node->left, keys);
+    hnode = node->data;
+    if (hnode)
+        list_append_data (keys, hnode->key);
+    _hashtable_get_keys (bst, node->right, keys);
+}
+
+// get list of keys
+struct list_simple *hashtable_get_keys (struct hashtable_t *htable)
+{
+    struct list_simple *keys;
+
+    if (!htable)
+        return NULL;
+
+    keys = NULL;
+    if (htable->bst)
+        _hashtable_get_keys (htable->bst, htable->bst->root, &keys);
+
+    return keys;
+}
+
+void *_hashtable_get_values (struct tree_t *bst, struct tree_node_t *node, struct list_simple **values)
+{
+    int result;
+    struct hashtable_node *hnode;
+
+    // value not found
+    if (!bst || !node || !values)
+        return NULL;
+
+    _hashtable_get_values (bst, node->left, values);
+    hnode = node->data;
+    if (hnode)
+        list_append_data (values, hnode->value);
+    _hashtable_get_values (bst, node->right, values);
+}
+
+// get list of values
+struct list_simple *hashtable_get_values (struct hashtable_t *htable)
+{
+    struct list_simple *values;
+
+    values = NULL;
+    _hashtable_get_values (htable->bst, htable->bst->root, &values);
+
+    return values;
 }
 
