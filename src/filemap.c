@@ -159,7 +159,7 @@ void filemap_remove_fmap (struct filemap_list_t **root, struct filemap_t *filema
 }
 
 // search file pointer in tree
-struct filemap_t *_filemap_search (struct filemap_list_t *root, uint64_t hash)
+struct filemap_t *__filemap_search (struct filemap_list_t *root, uint64_t hash)
 {
     // pointers check
     if (!root)
@@ -172,19 +172,29 @@ struct filemap_t *_filemap_search (struct filemap_list_t *root, uint64_t hash)
 
     // go through tree
     if (hash <= root->filemap->hash)
-        _filemap_search (root->prev, hash);
+        __filemap_search (root->prev, hash);
     else if (hash > root->filemap->hash)
-        _filemap_search (root->next, hash);
+        __filemap_search (root->next, hash);
 }
 
-struct filemap_t *filemap_search (struct filemap_list_t *root, char *filename)
+struct filemap_t *_filemap_search (struct filemap_list_t *root, char *filename)
 {
     uint64_t hash;
     struct filemap_t *fmap, *needle;
+    FILE *fp;
 
-    needle = filemap_create (filename);
+    // create filemap
+    fp = fopen (filename, "r");
+    if (!fp) {
+        fprintf (stderr, "error: filemap_create(): Failed opening (r) %s\n", filename);
+        return NULL;
+    }
+    needle = filemap_create_from_fp (fp);
+    fclose (fp);
+
+    // hash and all
     hash = fnv_hash (needle->map, needle->sz_map);
-    fmap = _filemap_search (root, hash);
+    fmap = __filemap_search (root, hash);
     filemap_destroy (&needle);
 
     return fmap;
@@ -197,6 +207,6 @@ struct filemap_t *filemap_exist (char *filename)
     if (!filemaps || !filename)
         return NULL;
 
-    return filemap_search (filemaps, filename);
+    return _filemap_search (filemaps, filename);
 }
 
