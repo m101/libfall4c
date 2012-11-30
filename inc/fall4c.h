@@ -5,8 +5,10 @@
 #include <stdio.h>
 
 #include "ctype_extended.h"
+#include "escape.h"
 #include "file.h"
 #include "file_browse.h"
+#include "filemap.h"
 #include "string_ext.h"
 #include "data/cache.h"
 #include "data/tree_avl.h"
