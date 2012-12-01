@@ -28,6 +28,7 @@ extern "C"
 #include <stdint.h>
 
     struct string_t {
+        uint64_t hash;
         // string
         char *bytes;
         // size of string
@@ -36,25 +37,36 @@ extern "C"
         int capacity;
     };
     
+    // init string
+    struct string_t *string_set (struct string_t **dst, char *str);
+    // destroy string
+    void string_destroy (struct string_t **str);
     // secure string copy
-    struct string_t* string_cpy (struct string_t *dst, struct string_t *src);
+    struct string_t *string_cpy (struct string_t *dst, struct string_t *src);
     // secure string concatenation
-    struct string_t* string_cat (struct string_t *dst, struct string_t *src);
+    struct string_t *string_cat (struct string_t *dst, struct string_t *src);
     // secure string comparison
     int string_cmp (struct string_t *str1, struct string_t *str2);
+    // puts
+    int string_puts (struct string_t *str);
+    // putsln
+    int string_putsln (struct string_t *str);
+
+    // str functions
+    // delete a word in a string
+    int str_word_delete (char *str, char *word);
     // separate a string in its column components
-    char** string_get_columns (char *str, int len, int nColumns);
+    char **str_get_columns (char *str, int len, int n_columns);
     // normalize string to ascii (no accent, etc)
-    char *normalize_str (char *str, int szStr);
+    char *str_normalize (char *str, int sz_str);
     
     // hashing functions
+#define str_hash(str, len)    fnv_hash(str, len)
     // djb2 hashing algorithm
-    unsigned long str_hash(unsigned char *str, int len);
+    unsigned long djb2_hash (unsigned char *str, int len);
     // FNV-1a hashing algorithm
     uint64_t fnv_hash (uint8_t *str, int len);
 
-    void clean(char *chaine);
-    void purger(void);
     /*
     char *_DEFUN (strtok_r, (s, delim, lasts),
                 	register char *s _AND

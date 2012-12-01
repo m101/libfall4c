@@ -27,26 +27,44 @@
 #include "string_ext.h"
 #include "ctype_extended.h"
 
-struct string_t *string_init (struct string_t **str)
+// init string
+struct string_t *string_set (struct string_t **dst, char *str)
 {
-    *str = calloc(1, sizeof(**str));
+    if (!dst) {
+        fprintf (stderr, "error: string_cat(): Bad parameter\n");
+        return NULL;
+    }
 
-    return *str;
-}
-
-struct string_t *string_set (struct string_t *dst, char *str)
-{
-    dst->size = strlen(str);
-    dst->capacity = dst->size + 1;
-    if (dst->bytes)
-        free(dst->bytes);
-    dst->bytes = calloc(dst->capacity, sizeof(*dst->bytes));
-    if (!dst->bytes)
+    *dst = calloc(1, sizeof(**dst));
+    if (!*dst)
         return NULL;
 
-    strncpy(dst->bytes, str, dst->size);
+    (*dst)->size = strlen(str);
+    (*dst)->capacity = (*dst)->size + 1;
+    if ((*dst)->bytes)
+        free((*dst)->bytes);
+    (*dst)->bytes = calloc((*dst)->capacity, sizeof(*(*dst)->bytes));
+    if (!(*dst)->bytes)
+        return NULL;
 
-    return dst;
+    strncpy((*dst)->bytes, str, (*dst)->size);
+
+    (*dst)->hash = fnv_hash ((*dst)->bytes, (*dst)->size);
+
+    return *dst;
+}
+
+// destroy string
+void string_destroy (struct string_t **str)
+{
+    if (!str || !*str) {
+        fprintf (stderr, "error: string_destroy(): Bad parameter\n");
+        return;
+    }
+
+    free ((*str)->bytes);
+    free (*str);
+    *str = NULL;
 }
 
 // secure string length
@@ -54,16 +72,20 @@ size_t string_len (struct string_t *str)
 {
     if (str)
         return str->size;
-    else
+    else {
+        fprintf (stderr, "error: string_len(): Bad parameter\n");
         return -1;
+    }
 }
 
 // secure string copy
-struct string_t* string_cpy (struct string_t *dst, struct string_t *src)
+struct string_t *string_cpy (struct string_t *dst, struct string_t *src)
 {
     // pointer check
-    if (!dst || !src)
+    if (!dst || !src) {
+        fprintf (stderr, "error: string_cat(): Bad parameter(s)\n");
         return NULL;
+    }
 
     // if buffer isn't big enough
     // then allocate an adapted one
@@ -76,15 +98,19 @@ struct string_t* string_cpy (struct string_t *dst, struct string_t *src)
     strncpy (dst->bytes, src->bytes, src->size);
     dst->bytes[dst->size - 1] = '\0';
 
+    dst->hash = src->hash;
+
     return dst;
 }
 
 // secure string concatenation
-struct string_t* string_cat (struct string_t *dst, struct string_t *src)
+struct string_t *string_cat (struct string_t *dst, struct string_t *src)
 {
     // pointer check
-    if (!dst || !src)
+    if (!dst || !src) {
+        fprintf (stderr, "error: string_cat(): Bad parameter(s)\n");
         return NULL;
+    }
 
     // if buffer isn't big enough
     // then allocate an adapted one
@@ -97,38 +123,56 @@ struct string_t* string_cat (struct string_t *dst, struct string_t *src)
     strncat (dst->bytes, src->bytes, src->size);
     dst->bytes[dst->size - 1] = '\0';
 
+    dst->hash = fnv_hash (dst->bytes, dst->size);
+
     return dst;
 }
 
 // secure string comparison
 int string_cmp (struct string_t *str1, struct string_t *str2)
 {
-    int sz;
+    if (!str1 || !str2) {
+        fprintf (stderr, "error: string_cmp(): Bad parameter\n");
+        return str1 - str2;
+    }
 
-    if (!str1 || !str2)
-        return -1;
+    return str1->hash - str2->hash;
+}
 
-    // get the smaller size
-    if (str1->size > str2->size)
-        sz = str2->size;
-    else 
-        sz = str1->size;
+// puts
+int string_puts (struct string_t *str)
+{
+    int idx_str;
 
-    return strncmp (str1->bytes, str2->bytes, sz);
+    if (!str) {
+        fprintf (stderr, "error: string_puts(): Bad parameter\n");
+        return EOF;
+    }
+
+    for (idx_str = 0; idx_str < str->size; idx_str++) {
+        if (isprint (str->bytes[idx_str]))
+            putchar (str->bytes[idx_str]);
+        else
+            putchar ('.');
+    }
+
+    return 0;
+}
+
+// putsln
+int string_putsln (struct string_t *str)
+{
+    string_puts (str);
+    putchar ('\n');
 }
 
 /* hash string to an integer value */
-unsigned long str_hash(unsigned char *str, int len)/*{{{*/
+unsigned long djb2_hash (unsigned char *str, int len)/*{{{*/
 {
     int idx_str;
     unsigned long hash = 5381;
-    int c;
 
     idx_str = 0;
-    /*
-    while (c = str[idx_str] && idx_str < len) {
-        hash ^= (((hash << 5) + hash) + c); /* hash * 33 + c */
-    //*/
     while (idx_str < len) {
         hash ^= (((hash << 5) + hash) + str[idx_str]); /* hash * 33 + c */
         idx_str++;
@@ -144,22 +188,25 @@ uint64_t fnv_hash (uint8_t *str, int len)
     int idx_str;
 
     // offset basis
-    hash = 14695981039346656037;
+    hash = 14695981039346656037UL;
     for (idx_str = 0; idx_str < len; idx_str++) {
         hash ^= str[idx_str];
-        hash *= 1099511628211;
+        hash *= 1099511628211UL;
     }
 
     return hash;
 }
 
-int string_word_delete (char *str, char *word)
+// delete a word in a string
+int str_word_delete (char *str, char *word)
 {
     char *p, *space;
     
     p = strstr(str, word);
-    if (!p)
+    if (!p) {
+        fprintf (stderr, "error: str_word_delete(): Couldn't find word\n");
         return -1;
+    }
     
     space = strchr(p, ' ');
     
@@ -172,53 +219,53 @@ int string_word_delete (char *str, char *word)
 }
 
 // separate a string in its column components
-char** string_get_columns (char *str, int len, int nColumns)
+char **str_get_columns (char *str, int len, int n_columns)
 {
     // multiple len and rest len
-    int mLen, rLen;
+    int m_len, r_len;
     // indexes
-    int idxStr, idxAlpha;
+    int idx_str, idx_alpha;
     // string table
     char **cstr;
 
     // allocate the ciphertext space
-    cstr = calloc(nColumns, sizeof(*cstr));
+    cstr = calloc(n_columns, sizeof(*cstr));
     if (!cstr)
         return NULL;
 
     // calculate
-    rLen = len % nColumns;
-    mLen = len - rLen;
-    mLen = mLen / nColumns;
+    r_len = len % n_columns;
+    m_len = len - r_len;
+    m_len = m_len / n_columns;
 
     // construct the different strings
-    for (idxAlpha = 0; idxAlpha < nColumns; idxAlpha++) {
-        cstr[idxAlpha] = calloc(mLen + 2, sizeof(**cstr));
-        for (idxStr = 0; idxStr < mLen; idxStr++) {
-            // cstr[idxAlpha][idxStr] = str[idxStr * nColumns + idxAlpha];
-            cstr[idxAlpha][idxStr] = str[idxAlpha * nColumns + idxStr];
+    for (idx_alpha = 0; idx_alpha < n_columns; idx_alpha++) {
+        cstr[idx_alpha] = calloc(m_len + 2, sizeof(**cstr));
+        for (idx_str = 0; idx_str < m_len; idx_str++) {
+            // cstr[idx_alpha][idx_str] = str[idx_str * n_columns + idx_alpha];
+            cstr[idx_alpha][idx_str] = str[idx_alpha * n_columns + idx_str];
         }
     }
 
     // end the different strings
-    for (idxAlpha = 0; idxAlpha < rLen; idxAlpha++) {
-        for (idxStr = mLen; idxStr < mLen + 1; idxStr++) {
-            // cstr[idxAlpha][idxStr] = str[idxStr * nColumns + idxAlpha];
-            cstr[idxAlpha][idxStr] = str[idxAlpha * nColumns + idxStr];
+    for (idx_alpha = 0; idx_alpha < r_len; idx_alpha++) {
+        for (idx_str = m_len; idx_str < m_len + 1; idx_str++) {
+            // cstr[idx_alpha][idx_str] = str[idx_str * n_columns + idx_alpha];
+            cstr[idx_alpha][idx_str] = str[idx_alpha * n_columns + idx_str];
         }
-        // printf("cstr: '%s'\n", cstr[idxAlpha]);
+        // printf("cstr: '%s'\n", cstr[idx_alpha]);
     }
 
     return cstr;
 }
 
 // normalize string to ascii (no accent, etc)
-char *normalize_str (char *str, int szStr)
+char *str_normalize (char *str, int szStr)
 {
-    int idxStr, idxNew;
+    size_t idx_str, idx_new;
     // normalized string
-    char *normalized = NULL;
-    size_t sznormalized = 0;
+    char *normalized;
+    size_t sz_normalized;
     // return code
     int rc;
 
@@ -228,18 +275,20 @@ char *normalize_str (char *str, int szStr)
 
     // remove all accents and diacritics
     // ISO646-US === ASCII
-    rc = unac_string("ISO646-US", str, szStr, &normalized, &sznormalized);
+    normalized = NULL;
+    sz_normalized = 0;
+    rc = unac_string("ISO646-US", str, szStr, &normalized, &sz_normalized);
     if (rc < 0)
-        fatal("error: normalize_str(): Failed removing accents\n");
-    // printf("normalize_str():normalized: '%s'\n", normalized);
+        fatal("error: str_normalize(): Failed removing accents\n");
+    // printf("str_normalize():normalized: '%s'\n", normalized);
 
     // toupper string
-    for (idxStr = 0, idxNew = 0; idxStr < sznormalized; idxStr++) {
-        if (isalpha(normalized[idxStr])) {
-            normalized[idxNew++] = toupper(normalized[idxStr]);
+    for (idx_str = 0, idx_new = 0; idx_str < sz_normalized; idx_str++) {
+        if (isalpha(normalized[idx_str])) {
+            normalized[idx_new++] = toupper(normalized[idx_str]);
         }
     }
-    normalized[idxNew] = '\0';
+    normalized[idx_new] = '\0';
 
     return normalized;
 }
@@ -315,7 +364,7 @@ int binstr_count_digits (char *binstr, int len_binstr)
     int idx_binstr, max_bin;
 
     if (!binstr || len_binstr <= 0) {
-        fprintf(stderr, "error: binstr_count_digits(): bad parameter(s)\n");
+        fprintf (stderr, "error: binstr_count_digits(): Bad parameter(s)\n");
         return -1;
     }
 
@@ -384,7 +433,7 @@ uint8_t *hexstr_to_bin (char *hexstr, int len_hexstr)
 uint8_t *bin_to_hexstr (char *bin, int len_bin)
 {
     uint8_t hexdigit;
-    int idx_bin, idx_hexstr;
+    int idx_bin;
     uint8_t *hexstr, *p_hexstr;
 
     if (!bin || len_bin <= 0) {
