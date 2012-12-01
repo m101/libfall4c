@@ -39,8 +39,8 @@ struct hashtable_node {
 // associative array
 struct hashtable_t {
     struct tree_t *bst;
-    struct list_simple *keys;
-    struct list_simple *values;
+    struct tree_t *keys;
+    struct tree_t *values;
 };
 
 struct hashtable_t *hashtable_new (void);

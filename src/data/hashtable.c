@@ -21,7 +21,9 @@
 #include <string.h>
 
 #include "data/hashtable.h"
+#include "data/list.h"
 #include "data/tree_binary.h"
+#include "string_ext.h"
 
 int hashtable_comparator (void *data1, void *data2)
 {
@@ -41,14 +43,14 @@ size_t hashtable_elt_size (void *elt)
     return sizeof(struct hashtable_node);
 }
 
-int _hashtable_init_callbacks (struct hashtable_t *htable)
+int _hashtable_init_callbacks (struct tree_t *bst)
 {
-    if (!htable || !htable->bst)
+    if (!bst)
         return -1;
 
-    tree_set_callback (htable->bst, TREE_CALLBACK_COMPARATOR, hashtable_comparator);
-    tree_set_callback (htable->bst, TREE_CALLBACK_GET_DATA_SIZE, hashtable_elt_size);
-    tree_set_callback (htable->bst, TREE_CALLBACK_DESTROY_DATA, hashtable_destroy);
+    tree_set_callback (bst, comparator, hashtable_comparator);
+    tree_set_callback (bst, get_data_size, hashtable_elt_size);
+    tree_set_callback (bst, destroy_data, hashtable_destroy);
 
     return 0;
 }
@@ -64,7 +66,13 @@ struct hashtable_t *hashtable_new (void)
     // htable->bst = tree_new (hashtable_comparator, hashtable_elt_size);
     htable->bst = tree_new ();
 
-    rc = _hashtable_init_callbacks (htable);
+    // values and keys callbacks
+    htable->keys = tree_new();
+    tree_set_callback (htable->keys, comparator, string_cmp);
+    htable->values = tree_new();
+    tree_set_callback (htable->values, comparator, string_cmp);
+
+    rc = _hashtable_init_callbacks (htable->bst);
     if (rc < 0) {
         hashtable_destroy(&htable);
         return NULL;
@@ -77,6 +85,7 @@ void hashtable_node_destroy_data (void **data)
 {
     struct hashtable_node **node;
 
+    node = data;
     if (!node || !*node) {
         fprintf (stderr, "error: dict_destroy_data(): Bad parameter(s)\n");
         return;
@@ -106,8 +115,8 @@ void hashtable_destroy (struct hashtable_t **htable)
 // set a value
 struct hashtable_t* hashtable_set_value (struct hashtable_t **htable, char *key, void *value)
 {
-    int rc;
     struct hashtable_node *elt;
+    struct string_t *s_key;
 
     // pointer check
     if (!htable || !key || !value)
@@ -129,8 +138,10 @@ struct hashtable_t* hashtable_set_value (struct hashtable_t **htable, char *key,
     elt->value = value;
     
     // keep track of keys and values
-    list_append_data (&((*htable)->keys), key);
-    list_append_data (&((*htable)->values), value);
+    string_set (&s_key, key);
+    (*htable)->keys = tree_new();
+    bst_add ((*htable)->keys, s_key);
+    // bst_add (&((*htable)->values), value);
 
     // add value in tree
     bst_add ((*htable)->bst, elt);
@@ -148,7 +159,7 @@ void *hashtable_get_value (struct hashtable_t *htable, char *key)
     if (!htable || !key)
         return NULL;
 
-    rc = _hashtable_init_callbacks (htable);
+    rc = _hashtable_init_callbacks (htable->bst);
     if (rc < 0)
         return NULL;
 
@@ -163,7 +174,6 @@ void *hashtable_get_value (struct hashtable_t *htable, char *key)
 
 void *_hashtable_get_keys (struct tree_t *bst, struct tree_node_t *node, struct list_simple **keys)
 {
-    int result;
     struct hashtable_node *hnode;
 
     // key not found
@@ -194,7 +204,6 @@ struct list_simple *hashtable_get_keys (struct hashtable_t *htable)
 
 void *_hashtable_get_values (struct tree_t *bst, struct tree_node_t *node, struct list_simple **values)
 {
-    int result;
     struct hashtable_node *hnode;
 
     // value not found
@@ -213,8 +222,12 @@ struct list_simple *hashtable_get_values (struct hashtable_t *htable)
 {
     struct list_simple *values;
 
+    if (!htable)
+        return NULL;
+
     values = NULL;
-    _hashtable_get_values (htable->bst, htable->bst->root, &values);
+    if (htable->bst)
+        _hashtable_get_values (htable->bst, htable->bst->root, &values);
 
     return values;
 }
