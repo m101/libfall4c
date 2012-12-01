@@ -35,11 +35,7 @@ extern "C"
 #define TREE_AA
 #define TREE_HEAP // TREAP
 
-// callbacks ids
-#define TREE_CALLBACK_MAX_NUM           16
-#define TREE_CALLBACK_COMPARATOR        0
-#define TREE_CALLBACK_DESTROY_DATA      1
-#define TREE_CALLBACK_GET_DATA_SIZE     2
+#define tree_set_callback(bst, name, callback)  bst->name = callback
 
 // generic tree structure
 struct tree_t
@@ -49,14 +45,10 @@ struct tree_t
     // number of nodes
     size_t n;
 
-    // callbacks
-    uint64_t (*callbacks[TREE_CALLBACK_MAX_NUM]) (void *data1, void *data2);
-
-    // functions
+    // methods
     int (*comparator)(void *data1, void *data2);
     void (*destroy_data)(void **data);
     size_t (*get_data_size)(void *data);
-    // view functions
     void (*show)(void *data);
 };
 
@@ -90,18 +82,7 @@ struct tree_node_t
 // Create new tree
 struct tree_t *tree_new (void);
 // Destroy tree
-struct tree_t *tree_free (struct tree_t *tree, void *(*fct_free)(void *data));
-
-// setters
-struct tree_t *tree_set_callback (struct tree_t *tree, int id_callback, void (*callback)());
-// comparator
-void tree_set_comparator (int (*comparator)(void *, void *));
-//
-void tree_set_get_data_size (size_t (*get_data_size)(void *));
-//
-void tree_set_destroy (void (*destroy_data)(void *data));
-//
-void tree_set_show (void (*show)(void *data));
+struct tree_t *tree_free (struct tree_t *tree, void (*fct_free)(void *data));
 // recursively compute height
 int bst_depth (struct tree_t *bst);
 

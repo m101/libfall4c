@@ -42,9 +42,9 @@ int _tree_default_get_data_size (void *data)
 
 struct tree_t *_tree_init_callbacks (struct tree_t *tree)
 {
-    tree_set_callback (tree, TREE_CALLBACK_COMPARATOR, _tree_default_comparator);
-    tree_set_callback (tree, TREE_CALLBACK_DESTROY_DATA, _tree_default_destroy_data);
-    tree_set_callback (tree, TREE_CALLBACK_GET_DATA_SIZE, _tree_default_get_data_size);
+    tree_set_callback (tree, comparator, _tree_default_comparator);
+    tree_set_callback (tree, destroy_data, _tree_default_destroy_data);
+    tree_set_callback (tree, get_data_size, _tree_default_get_data_size);
 
     return 0;
 }
@@ -62,35 +62,6 @@ struct tree_t* tree_new (void)
     return tree_table;
 }
 
-struct tree_t *tree_set_callback (struct tree_t *tree, int id_callback, void (*callback)())
-{
-    if (!tree)
-        return NULL;
-
-    switch (id_callback) {
-        case TREE_CALLBACK_COMPARATOR:
-            tree->callbacks[TREE_CALLBACK_COMPARATOR] = callback;
-            tree->comparator = callback;
-            break;
-
-        case TREE_CALLBACK_DESTROY_DATA:
-            tree->callbacks[TREE_CALLBACK_DESTROY_DATA] = callback;
-            tree->destroy_data = callback;
-            break;
-
-        case TREE_CALLBACK_GET_DATA_SIZE:
-            tree->callbacks[TREE_CALLBACK_GET_DATA_SIZE] = callback;
-            tree->get_data_size = callback;
-            break;
-
-        default:
-            fprintf(stderr, "error: callback was not defined\n");
-            break;
-    }
-
-    return tree;
-}
-
 /*!  @brief Add new callback using an id
  */
 struct tree_t* tree_add_callback_from_id (int id, void (*callback)(void *, void *))
@@ -105,7 +76,7 @@ struct tree_t* tree_add_callback_from_name (char *name, void (*callback)(void *,
 }
 
 // recursively traverse nodes to free them
-struct tree_t *_tree_free (struct tree_node_t *node, void *(*fct_free)(void *data))
+struct tree_t *_tree_free (struct tree_node_t *node, void (*fct_free)(void *data))
 {
     if (!node)
         return NULL;
@@ -119,7 +90,7 @@ struct tree_t *_tree_free (struct tree_node_t *node, void *(*fct_free)(void *dat
 
 /*!  @brief  Destroy tree
 */
-struct tree_t *tree_free (struct tree_t *tree, void *(*fct_free)(void *data))
+struct tree_t *tree_free (struct tree_t *tree, void (*fct_free)(void *data))
 {
     if (!tree)
         return NULL;
