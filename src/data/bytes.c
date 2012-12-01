@@ -16,20 +16,44 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _RAW_DATA_H_
-#define _RAW_DATA_H_
-
 #include <stdio.h>
 #include <stdlib.h>
 
-struct raw_data {
-    unsigned char *data;
-    size_t capacity;
-    size_t used;
-};
+#include "data/bytes.h"
 
-struct raw_data* raw_data_new(size_t size);
-struct raw_data* raw_data_realloc(struct raw_data *rd, size_t size);
-void raw_data_destroy(struct raw_data **data);
+struct bytes *bytes_new (size_t size)
+{
+    struct bytes *bytes;
 
-#endif /* _RAW_DATA_H_ */
+    bytes = calloc(1, sizeof(*bytes));
+    bytes->data = calloc(size, sizeof(*(bytes->data)));
+    bytes->capacity = size;
+
+    return bytes;
+}
+
+struct bytes *bytes_realloc (struct bytes *bytes, size_t size)
+{
+    if (!bytes)
+        return NULL;
+
+    bytes->capacity = size;
+    bytes->data = realloc(bytes->data, bytes->capacity);
+    if (bytes->data == NULL)
+        return NULL;
+
+    return bytes;
+}
+
+void bytes_destroy (struct bytes **bytes)
+{
+    if (!bytes)
+        return;
+    if (!*bytes)
+        return;
+
+    free((*bytes)->data);
+    free(*bytes);
+    *bytes = NULL;
+}
+
