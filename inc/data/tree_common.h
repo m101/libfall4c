@@ -43,7 +43,7 @@ struct tree_t
     // root of the tree
     struct tree_node_t *root;
     // number of nodes
-    size_t n;
+    size_t size;
 
     // methods
     int (*comparator)(void *data1, void *data2);

@@ -35,6 +35,7 @@ struct tree_node_t *_bst_add (struct tree_t *bst, struct tree_node_t **node, voi
     if (!(*node)) {
         *node = calloc (1, sizeof(**node));
         (*node)->data = data;
+        bst->size++;
         return *node;
     }
 
@@ -241,5 +242,36 @@ struct tree_t *bst_del (struct tree_t *bst, void *data)
     if (!bst ||  !data)
         return -1;
     return _bst_del (bst, &(bst->root), data);
+}
+
+/*! @brief Recursive stub for binary tree walking
+*/
+struct tree_node_t *_bst_walk (struct tree_t *bst, struct tree_node_t *node, void *(*action) (void *data))
+{
+    int result;
+
+    // key not found
+    if (!bst || !node || !action)
+        return NULL;
+
+    _bst_walk (bst, node->left, action);
+    action (node->data);
+    _bst_walk (bst, node->right, action);
+
+    return node;
+}
+
+struct tree_t *bst_walk (struct tree_t *bst, void *(*action) (void *data))
+{
+    struct tree_node_t *node;
+
+    if (!bst || !action) {
+        fprintf (stderr, "error: bst_walk(): Bad parameter(s)\n");
+        return NULL;
+    }
+
+    node = _bst_walk (bst, bst->root, action);
+
+    return (node ? bst : NULL);
 }
 

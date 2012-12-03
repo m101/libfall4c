@@ -33,6 +33,7 @@ struct tree_t *bst_add (struct tree_t *bst, void *data);
 // Search tree for specified data
 void *bst_search (struct tree_t *bst, void *data);
 struct tree_t *bst_del (struct tree_t *bst, void *data);
+struct tree_t *bst_walk (struct tree_t *bst, void *(*action) (void *data));
 
 #ifdef __cplusplus
 }
