@@ -103,12 +103,19 @@ struct list_simple *list_append_list (struct list_simple **list1, struct list_si
     printf ("list_merge(): number of nodes in list2: %d (before)\n", list_count_nodes(*list2));
 #endif
 
-    (*list1)->tail->next = (*list2)->head;
-    (*list2)->head->prev = (*list1)->tail;
-    (*list1)->size = (*list1)->size + (*list2)->size;
+    if (*list1) {
+        (*list1)->tail->next = (*list2)->head;
+        (*list2)->head->prev = (*list1)->tail;
+        (*list1)->size = (*list1)->size + (*list2)->size;
 
-    free (*list2);
-    *list2 = NULL;
+        free (*list2);
+        *list2 = NULL;
+    }
+    else {
+        *list1 = *list2;
+        free (*list2);
+        *list2 = NULL;
+    }
 
 #ifdef DEBUG
     printf ("list_merge: number of nodes in list: %d (after)\n", list_count_nodes(*list1));
@@ -177,7 +184,7 @@ int _list_append_node (struct list_simple **list, struct list_node *node)
 
     if ((*list)->tail == node)
         return -1;
-    
+
     // append_node, we only want 1 node (and avoid circular references)
     prev = node->prev;
     next = node->next;
@@ -266,7 +273,7 @@ int _list_prepend_node (struct list_simple **list, struct list_node *node)
 
     if ((*list)->head == node)
         return -1;
-    
+
     // prepend node, we only want 1 node (and avoid circular references)
     prev = node->prev;
     next = node->next;
