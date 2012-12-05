@@ -18,13 +18,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "data/data_ops.h"
 #include "data/list.h"
 
 struct list_node* _list_has_node (struct list_simple *list, struct list_node *node);
 // default constructor for node
 struct list_node* _list_node_new (void *data);
 // default destructor for node
-int _list_node_destroy (struct list_node **node, void (*destroy_data)(void *));
+int _list_node_destroy (struct list_node **node, void (*destroy_data)(void **));
 // append a node to existing list
 int _list_append_node (struct list_simple **list, struct list_node *node);
 // prepend a node to existing list
@@ -36,14 +37,25 @@ int _list_remove_node (struct list_simple *list, struct list_node **node);
 // remove a node at specified position
 int _list_remove_node_at_pos (struct list_simple **list, size_t pos);
 
+struct data_ops list_data_ops = {
+    .comparator = comparator_no_ops,
+    .destroy = destroy_no_ops,
+    .get_size = get_size_no_ops,
+    .show = show_no_ops
+};
+
 // default constructor for list
 struct list_simple* list_new (void) 
 {
-    return calloc(1, sizeof(struct list_simple));
+    struct list_simple *list = calloc(1, sizeof(struct list_simple));
+
+    list->dops = &list_data_ops;
+
+    return list;
 }
 
 // default destructor
-int list_destroy (struct list_simple **list, void (*destroy_data)(void *)) 
+int list_destroy (struct list_simple **list) 
 {
     struct list_node *node, *next;
 
@@ -53,7 +65,7 @@ int list_destroy (struct list_simple **list, void (*destroy_data)(void *))
     // we traverse the linked list to destroy it
     for (node = list_begin(*list); node != NULL; ) {
         next = node->next;
-        _list_node_destroy(&node, destroy_data);
+        _list_node_destroy(&node, (*list)->dops->destroy);
         node = next;
     }
 
@@ -150,7 +162,7 @@ struct list_node* _list_node_new (void *data)
 }
 
 // default destructor for node
-int _list_node_destroy (struct list_node **node, void (*destroy_data)(void *))
+int _list_node_destroy (struct list_node **node, void (*destroy_data)(void **))
 {
     if (!node || !*node)
         return -1;
@@ -162,7 +174,7 @@ int _list_node_destroy (struct list_node **node, void (*destroy_data)(void *))
         (*node)->next->prev = (*node)->prev;
 
     if ((*node)->data && destroy_data) {
-        destroy_data((*node)->data);
+        destroy_data(&((*node)->data));
         (*node)->data = NULL;
     }
     free(*node);
@@ -430,9 +442,22 @@ int list_remove_data (struct list_simple *list, void *data)
     int rc;
     struct list_node *iter;
 
-    list_for_each (list, iter, data)
-        if (iter->data == data)
+    if (!list || !data) {
+        fprintf (stderr, "error: list_remove_data(): Bad parameter(s)\n");
+        return -1;
+    }
+
+    if (!list->dops || !list->dops->comparator) {
+        fprintf (stderr, "error: list_remove_data(): list->dops->comparator is NULL\n");
+        return -1;
+    }
+
+    list_for_each (list, iter, data) {
+        if (!iter)
+            continue;
+        if (list->dops->comparator (iter->data, data) == 0)
             _list_remove_node (list, &iter);
+    }
 
     return rc;
 }
@@ -509,7 +534,7 @@ struct list_node* _list_has_node (struct list_simple *list, struct list_node *no
     return iter;
 }
 
-struct list_simple *list_has_data (struct list_simple *list, void *data, int (*compare)(void *data1, void* data2))
+struct list_simple *list_has_data (struct list_simple *list, void *data)
 {
     struct list_node *node;
 
@@ -517,7 +542,7 @@ struct list_simple *list_has_data (struct list_simple *list, void *data, int (*c
         return NULL;
 
     for (node = list->head; node != NULL; node = node->next) {
-        if (compare(node->data, data) == 0)
+        if (list->dops->comparator(node->data, data) == 0)
             return list;
     }
 

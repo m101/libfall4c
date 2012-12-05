@@ -25,6 +25,8 @@ extern "C"
 
 #include <stdio.h>
 
+#include "data/data_ops.h"
+
 struct list_node {
     // doubly linked list
     struct list_node *next, *prev;
@@ -37,7 +39,12 @@ struct list_node {
 struct list_simple {
     struct list_node *head, *tail;
     size_t size;
+
+    // methods
+    struct data_ops *dops;
 };
+
+#define list_set_callback(list, name, callback) if (list->dops) list->dops->name = callback
 
 #define list_get_size(list) (list ? (list)->size : -1)
 #define list_begin(list) (list ? (list)->head : NULL)
@@ -49,7 +56,7 @@ struct list_simple {
     // default constructor for list
     struct list_simple *list_new (void);
     // default destructor
-    int list_destroy (struct list_simple **list, void (*destroy_data)(void *));
+    int list_destroy (struct list_simple **list);
     int list_count_nodes (struct list_simple *list);
     // append data to existing struct list
     int list_append_data (struct list_simple **list, void *data);
@@ -63,7 +70,7 @@ struct list_simple {
     void *list_get_data_at_pos (struct list_simple *list, size_t pos);
     // show all elements of the list
     void list_show_all (struct list_simple *list);
-    struct list_simple *list_has_data (struct list_simple *list, void *data, int (*compare)(void *data1, void* data2));
+    struct list_simple *list_has_data (struct list_simple *list, void *data);
 
     // merge two list in one, no dupes checks, return new list
     struct list_simple *list_append_list (struct list_simple **list1, struct list_simple **list2);
