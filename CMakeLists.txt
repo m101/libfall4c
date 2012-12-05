@@ -34,6 +34,7 @@ add_library(
     src/file_browse.c
     src/data/bytes.c
     src/data/cache.c
+    src/data/data_ops.c
     src/data/wordlist.c
     src/data/list.c
     src/data/queue.c
