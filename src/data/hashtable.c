@@ -25,6 +25,16 @@
 #include "data/tree_binary.h"
 #include "string_ext.h"
 
+int hashtable_comparator (void *data1, void *data2);
+size_t hashtable_elt_size (void *elt);
+
+struct data_ops hashtable_data_ops = {
+    .comparator = hashtable_comparator,
+    .destroy = hashtable_destroy,
+    .get_size = hashtable_elt_size,
+    .show = show_no_ops
+};
+
 int hashtable_comparator (void *data1, void *data2)
 {
     struct hashtable_node *node1 = data1, *node2 = data2;
@@ -43,18 +53,6 @@ size_t hashtable_elt_size (void *elt)
     return sizeof(struct hashtable_node);
 }
 
-int _hashtable_init_callbacks (struct tree_t *bst)
-{
-    if (!bst)
-        return -1;
-
-    tree_set_callback (bst, comparator, hashtable_comparator);
-    tree_set_callback (bst, get_data_size, hashtable_elt_size);
-    tree_set_callback (bst, destroy_data, hashtable_destroy);
-
-    return 0;
-}
-
 struct hashtable_t *hashtable_new (void)
 {
     int rc;
@@ -67,16 +65,14 @@ struct hashtable_t *hashtable_new (void)
     htable->bst = tree_new ();
 
     // values and keys callbacks
+    /*
     htable->keys = tree_new();
     tree_set_callback (htable->keys, comparator, string_cmp);
     htable->values = tree_new();
     tree_set_callback (htable->values, comparator, string_cmp);
+    //*/
 
-    rc = _hashtable_init_callbacks (htable->bst);
-    if (rc < 0) {
-        hashtable_destroy(&htable);
-        return NULL;
-    }
+    htable->bst->dops = &hashtable_data_ops;
 
     return htable;
 }
@@ -158,10 +154,10 @@ void *hashtable_get_value (struct hashtable_t *htable, char *key)
     // pointer check
     if (!htable || !key)
         return NULL;
-
-    rc = _hashtable_init_callbacks (htable->bst);
-    if (rc < 0)
+    if (!htable->bst)
         return NULL;
+
+    htable->bst->dops = &hashtable_data_ops;
 
     // search element in tree
     elt.hash_key = fnv_hash (key, strlen(key));

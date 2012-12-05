@@ -20,34 +20,18 @@
 
 #include <assert.h>
 
+#include "data/data_ops.h"
 #include "data/tree_common.h"
+
+struct data_ops tree_data_ops = {
+    .comparator = comparator_no_ops,
+    .destroy = destroy_no_ops,
+    .get_size = get_size_no_ops,
+    .show = show_no_ops
+};
 
 // Create a tree node
 struct tree_node_t* _tree_node_new (void);
-
-int _tree_default_comparator (void *data1, void *data2)
-{
-    return 0;
-}
-
-int _tree_default_destroy_data (void **data)
-{
-    return 0;
-}
-
-int _tree_default_get_data_size (void *data)
-{
-    return 0;
-}
-
-struct tree_t *_tree_init_callbacks (struct tree_t *tree)
-{
-    tree_set_callback (tree, comparator, _tree_default_comparator);
-    tree_set_callback (tree, destroy_data, _tree_default_destroy_data);
-    tree_set_callback (tree, get_data_size, _tree_default_get_data_size);
-
-    return 0;
-}
 
 /*  @brief  Create new tree
 */
@@ -57,7 +41,7 @@ struct tree_t* tree_new (void)
 
     tree_table = calloc (1, sizeof(*tree_table));
     assert (tree_table != NULL);
-    _tree_init_callbacks (tree_table);
+    tree_table->dops = &tree_data_ops;
 
     return tree_table;
 }

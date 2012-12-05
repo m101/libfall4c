@@ -37,6 +37,8 @@ extern "C"
 
 #define tree_set_callback(bst, name, callback)  bst->name = callback
 
+#include "data/data_ops.h"
+
 // generic tree structure
 struct tree_t
 {
@@ -46,10 +48,7 @@ struct tree_t
     size_t size;
 
     // methods
-    int (*comparator)(void *data1, void *data2);
-    void (*destroy_data)(void **data);
-    size_t (*get_data_size)(void *data);
-    void (*show)(void *data);
+    struct data_ops *dops;
 };
 
 // node structure

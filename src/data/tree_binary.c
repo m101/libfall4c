@@ -42,7 +42,7 @@ struct tree_node_t *_bst_add (struct tree_t *bst, struct tree_node_t **node, voi
     // we don't check equality since we don't want dupes
     // if smaller
     // then we go left
-    result = bst->comparator((*node)->data, data);
+    result = bst->dops->comparator((*node)->data, data);
     if (result < 0)
         return _bst_add (bst, &((*node)->left), data);
     // if bigger
@@ -77,7 +77,7 @@ struct tree_t *_bst_show (struct tree_t *bst, struct tree_node_t *node)
         return NULL;
 
     _bst_show (bst, node->next);
-    bst->show (node->data);
+    bst->dops->show (node->data);
     _bst_show (bst, node->prev);
 
     return bst;
@@ -131,7 +131,7 @@ struct tree_node_t *_bst_search (struct tree_t *bst, struct tree_node_t *node, v
     if (!bst || !node || !data)
         return NULL;
 
-    result = bst->comparator (node->data, data);
+    result = bst->dops->comparator (node->data, data);
 
     // if equal
     // then we found it
@@ -168,7 +168,7 @@ struct tree_t *_bst_destroy_node (struct tree_t *bst, struct tree_node_t **node)
     if (!bst || !node || !*node)
         return NULL;
 
-    bst->destroy_data(&((*node)->data));
+    bst->dops->destroy (&((*node)->data));
     free(*node);
     *node = NULL;
 
@@ -187,7 +187,7 @@ struct tree_node_t *_bst_del (struct tree_t *bst, struct tree_node_t **node, voi
     if (!bst || !node || !*node || !data)
         return NULL;
 
-    result = bst->comparator ((*node)->data, data);
+    result = bst->dops->comparator ((*node)->data, data);
 
     // if below
     if (result < 0)
