@@ -1,0 +1,11 @@
+= Dependencies
+
+- cmake
+- libunac1-dev
+
+# apt-get install libunac1-dev
+
+= Compilation
+
+./build.sh && cd build && make && sudo make install && cd ..
+
