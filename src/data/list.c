@@ -37,7 +37,7 @@ int _list_remove_node (struct list_simple *list, struct list_node **node);
 // remove a node at specified position
 int _list_remove_node_at_pos (struct list_simple **list, size_t pos);
 
-struct data_ops list_data_ops = {
+static const struct data_ops list_data_ops = {
     .comparator = comparator_no_ops,
     .destroy = destroy_no_ops,
     .get_size = get_size_no_ops,
@@ -49,13 +49,35 @@ struct list_simple* list_new (void)
 {
     struct list_simple *list = calloc(1, sizeof(struct list_simple));
 
-    list->dops = &list_data_ops;
+    list->dops = calloc (1, sizeof(list_data_ops));
+    memcpy (list->dops, &list_data_ops, sizeof(list_data_ops));
 
     return list;
 }
 
+// free list without destructing objects
+int list_delete (struct list_simple **list)
+{
+    struct list_node *node, *next;
+
+    if (!list ||  !*list)
+        return -1;
+
+    // we traverse the linked list to destroy it
+    for (node = list_begin(*list); node != NULL; ) {
+        next = node->next;
+        _list_node_destroy (&node, NULL);
+        node = next;
+    }
+
+    free(*list);
+    *list = NULL;
+
+    return 0;
+}
+
 // default destructor
-int list_destroy (struct list_simple **list) 
+int list_destroy (struct list_simple **list)
 {
     struct list_node *node, *next;
 

@@ -6,7 +6,7 @@
 
 // about the cache structure
 enum {
-    ERR_CACHE_UNDEFINED,
+    ERR_CACHE_UNDEFINED = 1,
     ERR_CACHE_FULL
 };
 
@@ -22,6 +22,8 @@ struct cache_t {
 #define cache_for_each(cache, iter, data)   for (iter = 0; iter < cache_get_size(cache); data = cache_get(cache, iter), iter++)
 
 /* cache structure */
+// init cache
+struct cache_t *cache_init (struct cache_t *cache, int n_objects);
 // allocate cache
 struct cache_t* cache_new(int n_objects);
 // allocate cache by copy

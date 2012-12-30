@@ -21,13 +21,15 @@
 #include "data/queue.h"
 
 // push data on the queue
-struct queue_t* queue_push (struct queue_t **p, void *data)
+struct queue_t *queue_push (struct queue_t **p, void *data)
 {
     struct queue_element_t *elt;
 
     // pointer check
-    if (!p || !data)
+    if (!p || !data) {
+        fprintf (stderr, "error: queue_push(): Bad parameter(s)\n");
         return NULL;
+    }
 
     elt = calloc (1, sizeof(*elt));
     if (!elt) {
@@ -38,8 +40,10 @@ struct queue_t* queue_push (struct queue_t **p, void *data)
     // was queue allocated?
     if (!*p) {
         *p = calloc (1, sizeof(**p));
-        if (!*p)
+        if (!*p) {
+            fprintf (stderr, "error: queue_push(): Failed allocating root node\n");
             return NULL;
+        }
         // update base pointer
         (*p)->front = elt;
     }
@@ -59,7 +63,7 @@ struct queue_t* queue_push (struct queue_t **p, void *data)
 }
 
 // get last data added to the queue
-void* queue_pop (struct queue_t **p)
+void *queue_pop (struct queue_t **p)
 {
     void *data;
     struct queue_element_t *elt = NULL;
@@ -77,17 +81,18 @@ void* queue_pop (struct queue_t **p)
         return NULL;
     }
 
+    // since we are popping front
+    // we ought to unref back if it's the same
+    if ((*p)->front == (*p)->back)
+        (*p)->back = NULL;
+
     elt = (*p)->front;
-    // remove it from the queue
-    // queue front follower become the queue front
-    if (elt->next)
-        elt->next->prev = NULL;
     // update top element of the queue
     (*p)->front = (*p)->front->next;
-    // get element at the front of the queue
-    // node prev and next
-    elt->prev = NULL;
-    elt->next = NULL;
+    // remove it from the queue
+    // queue front follower become the queue front
+    if ((*p)->front)
+        (*p)->front->prev = NULL;
     // get correct count
     (*p)->size--;
     // get data
@@ -95,6 +100,9 @@ void* queue_pop (struct queue_t **p)
 
     // destroy element
     free (elt);
+
+    if ( (*p)->front == NULL || (*p)->back == NULL )
+        free (*p), *p = NULL;
 
     return data;
 }

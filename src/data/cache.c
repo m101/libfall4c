@@ -4,6 +4,23 @@
 #include "data/cache.h"
 #include "data/list.h"
 
+// init cache
+struct cache_t *cache_init (struct cache_t *cache, int n_objects)
+{
+    if (!cache || n_objects <= 0)
+        return NULL;
+
+    cache->objects = calloc(n_objects, sizeof(*cache->objects));
+    if (!cache->objects) {
+        free(cache);
+        return NULL;
+    }
+
+    cache->capacity = n_objects;
+
+    return cache;
+}
+
 // allocate cache
 struct cache_t *cache_new (int n_objects)
 {
@@ -16,15 +33,7 @@ struct cache_t *cache_new (int n_objects)
     if (!cache)
         return NULL;
 
-    cache->objects = calloc(n_objects, sizeof(*cache->objects));
-    if (!cache->objects) {
-        free(cache);
-        return NULL;
-    }
-
-    cache->capacity = n_objects;
-
-    return cache;
+    return cache_init(cache, n_objects);
 }
 
 // allocate gadget cache by copy
@@ -81,8 +90,6 @@ int cache_purge (struct cache_t *cache, void (*destroy)(void **data))
 // purge cache: just "free" by resetting the used counter
 int cache_reset (struct cache_t *cache)
 {
-    int idx_object;
-
     // check parameters
     if (!cache)
         return -ERR_CACHE_UNDEFINED;

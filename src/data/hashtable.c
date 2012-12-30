@@ -28,7 +28,7 @@
 int hashtable_comparator (void *data1, void *data2);
 size_t hashtable_elt_size (void *elt);
 
-struct data_ops hashtable_data_ops = {
+static const struct data_ops hashtable_data_ops = {
     .comparator = hashtable_comparator,
     .destroy = hashtable_destroy,
     .get_size = hashtable_elt_size,
@@ -65,12 +65,10 @@ struct hashtable_t *hashtable_new (void)
     htable->bst = tree_new ();
 
     // values and keys callbacks
-    /*
     htable->keys = tree_new();
     tree_set_callback (htable->keys, comparator, string_cmp);
     htable->values = tree_new();
     tree_set_callback (htable->values, comparator, string_cmp);
-    //*/
 
     htable->bst->dops = &hashtable_data_ops;
 

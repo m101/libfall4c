@@ -34,6 +34,7 @@ struct data_ops {
 
 int comparator_no_ops (void *data1, void *data2);
 void destroy_no_ops (void **data);
+void destroy_allocated (void **data);
 void get_size_no_ops (void *data);
 void show_no_ops (void *data);
 

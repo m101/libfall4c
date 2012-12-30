@@ -35,9 +35,9 @@ extern "C"
 #define TREE_AA
 #define TREE_HEAP // TREAP
 
-#define tree_set_callback(bst, name, callback)  bst->name = callback
+#define tree_set_callback(bst, name, callback)  bst->dops->name = callback
 
-#include "data/data_ops.h"
+#include "data_ops.h"
 
 // generic tree structure
 struct tree_t

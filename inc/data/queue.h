@@ -25,6 +25,8 @@ extern "C"
 
 #include <stdlib.h>
 
+#define queue_get_size(queue) (queue ? (queue)->size : -1)
+
 // queue
 struct queue_t
 {

@@ -25,7 +25,7 @@ extern "C"
 
 #include <stdio.h>
 
-#include "data/data_ops.h"
+#include "data_ops.h"
 
 struct list_node {
     // doubly linked list
@@ -50,11 +50,13 @@ struct list_simple {
 #define list_begin(list) (list ? (list)->head : NULL)
 #define list_end(list) (list ? (list)->tail : NULL)
 
-#define list_for_each(list, it, _data)   if (list) for (it = (list)->head, _data = it->data; it != NULL; it = it->next, _data = (it ? it->data : NULL))
-#define list_for_each_backward(list, it, _data)   if (list) for (it = (list)->tail, _data = it->data; it != NULL; it = it->prev, _data = (it ? it->data : NULL))
+#define list_for_each(list, it, _data)   if (list) for (it = (list)->head, _data = (it ? it->data : NULL); it != NULL; it = it->next, _data = (it ? it->data : NULL))
+#define list_for_each_backward(list, it, _data)   if (list) for (it = (list)->tail, _data = (it ? it->data : NULL); it != NULL; it = it->prev, _data = (it ? it->data : NULL))
 
     // default constructor for list
     struct list_simple *list_new (void);
+    // free list without destructing objects
+    int list_delete (struct list_simple **list);
     // default destructor
     int list_destroy (struct list_simple **list);
     int list_count_nodes (struct list_simple *list);

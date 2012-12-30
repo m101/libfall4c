@@ -25,6 +25,8 @@ extern "C"
 
 #include "tree_common.h"
 
+#define hashtable_for_each(htable, key, value)
+
 // associative array element
 struct hashtable_node {
     // key

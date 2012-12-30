@@ -23,7 +23,7 @@
 #include "data/data_ops.h"
 #include "data/tree_common.h"
 
-struct data_ops tree_data_ops = {
+static const struct data_ops tree_data_ops = {
     .comparator = comparator_no_ops,
     .destroy = destroy_no_ops,
     .get_size = get_size_no_ops,
@@ -41,7 +41,8 @@ struct tree_t* tree_new (void)
 
     tree_table = calloc (1, sizeof(*tree_table));
     assert (tree_table != NULL);
-    tree_table->dops = &tree_data_ops;
+    tree_table->dops = calloc (1, sizeof(tree_data_ops));
+    memcpy (tree_table->dops, &tree_data_ops, sizeof(tree_data_ops));
 
     return tree_table;
 }
