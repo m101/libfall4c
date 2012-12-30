@@ -67,6 +67,14 @@ void string_destroy (struct string_t **str)
     *str = NULL;
 }
 
+// get char *
+char *string_to_cstr (struct string_t *str)
+{
+    if (!str)
+        return NULL;
+    return str->bytes;
+}
+
 // secure string length
 size_t string_len (struct string_t *str)
 {
@@ -197,24 +205,56 @@ uint64_t fnv_hash (uint8_t *str, int len)
     return hash;
 }
 
+// remove starting and trailing spaces
+char *str_strip (char *str, int len)
+{
+    char *tmp;
+    int idx_str;
+
+    if (!str || len <= 0)
+        return NULL;
+
+    tmp = calloc (len, sizeof(*tmp));
+    if (!tmp)
+        return NULL;
+
+    // search for first non space character
+    for (idx_str = 0; idx_str < len; idx_str++) {
+        if (isspace (str[idx_str]) == 0) {
+            break;
+        }
+    }
+
+    // suppress it
+    memcpy (tmp, str + idx_str, len - idx_str);
+
+    // remove other blanks
+    for (idx_str = 0; idx_str < len; idx_str++) {
+        if (isspace (tmp[idx_str]))
+            tmp[idx_str] = '\0';
+    }
+
+    return tmp;
+}
+
 // delete a word in a string
 int str_word_delete (char *str, char *word)
 {
     char *p, *space;
-    
+
     p = strstr(str, word);
     if (!p) {
         fprintf (stderr, "error: str_word_delete(): Couldn't find word\n");
         return -1;
     }
-    
+
     space = strchr(p, ' ');
-    
+
     if (space)
         strcpy(p, space);
     else
         return -1;
-    
+
     return 0;
 }
 
@@ -293,70 +333,38 @@ char *str_normalize (char *str, int szStr)
     return normalized;
 }
 
-/*
-char *
-_DEFUN (strtok_r, (s, delim, lasts),
-	register char *s _AND
-	register const char *delim _AND
-	char **lasts)
+// replace char
+char *str_replace_chr (char *str, int len, int chr, int rep)
 {
-	register char *spanp;
-	register int c, sc;
-	char *tok;
+    int idx_str;
 
+    if (!str || len <= 0) {
+        fprintf (stderr, "error: str_replace(): Bad parameter(s)\n");
+        return NULL;
+    }
 
-	if (s == NULL && (s = *lasts) == NULL)
-		return (NULL);
+    for (idx_str = 0; idx_str < len; idx_str++) {
+        if (str[idx_str] == chr)
+            str[idx_str] = rep;
+    }
 
-	 // Skip (span) leading delimiters (s += strspn(s, delim), sort of).
-cont:
-	c = *s++;
-	for (spanp = (char *)delim; (sc = *spanp++) != 0;) {
-		if (c == sc)
-			goto cont;
-	}
-
-    // no non-delimiter characters
-	if (c == 0) {		
-		*lasts = NULL;
-		return (NULL);
-	}
-	tok = s - 1;
-
-	 // Scan token (scan for delimiters: s += strcspn(s, delim), sort of).
-	 // Note that delim must have one NUL; we stop if we see that, too.
-	for (;;) {
-		c = *s++;
-		spanp = (char *)delim;
-		do {
-			if ((sc = *spanp++) == c) {
-				if (c == 0)
-					s = NULL;
-				else
-					s[-1] = 0;
-				*lasts = s;
-				return (tok);
-			}
-		} while (sc != 0);
-	}
-	// NOTREACHED
+    return str;
 }
-//*/
 
 char *str_reverse (char *str)
 {
-  char *head, *tail;
+    char *head, *tail;
 
-  head = str;
-  tail = str + strlen(str) - 1;
+    head = str;
+    tail = str + strlen(str) - 1;
 
-  while (head < tail) {
-    *head = *tail;
-    head++;
-    tail--;
-  }
+    while (head < tail) {
+        *head = *tail;
+        head++;
+        tail--;
+    }
 
-  return str;
+    return str;
 }
 
 int binstr_count_digits (char *binstr, int len_binstr)
@@ -377,7 +385,7 @@ int binstr_count_digits (char *binstr, int len_binstr)
 }
 
 /* @desc    convert binstr to binary
- */
+*/
 uint8_t *hexstr_to_bin (char *hexstr, int len_hexstr)
 {
     int idx_hexstr, idx_digit, idx_bin, max_bin;
@@ -447,14 +455,12 @@ uint8_t *bin_to_hexstr (char *bin, int len_bin)
         return NULL;
     }
 
-    printf ("info : bin_to_hexstr(): hexstr (before): '%s'\n", hexstr);
     p_hexstr = hexstr;
     for (idx_bin = 0; idx_bin < len_bin; idx_bin++) {
         hexdigit = bin[idx_bin];
         snprintf(p_hexstr, 3, "%02x", hexdigit & 0xff);
         p_hexstr += 2;
     }
-    printf ("info : bin_to_hexstr(): hexstr (after) : '%s'\n", hexstr);
 
     return hexstr;
 }

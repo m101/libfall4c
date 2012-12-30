@@ -36,11 +36,15 @@ extern "C"
         // size of allocated space
         int capacity;
     };
+
+#define string_get_size(str)    (str ? (str)->size : -1)
     
     // init string
     struct string_t *string_set (struct string_t **dst, char *str);
     // destroy string
     void string_destroy (struct string_t **str);
+    // get char *
+    char *string_to_cstr (struct string_t *str);
     // secure string copy
     struct string_t *string_cpy (struct string_t *dst, struct string_t *src);
     // secure string concatenation
@@ -53,12 +57,16 @@ extern "C"
     int string_putsln (struct string_t *str);
 
     // str functions
+    // remove starting and trailing spaces
+    char *str_strip (char *str, int len);
     // delete a word in a string
     int str_word_delete (char *str, char *word);
     // separate a string in its column components
     char **str_get_columns (char *str, int len, int n_columns);
     // normalize string to ascii (no accent, etc)
     char *str_normalize (char *str, int sz_str);
+    // replace char
+    char *str_replace_chr (char *str, int len, int chr, int rep);
     
     // hashing functions
 #define str_hash(str, len)    fnv_hash(str, len)
@@ -67,12 +75,6 @@ extern "C"
     // FNV-1a hashing algorithm
     uint64_t fnv_hash (uint8_t *str, int len);
 
-    /*
-    char *_DEFUN (strtok_r, (s, delim, lasts),
-                	register char *s _AND
-                	register const char *delim _AND
-                	char **lasts);
-    */
     int binstr_count_digits (char *binstr, int len_binstr);
     // uint8_t *binstr_to_bin (char *binstr, int len_binstr);
     uint8_t *hexstr_to_bin (char *hexstr, int len_hexstr);
