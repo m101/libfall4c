@@ -24,14 +24,25 @@ extern "C"
 #endif
 
 #define _DEBUG_ 1
+#define MESSAGE_ERROR       1
+#define MESSAGE_WARNING     2
+#define MESSAGE_INFO        3
 
 #if _DEBUG_
-    #define debug_message(stream, fmt, ...)  fprintf(stream, fmt, ##__VA_ARGS__)
+    #define debug_message(level, fmt, ...)                      \
+        if (level == MESSAGE_ERROR)                             \
+            debug_printf(level, stderr, fmt, ##__VA_ARGS__);    \
+        else                                                    \
+            debug_printf(level, stdout, fmt, ##__VA_ARGS__);
 #else
     #define debug_message(level, fmt, ...)
 #endif
 
 int dump (unsigned char *bytes, size_t nbytes, size_t align);
+
+int debug_printf (int level, FILE *stream, char *fmt, ...);
+int debug_set_verbose_level (int level);
+int debug_get_verbose_level (void);
 
 #ifdef __cplusplus
 }

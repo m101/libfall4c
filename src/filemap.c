@@ -24,6 +24,8 @@
 #include "filemap_internal.h"
 #include "string_ext.h"
 
+#include "util/debug.h"
+
 static struct filemap_list_t *filemaps = NULL;
 
 // create filemap
@@ -33,20 +35,20 @@ struct filemap_t *filemap_create (char *filename)
     FILE *fp;
 
     if (!filename) {
-        fprintf (stderr, "error: filemap_create(): Bad parameters\n");
+        debug_printf (MESSAGE_ERROR, stderr, "error: filemap_create(): Bad parameters\n");
         return NULL;
     }
 
     // check filemap existence
     fmap = filemap_exist (filename);
     if (fmap) {
-        fprintf (stderr, "info : filemap_create_from_fp(): Filemap already exist, borrowing it\n");
+        debug_printf (MESSAGE_INFO, stdout, "info : filemap_create_from_fp(): Filemap already exist, borrowing it\n");
         return fmap;
     }
 
     fp = fopen (filename, "r");
     if (!fp) {
-        fprintf (stderr, "error: filemap_create(): Failed opening (r) %s\n", filename);
+        debug_printf (MESSAGE_ERROR, stderr, "error: filemap_create(): Failed opening (r) %s\n", filename);
         return NULL;
     }
 
@@ -186,7 +188,7 @@ struct filemap_t *_filemap_search (struct filemap_list_t *root, char *filename)
     // create filemap
     fp = fopen (filename, "r");
     if (!fp) {
-        fprintf (stderr, "error: filemap_create(): Failed opening (r) %s\n", filename);
+        debug_printf (MESSAGE_ERROR, stderr, "error: filemap_create(): Failed opening (r) %s\n", filename);
         return NULL;
     }
     needle = filemap_create_from_fp (fp);

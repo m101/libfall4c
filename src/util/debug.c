@@ -17,8 +17,11 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 #include <ctype.h>
+
+static int verbose_level = 0;
 
 // dump
 int dump (unsigned char *bytes, size_t nbytes, size_t align) {
@@ -103,4 +106,35 @@ int hexdump (unsigned int line_len, char *str)
     return 0;
 }
 
+int debug_printf (int level, FILE *stream, char *fmt, ...)
+{
+    va_list ap;
+
+    if (!level || !stream || !fmt)
+        return;
+
+    va_start(ap, fmt);
+
+    if (level <= verbose_level)
+        vfprintf (stream, fmt, ap);
+
+    va_end(ap);
+
+    return 0;
+}
+
+int debug_set_verbose_level (int level)
+{
+    if (level < 0)
+        return -1;
+
+    verbose_level = level;
+
+    return level;
+}
+
+int debug_get_verbose_level (void)
+{
+    return verbose_level;
+}
 

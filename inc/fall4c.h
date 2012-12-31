@@ -10,6 +10,8 @@
 #include "file_browse.h"
 #include "filemap.h"
 #include "string_ext.h"
+
+// data
 #include "data/cache.h"
 #include "data/tree_avl.h"
 #include "data/tree_binary.h"
@@ -18,5 +20,9 @@
 #include "data/list.h"
 #include "data/queue.h"
 #include "data/stack.h"
+
+// util
+#include "util/debug.h"
+#include "util/errors.h"
 
 #endif /* _FALL4C_DEFINE_ */
