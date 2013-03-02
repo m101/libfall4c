@@ -80,8 +80,10 @@ struct tree_node_t
 
 // Create new tree
 struct tree_t *tree_new (void);
-// Destroy tree
+// Free tree
 struct tree_t *tree_free (struct tree_t *tree, void (*fct_free)(void *data));
+// Destroy tree
+struct tree_t *tree_destroy (struct tree_t *tree, void (*fct_destroy)(void **data));
 // recursively compute height
 int bst_depth (struct tree_t *bst);
 

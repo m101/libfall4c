@@ -17,6 +17,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <assert.h>
 
@@ -26,6 +27,7 @@
 static const struct data_ops tree_data_ops = {
     .comparator = comparator_no_ops,
     .destroy = destroy_no_ops,
+    .free = free_no_ops,
     .get_size = get_size_no_ops,
     .show = show_no_ops
 };
@@ -35,7 +37,7 @@ struct tree_node_t* _tree_node_new (void);
 
 /*  @brief  Create new tree
 */
-struct tree_t* tree_new (void)
+struct tree_t *tree_new (void)
 {
     struct tree_t *tree_table;
 
@@ -47,40 +49,56 @@ struct tree_t* tree_new (void)
     return tree_table;
 }
 
-/*!  @brief Add new callback using an id
- */
-struct tree_t* tree_add_callback_from_id (int id, void (*callback)(void *, void *))
-{
-}
-
-
-/*!  @brief Add new callback using a callback name
- */
-struct tree_t* tree_add_callback_from_name (char *name, void (*callback)(void *, void *))
-{
-}
-
 // recursively traverse nodes to free them
-struct tree_t *_tree_free (struct tree_node_t *node, void (*fct_free)(void *data))
+struct tree_t *_tree_free (struct tree_node_t **node, void (*fct_free)(void *data))
 {
-    if (!node)
+    if (!node || !*node)
         return NULL;
 
-    _tree_free (node->left, fct_free);
-    _tree_free (node->right, fct_free);
-    free (node);
+    _tree_free (&((*node)->left), fct_free);
+    _tree_free (&((*node)->right), fct_free);
     if (fct_free)
-        fct_free (node->data);
+        fct_free ((*node)->data);
+    free (*node);
+    *node = NULL;
 }
 
-/*!  @brief  Destroy tree
+/*!  @brief  Free tree
 */
 struct tree_t *tree_free (struct tree_t *tree, void (*fct_free)(void *data))
 {
     if (!tree)
         return NULL;
+    if (!fct_free)
+        return NULL;
 
-    _tree_free (tree->root, fct_free);
+    _tree_free (&(tree->root), fct_free);
+    free (tree);
+}
+
+/*!  @brief  Destroy tree
+*/
+struct tree_t *_tree_destroy (struct tree_node_t **node, void (*fct_destroy)(void *data))
+{
+    if (!node || !*node)
+        return NULL;
+
+    _tree_destroy (&((*node)->left), fct_destroy);
+    _tree_destroy (&((*node)->right), fct_destroy);
+    if (fct_destroy)
+        fct_destroy (&((*node)->data));
+    free (*node);
+    *node = NULL;
+}
+
+/*!  @brief  Destroy tree
+*/
+struct tree_t *tree_destroy (struct tree_t *tree, void (*fct_destroy)(void **data))
+{
+    if (!tree)
+        return NULL;
+
+    _tree_destroy (&(tree->root), fct_destroy);
     free (tree);
 }
 

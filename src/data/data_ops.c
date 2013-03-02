@@ -11,6 +11,11 @@ void destroy_no_ops (void **data)
     return;
 }
 
+void free_no_ops (void *data)
+{
+    return;
+}
+
 void destroy_allocated (void **data)
 {
     if (!data) {

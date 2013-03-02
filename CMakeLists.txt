@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8.9)
+cmake_minimum_required (VERSION 2.8.6)
 project (libfall4c)
 
 set (CMAKE_BUILD_TYPE Debug)
@@ -104,6 +104,17 @@ target_link_libraries (avl_tree_test
     )
 # test: coverage
 add_test(NAME avl_tree_test COMMAND avl_tree_test)
+
+# executable testing hashtable
+add_executable (htable_test
+    tests/htable_test.c
+    )
+target_link_libraries (htable_test
+    fall4c
+    gcov
+    )
+# test: coverage
+add_test(NAME htable_test COMMAND htable_test)
 
 install (TARGETS fall4c DESTINATION lib)
 file (
