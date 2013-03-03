@@ -91,6 +91,7 @@ int list_destroy (struct list_simple **list)
         node = next;
     }
 
+    free((*list)->dops);
     free(*list);
     *list = NULL;
 

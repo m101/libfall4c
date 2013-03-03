@@ -114,6 +114,7 @@ void hashtable_node_destroy_data (void **data)
         return;
     }
 
+    // string_destroy (&((*node)->key));
     free ((*node)->key);
     // free ((*node)->value);
     free (*node);
@@ -132,10 +133,18 @@ void hashtable_destroy (struct hashtable_t **htable)
     if (!htable || !*htable)
         return;
 
+    // free buckets
     for (idx_bucket = 0; idx_bucket < N_BUCKETS; idx_bucket++)
         tree_free ((*htable)->buckets[idx_bucket], _hashtable_node_free);
+
+    // free key list
+    list_set_callback ((*htable)->keys, destroy, string_destroy);
     list_destroy (&((*htable)->keys));
+
+    // free values
     list_destroy (&((*htable)->values));
+
+    // free htable
     free(*htable);
     *htable = NULL;
 }
