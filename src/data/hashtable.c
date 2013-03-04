@@ -49,14 +49,10 @@ int _hnode_hash (struct hashtable_node *hnode, uint8_t *str, int len)
     }
 
     checksum = 0;
-    hnode->hash_key = 14695981039346656037UL;
-    for (idx_str = 0; idx_str < len; idx_str++) {
-        hnode->hash_key ^= str[idx_str];
-        hnode->hash_key *= 1099511628211UL;
-
+    for (idx_str = 0; idx_str < len; idx_str++)
         checksum += str[idx_str];
-    }
     checksum %= N_BUCKETS;
+    hnode->hash_key = hnode->key->hash;
     hnode->idx_bucket = (hnode->hash_key + next_idx * checksum) % N_BUCKETS;
     next_idx = (next_idx + 1) % N_BUCKETS;
     // hnode->idx_bucket = checksum;
