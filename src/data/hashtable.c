@@ -115,7 +115,7 @@ void hashtable_node_destroy_data (void **data)
     }
 
     // string_destroy (&((*node)->key));
-    free ((*node)->key);
+    string_destroy (&((*node)->key));
     // free ((*node)->value);
     free (*node);
     *node = NULL;
@@ -138,7 +138,6 @@ void hashtable_destroy (struct hashtable_t **htable)
         tree_free ((*htable)->buckets[idx_bucket], _hashtable_node_free);
 
     // free key list
-    list_set_callback ((*htable)->keys, destroy, string_destroy);
     list_destroy (&((*htable)->keys));
 
     // free values
@@ -168,21 +167,20 @@ struct hashtable_t* hashtable_set_value (struct hashtable_t **htable, char *key,
     if (!elt)
         return NULL;
     // key
-    elt->key = strdup(key);
-    elt->sz_key = strlen (key);
-    _hnode_hash (elt, key, elt->sz_key);
+    string_set (&s_key, key);
+    elt->key = s_key;
+    _hnode_hash (elt, key, s_key->size);
     // value
     elt->value = value;
     
     // keep track of keys and values
-    string_set (&s_key, key);
     if ((*htable)->keys == NULL)
         (*htable)->keys = list_new();
     list_append_data (&((*htable)->keys), s_key);
 /*
     if ((*htable)->values == NULL)
         (*htable)->values = list_new();
-    list_add (&((*htable)->values), value);
+    list_append_data (&((*htable)->values), value);
 */
     // add value in tree
     bst_add ((*htable)->buckets[elt->idx_bucket], elt);

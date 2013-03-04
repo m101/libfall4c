@@ -25,6 +25,7 @@ extern "C"
 
 #include <stdint.h>
 
+#include "string_ext.h"
 #include "tree_common.h"
 
 #define N_BUCKETS 256
@@ -36,8 +37,7 @@ struct hashtable_node {
     uint16_t idx_bucket;
     // key
     uint64_t hash_key;
-    int sz_key;
-    char *key;
+    struct string_t *key;
     // value
     int sz_value;
     void *value;
