@@ -24,7 +24,10 @@
 
 struct filemap_t
 {
+    // hash
     uint64_t hash;
+    size_t sz_hashed;
+    // file
     char *filename;
 	size_t sz_filename;
     FILE *fp;
@@ -35,7 +38,9 @@ struct filemap_t
 
 // create filemap
 struct filemap_t *filemap_create (char *filename);
+struct filemap_t *filemap_create_ex (char *filename, int sz);
 struct filemap_t *filemap_create_from_fp (FILE *fp);
+struct filemap_t *filemap_create_from_fp_ex (FILE *fp, int sz);
 // destroy filemap
 void filemap_destroy (struct filemap_t **filemap);
 
