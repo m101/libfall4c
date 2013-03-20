@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include <fall4c/fall4c.h>
+#include "fall4c.h"
 
 int main (int argc, char *argv[])
 {
