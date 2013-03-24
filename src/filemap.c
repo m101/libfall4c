@@ -32,6 +32,7 @@ static struct filemap_list_t *filemaps = NULL;
 struct filemap_t *_filemap_search (struct filemap_list_t *root, FILE *fp, int sz);
 // check if file was loaded in memory
 struct filemap_t *_filemap_exist (FILE *fp, int sz);
+struct filemap_t *_filemap_create_from_fp_ex (FILE *fp, int sz);
 
 // create filemap
 struct filemap_t *filemap_create (char *filename)
@@ -85,7 +86,6 @@ struct filemap_t *filemap_create_from_fp (FILE *fp)
 struct filemap_t *filemap_create_from_fp_ex (FILE *fp, int sz)
 {
     struct filemap_t *filemap;
-    size_t foffset, sz_map;
 
     // check filemap existence
     filemap = _filemap_exist (fp, sz);
@@ -93,6 +93,14 @@ struct filemap_t *filemap_create_from_fp_ex (FILE *fp, int sz)
         debug_printf (MESSAGE_INFO, stdout, "info : filemap_create_from_fp_ex(): Filemap already exist, borrowing it\n");
         return filemap;
     }
+
+    return _filemap_create_from_fp_ex (fp, sz);
+}
+
+struct filemap_t *_filemap_create_from_fp_ex (FILE *fp, int sz)
+{
+    struct filemap_t *filemap;
+    size_t foffset, sz_map;
 
     // add filemap
     filemap = malloc (sizeof(struct filemap_t));
@@ -214,7 +222,7 @@ struct filemap_t *_filemap_search (struct filemap_list_t *root, FILE *fp, int sz
     uint64_t hash;
     struct filemap_t *fmap, *needle;
 
-    needle = filemap_create_from_fp_ex (fp, sz);
+    needle = _filemap_create_from_fp_ex (fp, sz);
 
     // hash and all
     hash = fnv_hash (needle->map, sz);
