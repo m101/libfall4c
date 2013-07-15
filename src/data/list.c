@@ -70,7 +70,8 @@ int list_delete (struct list_simple **list)
         node = next;
     }
 
-    free(*list);
+    free ( (*list)->dops );
+    free (*list);
     *list = NULL;
 
     return 0;
@@ -91,7 +92,8 @@ int list_destroy (struct list_simple **list)
         node = next;
     }
 
-    free(*list);
+    free ( (*list)->dops );
+    free (*list);
     *list = NULL;
 
     return 0;
