@@ -11,6 +11,9 @@
 #include "filemap.h"
 #include "string_ext.h"
 
+// maths
+#include "math/math_ext.h"
+
 // data
 #include "data/cache.h"
 #include "data/tree_avl.h"
@@ -20,6 +23,7 @@
 #include "data/list.h"
 #include "data/queue.h"
 #include "data/stack.h"
+#include "data/wordlist.h"
 
 // util
 #include "util/debug.h"
