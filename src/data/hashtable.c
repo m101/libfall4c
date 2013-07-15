@@ -132,7 +132,7 @@ struct hashtable_t* hashtable_set_value (struct hashtable_t **htable, char *key,
     elt->value = value;
     
     // keep track of keys and values
-    string_set (&s_key, key);
+    string_set (&s_key, key, strlen (key));
     (*htable)->keys = tree_new();
     bst_add ((*htable)->keys, s_key);
     // bst_add (&((*htable)->values), value);
