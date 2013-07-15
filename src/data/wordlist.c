@@ -27,7 +27,7 @@
 
 // internal functions
 // insert a word (stub)
-int _wlist_insert_word (struct wlist_node_t **node, char *word, int sz_word);
+int _wlist_insert_word (struct wlist_node_t **node, char *word, int sz_word, int whash);
 // get word with highest occurence (stub)
 struct wlist_node_t *_wlist_search_highest_occurrences (struct wlist_node_t *node, struct wlist_node_t **accu);
 // count number of offsets (stub)
@@ -79,7 +79,7 @@ void wlist_destroy (struct wlist_t **wlist)
 }
 
 // insert a word (stub)
-int _wlist_insert_word (struct wlist_node_t **node, char *word, int sz_word)
+int _wlist_insert_word (struct wlist_node_t **node, char *word, int sz_word, int whash)
 {
     int check;
 
@@ -95,7 +95,7 @@ int _wlist_insert_word (struct wlist_node_t **node, char *word, int sz_word)
     if (!*node) {
         // we allocate a node
         *node = calloc(1, sizeof(**node));
-        (*node)->hash = fnv_hash (word, sz_word);
+        (*node)->hash = whash;
         (*node)->str = word;
         // we initialize all variable to ensure correct behavior
         (*node)->sz_str = sz_word;
@@ -114,13 +114,16 @@ int _wlist_insert_word (struct wlist_node_t **node, char *word, int sz_word)
     if ( (*node)->sz_str != sz_word )
         check = (*node)->sz_str - sz_word;
     else
-        check = memcmp((*node)->str, word, sz_word);
+        check = (*node)->hash - whash;
+
+    if ((*node)->str == word && check == 0)
+        return 1;
 
     // insertion
     if ( check > 0 )
-        return _wlist_insert_word ( &((*node)->right), word, sz_word);
+        return _wlist_insert_word ( &((*node)->right), word, sz_word, whash);
     else if ( check < 0 )
-        return _wlist_insert_word ( &((*node)->left), word, sz_word);
+        return _wlist_insert_word ( &((*node)->left), word, sz_word, whash);
     else {
         // if same ptr or size not equal
         // then do not count it
@@ -146,7 +149,7 @@ int _wlist_insert_word (struct wlist_node_t **node, char *word, int sz_word)
 // insert a word
 int wlist_insert_word (struct wlist_t *wlist, char *word, int sz_word)
 {
-    return _wlist_insert_word(&(wlist->root), word, sz_word);
+    return _wlist_insert_word(&(wlist->root), word, sz_word, fnv_hash (word, sz_word));
 }
 
 // search a word in the wordlist
@@ -286,15 +289,16 @@ struct wlist_t *wlist_build_from_str_static_size_kasiski (struct wlist_t *wlist,
         dupe = 0;
         p_str2 = str;
         while (p_str2 < str + sz_str) {
-            check = memcmp(p_str1, p_str2, sz_token);
-            if (check == 0) {
-                dupe++;
-                if (dupe > 1)
-                    break;
+            if (*p_str1 == *p_str2) {
+                check = memcmp(p_str1, p_str2, sz_token);
+                if (check == 0) {
+                    dupe++;
+                    if (dupe > 1)
+                        break;
+                }
             }
             p_str2++;
         }
-
         // if it appear more than once
         // then we are interested in it
         if (dupe > 1)
