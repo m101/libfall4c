@@ -28,32 +28,32 @@
 int main (int argc, char *argv[])
 {
     uint8_t *bin;
-    char *binstr;
-    int len_binstr;
+    char *hexstr;
+    int len_hexstr;
 
     if (argc < 2) {
         printf (
-                "binstr_to_bin  Copyright (C) 2012  m_101\n"
+                "hexstr_to_bin  Copyright (C) 2012  m_101\n"
                 "This program comes with ABSOLUTELY NO WARRANTY.\n"
                 "This is free software, and you are welcome to redistribute it\n"
                 "under certain conditions.\n\n"
                );
-        printf("Usage: %s binstr\n", argv[0]);
+        printf("Usage: %s hexstr\n", argv[0]);
         exit(1);
     }
 
-    binstr = strdup(argv[1]);
-    len_binstr = strlen(binstr);
-    bin = hexstr_to_bin(binstr, len_binstr);
+    hexstr = strdup(argv[1]);
+    len_hexstr = strlen(hexstr);
+    bin = hexstr_to_bin(hexstr, len_hexstr);
     if (!bin) {
         fprintf(stderr, "error: Failed to convert\n");
         exit(1);
     }
 
-    printf("original: '%s'\n", binstr);
-    dump(bin, binstr_count_digits(binstr, len_binstr), 16);
+    printf("original: '%s'\n", hexstr);
+    dump(bin, hexstr_count_digits(hexstr, len_hexstr), 16);
 
-    free(binstr);
+    free(hexstr);
 
     return 0;
 }

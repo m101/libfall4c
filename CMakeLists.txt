@@ -84,15 +84,15 @@ target_link_libraries (wordlist_example
 add_test(NAME wordlist_example COMMAND wordlist_example)
 
 # executable testing wordlist
-add_executable (binstr_to_bin
-    tests/binstr_to_bin.c
+add_executable (hexstr_to_bin
+    tests/hexstr_to_bin.c
     )
-target_link_libraries (binstr_to_bin
+target_link_libraries (hexstr_to_bin
     fall4c
     gcov
     )
 # test: coverage
-add_test(NAME binstr_to_bin COMMAND binstr_to_bin)
+add_test(NAME hexstr_to_bin COMMAND hexstr_to_bin)
 
 # executable testing wordlist
 add_executable (avl_tree_test

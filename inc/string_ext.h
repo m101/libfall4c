@@ -39,8 +39,12 @@ extern "C"
 
 #define string_get_size(str)    (str ? (str)->size : -1)
     
+    // new string
+    struct string_t *string_new (void);
+    // new string from str
+    struct string_t *string_new_from_str (char *str);
     // init string
-    struct string_t *string_set (struct string_t **dst, char *str);
+    struct string_t *string_set (struct string_t **dst, char *str, int len);
     // destroy string
     void string_destroy (struct string_t **str);
     // get char *
@@ -49,12 +53,16 @@ extern "C"
     struct string_t *string_cpy (struct string_t *dst, struct string_t *src);
     // secure string concatenation
     struct string_t *string_cat (struct string_t *dst, struct string_t *src);
+    // concatenation of cstr to string
+    struct string_t *string_cat_cstr (struct string_t *dst, char *src, int len);
     // secure string comparison
     int string_cmp (struct string_t *str1, struct string_t *str2);
     // puts
     int string_puts (struct string_t *str);
     // putsln
     int string_putsln (struct string_t *str);
+    // check string consistency
+    int string_check (struct string_t *str);
 
     // str functions
     // remove starting and trailing spaces
@@ -75,10 +83,9 @@ extern "C"
     // FNV-1a hashing algorithm
     uint64_t fnv_hash (uint8_t *str, int len);
 
-    int binstr_count_digits (char *binstr, int len_binstr);
-    // uint8_t *binstr_to_bin (char *binstr, int len_binstr);
+    int hexstr_count_digits (char *hexstr, int len_hexstr);
     uint8_t *hexstr_to_bin (char *hexstr, int len_hexstr);
-    uint8_t *bin_to_hexstr (char *bin, int len_bin);
+    uint8_t *bin_to_hexstr (uint8_t *bin, int len_bin);
 #ifdef __cplusplus
 }
 #endif

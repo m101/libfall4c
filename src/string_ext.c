@@ -27,11 +27,27 @@
 #include "string_ext.h"
 #include "ctype_extended.h"
 
-// init string
-struct string_t *string_set (struct string_t **dst, char *str)
+// new string
+struct string_t *string_new (void)
 {
-    if (!dst) {
-        fprintf (stderr, "error: string_cat(): Bad parameter\n");
+    struct string_t *string;
+
+    return string_set (&string, "", 1);
+}
+
+// new string from str
+struct string_t *string_new_from_str (char *str)
+{
+    struct string_t *string;
+
+    return string_set (&string, str, strlen (str));
+}
+
+// init string
+struct string_t *string_set (struct string_t **dst, char *str, int len)
+{
+    if (!dst || !str || (len <= 0)) {
+        fprintf (stderr, "error: string_set(): Bad parameter\n");
         return NULL;
     }
 
@@ -39,15 +55,15 @@ struct string_t *string_set (struct string_t **dst, char *str)
     if (!*dst)
         return NULL;
 
-    (*dst)->size = strlen(str);
+    (*dst)->size = len;
     (*dst)->capacity = (*dst)->size + 1;
-    if ((*dst)->bytes)
-        free((*dst)->bytes);
     (*dst)->bytes = calloc((*dst)->capacity, sizeof(*(*dst)->bytes));
-    if (!(*dst)->bytes)
+    if (!(*dst)->bytes) {
+        fprintf (stderr, "error: string_set(): Failed allocation\n");
         return NULL;
+    }
 
-    strncpy((*dst)->bytes, str, (*dst)->size);
+    memcpy ((*dst)->bytes, str, (*dst)->size);
 
     (*dst)->hash = fnv_hash ((*dst)->bytes, (*dst)->size);
 
@@ -91,7 +107,7 @@ struct string_t *string_cpy (struct string_t *dst, struct string_t *src)
 {
     // pointer check
     if (!dst || !src) {
-        fprintf (stderr, "error: string_cat(): Bad parameter(s)\n");
+        fprintf (stderr, "error: string_cpy(): Bad parameter(s)\n");
         return NULL;
     }
 
@@ -114,22 +130,33 @@ struct string_t *string_cpy (struct string_t *dst, struct string_t *src)
 // secure string concatenation
 struct string_t *string_cat (struct string_t *dst, struct string_t *src)
 {
-    // pointer check
-    if (!dst || !src) {
+    if (!src) {
         fprintf (stderr, "error: string_cat(): Bad parameter(s)\n");
+        return NULL;
+    }
+
+    return string_cat_cstr (dst, src->bytes, src->size);
+}
+
+struct string_t *string_cat_cstr (struct string_t *dst, char *src, int len)
+{
+    // pointer check
+    if (!dst || !src || len <= 0) {
+        fprintf (stderr, "error: string_cat_cstr(): Bad parameter(s)\n");
         return NULL;
     }
 
     // if buffer isn't big enough
     // then allocate an adapted one
-    if (dst->capacity < dst->size + src->size) {
-        dst->capacity = dst->size + src->size + 1;
+    if (dst->capacity < dst->size + len) {
+        dst->capacity = dst->size + len + 1;
         dst->bytes = realloc (dst->bytes, dst->capacity);
     }
 
     // we concatenate strings
-    strncat (dst->bytes, src->bytes, src->size);
-    dst->bytes[dst->size - 1] = '\0';
+    strncat (dst->bytes, src, len);
+    dst->bytes[dst->capacity - 1] = '\0';
+    dst->size += len;
 
     dst->hash = fnv_hash (dst->bytes, dst->size);
 
@@ -157,6 +184,11 @@ int string_puts (struct string_t *str)
         return EOF;
     }
 
+    if (string_check (str) == 0) {
+        fprintf (stderr, "error: string_puts(): str not initialized correctly\n");
+        return EOF;
+    }
+
     for (idx_str = 0; idx_str < str->size; idx_str++) {
         if (isprint (str->bytes[idx_str]))
             putchar (str->bytes[idx_str]);
@@ -172,6 +204,18 @@ int string_putsln (struct string_t *str)
 {
     string_puts (str);
     putchar ('\n');
+}
+
+// check string consistency
+int string_check (struct string_t *str)
+{
+    if (!str)
+        return 0;
+
+    if (str->bytes == NULL || str->size > str->capacity)
+        return 0;
+
+    return 1;
 }
 
 /* hash string to an integer value */
@@ -228,8 +272,8 @@ char *str_strip (char *str, int len)
     // suppress it
     memcpy (tmp, str + idx_str, len - idx_str);
 
-    // remove other blanks
-    for (idx_str = 0; idx_str < len; idx_str++) {
+    // remove trailing blanks
+    for (idx_str = len - 1; idx_str >= 0; idx_str--) {
         if (isspace (tmp[idx_str]))
             tmp[idx_str] = '\0';
     }
@@ -367,24 +411,24 @@ char *str_reverse (char *str)
     return str;
 }
 
-int binstr_count_digits (char *binstr, int len_binstr)
+int hexstr_count_digits (char *hexstr, int len_hexstr)
 {
-    int idx_binstr, max_bin;
+    int idx_hexstr, max_bin;
 
-    if (!binstr || len_binstr <= 0) {
-        fprintf (stderr, "error: binstr_count_digits(): Bad parameter(s)\n");
+    if (!hexstr || len_hexstr <= 0) {
+        fprintf (stderr, "error: hexstr_count_digits(): Bad parameter(s)\n");
         return -1;
     }
 
-    for (idx_binstr = 0, max_bin = 0; idx_binstr < len_binstr; idx_binstr++) {
-        if (isxdigit(binstr[idx_binstr]))
+    for (idx_hexstr = 0, max_bin = 0; idx_hexstr < len_hexstr; idx_hexstr++) {
+        if (isxdigit(hexstr[idx_hexstr]))
             max_bin++;
     }
 
     return max_bin;
 }
 
-/* @desc    convert binstr to binary
+/* @desc    convert hexstr to binary
 */
 uint8_t *hexstr_to_bin (char *hexstr, int len_hexstr)
 {
@@ -392,15 +436,15 @@ uint8_t *hexstr_to_bin (char *hexstr, int len_hexstr)
     uint8_t hexnum, hexdigit;
     uint8_t *bin;
 
-    max_bin = binstr_count_digits (hexstr, len_hexstr);
+    max_bin = hexstr_count_digits (hexstr, len_hexstr);
     if (max_bin <= 0) {
-        fprintf(stderr, "error: binstr_to_bin(): count is 0\n");
+        fprintf(stderr, "error: hexstr_to_bin(): count is 0\n");
         return NULL;
     }
 
     bin = calloc(max_bin, sizeof(*bin));
     if (!bin) {
-        fprintf(stderr, "error: binstr_to_bin(): failed to allocated memory for binary\n");
+        fprintf(stderr, "error: hexstr_to_bin(): failed to allocated memory for binary\n");
         return NULL;
     }
 
@@ -438,7 +482,7 @@ uint8_t *hexstr_to_bin (char *hexstr, int len_hexstr)
     return bin;
 }
 
-uint8_t *bin_to_hexstr (char *bin, int len_bin)
+uint8_t *bin_to_hexstr (uint8_t *bin, int len_bin)
 {
     uint8_t hexdigit;
     int idx_bin;
