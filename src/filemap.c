@@ -26,6 +26,9 @@
 
 #include "util/debug.h"
 
+#define MB  1024*1024
+#define _FASTER_FILEMAP_
+
 static struct filemap_list_t *filemaps = NULL;
 
 // create filemap
@@ -84,7 +87,11 @@ struct filemap_t *filemap_create_from_fp (FILE *fp) {
     fseek (fp, foffset, SEEK_SET);
 
     // hash
+#ifdef _FASTER_FILEMAP_
+    filemap->hash = fnv_hash (filemap->map, (filemap->sz_map > 1*MB? 1*MB : filemap->sz_map));
+#else
     filemap->hash = fnv_hash (filemap->map, filemap->sz_map);
+#endif
 
     // add filemap in binary tree
     filemap_add_fmap (&filemaps, filemap);
@@ -195,7 +202,11 @@ struct filemap_t *_filemap_search (struct filemap_list_t *root, char *filename)
     fclose (fp);
 
     // hash and all
+#ifdef _FASTER_FILEMAP_
+    hash = fnv_hash (needle->map, (needle->sz_map > 1*MB? 1*MB : needle->sz_map));
+#else
     hash = fnv_hash (needle->map, needle->sz_map);
+#endif
     fmap = __filemap_search (root, hash);
     filemap_destroy (&needle);
 
