@@ -19,6 +19,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 /*! @brief                    Fonction copiant un fichier en mode texte
  *   @param   dest             Fichier de copie
  *   @param   src              Fichier a copier
@@ -46,13 +50,14 @@ char *fgetl (FILE *stream)
 {
     unsigned int length = 128, old_length;
     char *line;
-    int byte;
+    int byte, previous_byte;
     size_t idx_line;
 
     line = calloc(length, sizeof(*line));
     if (!line)
         return NULL;
 
+    previous_byte = 0;
     byte = 0;
     idx_line = 0;
     while (!feof(stream)) {
@@ -65,9 +70,12 @@ char *fgetl (FILE *stream)
 
         byte = fgetc(stream);
 
-        if (byte == '\r' || byte == '\n' || byte == EOF)
+        if ( (previous_byte == '\r' && byte == '\n')
+                || (previous_byte != '\r' && byte == '\n')
+                || byte == EOF )
             break;
 
+        previous_byte = byte;
         line[idx_line] = byte;
         idx_line++;
     }
@@ -119,10 +127,18 @@ long fgotoc (FILE *stream, long offset)
 int file_get_size (FILE *fp)
 {
     int offset, sz;
+    int fd;
+    struct stat fst;
 
     if (!fp)
         return -1;
 
+    // get file size through stat
+    fd = fileno (fp);
+    if (fstat (fd, &fst) == 0)
+        return fst.st_size;
+
+    // otherwise use ftell() method
     offset = ftell(fp);
     fseek(fp, 0, SEEK_END);
     sz = ftell(fp);
