@@ -22,7 +22,9 @@
 #include <ctype.h>
 
 // depedencies
+#ifdef __linux__
 #include <unac.h>
+#endif
 
 #include "string_ext.h"
 #include "ctype_extended.h"
@@ -312,6 +314,19 @@ char **str_get_columns (char *str, int len, int n_columns)
     // string table
     char **cstr;
 
+    if (!str || (len <= 0) || (n_columns <= 0)) {
+        fprintf (stderr, "error: str_get_columns(): Bad parameter(s)\n");
+        fprintf (stderr, "  str       :%p\n", str);
+        fprintf (stderr, "  len       :%p\n", len);
+        fprintf (stderr, "  n_columns :%p\n", n_columns);
+        return NULL;
+    }
+
+    printf ("str_get_columns params:\n");
+    printf ("  str       :%p\n", str);
+    printf ("  len       :%p\n", len);
+    printf ("  n_columns :%p\n", n_columns);
+
     // allocate the ciphertext space
     cstr = calloc(n_columns, sizeof(*cstr));
     if (!cstr)
@@ -319,11 +334,12 @@ char **str_get_columns (char *str, int len, int n_columns)
 
     // calculate
     r_len = len % n_columns;
-    m_len = len - r_len;
-    m_len = m_len / n_columns;
+    m_len = (len - r_len) / n_columns;
+
+    // printf ("the string: '%s' (%d/%d)\n", str, strlen(str), len);
 
     // construct the different strings
-    for (idx_alpha = 0; idx_alpha < n_columns; idx_alpha++) {
+    for (idx_alpha = 1; idx_alpha < n_columns; idx_alpha++) {
         cstr[idx_alpha] = calloc(m_len + 2, sizeof(**cstr));
         for (idx_str = 0; idx_str < m_len; idx_str++) {
             // cstr[idx_alpha][idx_str] = str[idx_str * n_columns + idx_alpha];
@@ -332,17 +348,16 @@ char **str_get_columns (char *str, int len, int n_columns)
     }
 
     // end the different strings
-    for (idx_alpha = 0; idx_alpha < r_len; idx_alpha++) {
-        for (idx_str = m_len; idx_str < m_len + 1; idx_str++) {
-            // cstr[idx_alpha][idx_str] = str[idx_str * n_columns + idx_alpha];
-            cstr[idx_alpha][idx_str] = str[idx_alpha * n_columns + idx_str];
-        }
-        // printf("cstr: '%s'\n", cstr[idx_alpha]);
+    cstr[0] = calloc(m_len + r_len + 2, sizeof(**cstr));
+    for (idx_str = len - r_len; idx_str < len; idx_str++) {
+        // cstr[idx_alpha][idx_str] = str[idx_str * n_columns + idx_alpha];
+        cstr[0][idx_str] = str[idx_str];
     }
 
     return cstr;
 }
 
+#ifdef _unac_h
 // normalize string to ascii (no accent, etc)
 char *str_normalize (char *str, int szStr)
 {
@@ -376,6 +391,7 @@ char *str_normalize (char *str, int szStr)
 
     return normalized;
 }
+#endif
 
 // replace char
 char *str_replace_chr (char *str, int len, int chr, int rep)
@@ -409,6 +425,111 @@ char *str_reverse (char *str)
     }
 
     return str;
+}
+
+// get a line from str
+char *str_get_line (char *str, int len, char **endptr)
+{
+    int idx_str;
+    char *src;
+    char *line;
+    int sz_line;
+
+    if (!str || len <= 0) {
+        fprintf (stderr, "error: str_get_line(): Bad parameter(s)\n");
+        return NULL;
+    }
+
+    if (endptr && *endptr && *endptr <= str + len)
+        src = *endptr;
+    else
+        src = str;
+
+    // get line
+    sz_line = 0;
+    for (idx_str = 0; src + idx_str < str + len; idx_str++) {
+        if ( src[idx_str] == '\r' && src[idx_str+1] == '\n' ) {
+            idx_str += 2;
+            break;
+        }
+        if (src[idx_str] == '\n') {
+            idx_str++;
+            break;
+        }
+        sz_line++;
+    }
+
+    if (sz_line == 0) {
+        fprintf (stderr, "error: str_get_line(): sz_line is 0\n");
+        return NULL;
+    }
+
+    // update endptr
+    if (endptr)
+        *endptr = src + idx_str;
+    /*
+    printf ("src        : '%s'\n", src);
+    printf ("*endptr str: '%s'\n", *endptr);
+    printf ("idx_str    : %d\n", idx_str);
+    //*/
+
+    // extract line
+    line = calloc (sz_line, sizeof (*line));
+    if (!line) {
+        fprintf (stderr, "error: str_get_line(): Failed line allocation\n");
+        return NULL;
+    }
+    memcpy (line, src, sz_line);
+
+    return line;
+}
+
+// return a repeated string of 'byte'
+char *str_repeat_byte (int byte, int n_repeat)
+{
+    char *bytes;
+
+    if (n_repeat <= 0) {
+        printf ("error: str_repeat_byte(): Bad parameter(s)\n");
+        return NULL;
+    }
+
+    bytes = calloc (n_repeat, sizeof (*bytes));
+    if (!byte || !bytes)
+        return bytes;
+
+    memset (bytes, byte, n_repeat);
+
+    return bytes;
+}
+
+// return a repeated string of 'str'
+char *str_repeat_str (char *str, int len, int n_repeat)
+{
+    char *bytes;
+    int idx_repeat;
+
+    if (!str || len <= 0 || n_repeat <= 0) {
+        printf ("error: str_repeat_str(): Bad parameter(s)\n");
+        return NULL;
+    }
+
+    if ( (len * n_repeat + 1) < len
+            || (len * n_repeat + 1) < n_repeat) {
+        printf ("error: str_repeat_str(): Integer overflow detected\n");
+        return NULL;
+    }
+
+    bytes = calloc (len * n_repeat + 1, sizeof (*bytes));
+    if (!bytes) {
+        printf ("error: str_repeat_str(): bytes failed allocation\n");
+        return bytes;
+    }
+
+    for (idx_repeat = 0; idx_repeat < n_repeat; idx_repeat++)
+        memcpy (bytes + idx_repeat * len, str, len);
+
+    return bytes;
 }
 
 int hexstr_count_digits (char *hexstr, int len_hexstr)

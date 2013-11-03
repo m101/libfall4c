@@ -64,6 +64,13 @@ extern "C"
     // check string consistency
     int string_check (struct string_t *str);
 
+    // hashing functions
+#define str_hash(str, len)    fnv_hash(str, len)
+    // djb2 hashing algorithm
+    unsigned long djb2_hash (unsigned char *str, int len);
+    // FNV-1a hashing algorithm
+    uint64_t fnv_hash (uint8_t *str, int len);
+
     // str functions
     // remove starting and trailing spaces
     char *str_strip (char *str, int len);
@@ -75,17 +82,23 @@ extern "C"
     char *str_normalize (char *str, int sz_str);
     // replace char
     char *str_replace_chr (char *str, int len, int chr, int rep);
-    
-    // hashing functions
-#define str_hash(str, len)    fnv_hash(str, len)
-    // djb2 hashing algorithm
-    unsigned long djb2_hash (unsigned char *str, int len);
-    // FNV-1a hashing algorithm
-    uint64_t fnv_hash (uint8_t *str, int len);
+    // get a line from str
+    char *str_get_line (char *str, int len, char **endptr);
 
+    // return a repeated string of 'byte'
+    char *str_repeat_byte (int byte, int n_repeat);
+    // return a repeated string of 'str'
+    char *str_repeat_str (char *str, int len, int n_repeat);
+    
     int hexstr_count_digits (char *hexstr, int len_hexstr);
     uint8_t *hexstr_to_bin (char *hexstr, int len_hexstr);
     uint8_t *bin_to_hexstr (uint8_t *bin, int len_bin);
+
+#ifdef _WIN32
+#define strdup _strdup
+#define snprintf _snprintf
+#endif
+
 #ifdef __cplusplus
 }
 #endif
