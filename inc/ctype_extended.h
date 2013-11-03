@@ -26,6 +26,10 @@ extern "C"
 {
 #endif
 
+#ifdef _WIN32
+#define strdup _strdup
+#endif
+
 /*! @file c_type_extended.h
 *   @brief Fonctions supplémentaires de conversion de type
 */

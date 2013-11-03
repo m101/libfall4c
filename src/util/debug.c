@@ -21,7 +21,9 @@
 
 #include <ctype.h>
 
-static int verbose_level = 0;
+#include "util/debug.h"
+
+static int verbose_level = MESSAGE_WARNING;
 
 // dump
 int dump (unsigned char *bytes, size_t nbytes, size_t align) {
@@ -111,7 +113,7 @@ int debug_printf (int level, FILE *stream, char *fmt, ...)
     va_list ap;
 
     if (!level || !stream || !fmt)
-        return;
+        return -1;
 
     va_start(ap, fmt);
 

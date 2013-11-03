@@ -2,9 +2,16 @@
 #define SOCKET_WRAP_H_
 
 #include <stdlib.h>
-#include <sys/socket.h>
 #include <sys/types.h>
+
+#ifdef __linux__
+#include <sys/socket.h>
 #include <netdb.h>
+#elif defined _WIN32
+#include <Ws2tcpip.h>
+#include <io.h>
+#define close _close
+#endif
 
 #define BUFFER_SIZE 256
 

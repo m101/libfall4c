@@ -20,6 +20,10 @@
 #include <stdarg.h>
 #include <string.h>
 
+#ifdef _WIN32
+#define strtok_r strtok_s
+#endif
+
 // minimum value
 int min (char *fmt, ...)
 {

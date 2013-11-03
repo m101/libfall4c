@@ -20,14 +20,19 @@
 
 #include <string.h>
 
+#ifdef __linux__
 #include <unistd.h>
 #include <sys/errno.h>
 
 #include <sys/socket.h>
 #include <netdb.h>
+#elif defined _WIN32
+#include <Ws2tcpip.h>
+#endif
 
 #include "sockets_wrap.h"
 #include "file.h"
+#include "util/debug.h"
 
 #define DEBUG
 

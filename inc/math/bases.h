@@ -23,6 +23,11 @@ extern "C"
 {
 #endif
 
+#ifdef _WIN32
+#define snprintf _snprintf
+#define strdup _strdup
+#endif
+
     long concatenationBinaire(long *binaire, long i);
     long bin2dec(long *binaire, long i);
     long dec2bin(long decimal);

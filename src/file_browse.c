@@ -21,8 +21,11 @@
 
 #include <string.h>
 
-#include <dirent.h>
+
 #include <sys/stat.h>
+
+#ifdef __linux__
+#include <dirent.h>
 #include <unistd.h>
 
 #include "data/list.h"
@@ -123,3 +126,4 @@ struct list_simple *dir_list (char *dirname, int depth)
     return list_files;
 }
 
+#endif

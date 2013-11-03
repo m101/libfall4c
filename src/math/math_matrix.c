@@ -29,8 +29,9 @@
 
 #define matrix_rref_gauss_java(var) matrix_rref_gauss(var)
 
-#ifdef WIN32
-    #include "strtok_r.h"
+#ifdef _WIN32
+#define strdup _strdup
+#define strtok_r strtok_s
 #endif
 
 /*! @brief				Function which destroy an object of type matrix_max
@@ -300,6 +301,7 @@ struct Matrix* matrix_rref_gauss_java (struct Matrix *matrix)
 {
     int x = 0, y = 0, t = 0;
     struct Matrix *m_rref = NULL;
+	double coef;
 
     if (!matrix)
     {
@@ -362,7 +364,7 @@ struct Matrix* matrix_rref_gauss_java (struct Matrix *matrix)
         {
             if (y==x)
                 continue;
-            double coef = m_rref->data[y][x];
+            coef = m_rref->data[y][x];
             for (t = 0; t < matrix->nc; t++)
                 m_rref->data[y][t] -= coef * m_rref->data[x][t];
         }
