@@ -27,6 +27,7 @@ extern "C"
 #define MESSAGE_ERROR       1
 #define MESSAGE_WARNING     2
 #define MESSAGE_INFO        3
+#define MESSAGE_DEBUG       4
 
 #if _DEBUG_
     #define debug_message(level, fmt, ...)                      \
@@ -39,6 +40,7 @@ extern "C"
 #endif
 
 int dump (unsigned char *bytes, size_t nbytes, size_t align);
+int hexdump (unsigned int line_len, char *str);
 
 int debug_printf (int level, FILE *stream, char *fmt, ...);
 int debug_set_verbose_level (int level);
