@@ -163,7 +163,7 @@ struct hashtable_t* hashtable_set_value (struct hashtable_t **htable, char *key,
     if (!elt)
         return NULL;
     // key
-    string_set (&s_key, key);
+    string_set (&s_key, key, strlen (key));
     elt->key = s_key;
     _hnode_hash (elt, key, s_key->size);
     // value
