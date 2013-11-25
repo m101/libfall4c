@@ -30,8 +30,11 @@ int dump (unsigned char *bytes, size_t nbytes, size_t align) {
     size_t idx_bytes, j, last;
     int n_disp;
     
-    if (!bytes || !nbytes)
+    if (!bytes || nbytes <= 0)
         return -1;
+
+    if (align <= 0)
+        align = 16;
 
     // first part of line is hex
     for (idx_bytes = 0, last = 0; idx_bytes < nbytes; idx_bytes++) {

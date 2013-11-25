@@ -29,14 +29,19 @@ extern "C"
 #define MESSAGE_INFO        3
 #define MESSAGE_DEBUG       4
 
+// the do ... while (0) is a hack to allow the proper use of the macro in conditionnal statements
 #if _DEBUG_
     #define debug_message(level, fmt, ...)                      \
+    do {                                                        \
         if (level == MESSAGE_ERROR)                             \
             debug_printf(level, stderr, fmt, ##__VA_ARGS__);    \
         else                                                    \
-            debug_printf(level, stdout, fmt, ##__VA_ARGS__);
+            debug_printf(level, stdout, fmt, ##__VA_ARGS__);    \
+    } while (0)
 #else
-    #define debug_message(level, fmt, ...)
+    #define debug_message(level, fmt, ...)                      \
+    do {                                                        \
+    } while (0)
 #endif
 
 int dump (unsigned char *bytes, size_t nbytes, size_t align);
