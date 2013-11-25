@@ -271,13 +271,19 @@ char *str_strip (char *str, int len)
         }
     }
 
-    // suppress it
-    memcpy (tmp, str + idx_str, len - idx_str);
+    // suppress prefixed spaces
+    idx_str = (idx_str > len ? len : idx_str);
+    if (idx_str != len)
+        memcpy (tmp, str + idx_str, len - idx_str);
+    else
+        memcpy (tmp, str, len);
 
     // remove trailing blanks
     for (idx_str = len - 1; idx_str >= 0; idx_str--) {
         if (isspace (tmp[idx_str]))
-            tmp[idx_str] = '\0';
+            tmp[idx_str] = 0;
+        else
+            break;
     }
 
     return tmp;
@@ -317,15 +323,15 @@ char **str_get_columns (char *str, int len, int n_columns)
     if (!str || (len <= 0) || (n_columns <= 0)) {
         fprintf (stderr, "error: str_get_columns(): Bad parameter(s)\n");
         fprintf (stderr, "  str       :%p\n", str);
-        fprintf (stderr, "  len       :%p\n", len);
-        fprintf (stderr, "  n_columns :%p\n", n_columns);
+        fprintf (stderr, "  len       :%d\n", len);
+        fprintf (stderr, "  n_columns :%d\n", n_columns);
         return NULL;
     }
 
     printf ("str_get_columns params:\n");
     printf ("  str       :%p\n", str);
-    printf ("  len       :%p\n", len);
-    printf ("  n_columns :%p\n", n_columns);
+    printf ("  len       :%d\n", len);
+    printf ("  n_columns :%d\n", n_columns);
 
     // allocate the ciphertext space
     cstr = calloc(n_columns, sizeof(*cstr));
@@ -468,9 +474,9 @@ char *str_get_line (char *str, int len, char **endptr)
     if (endptr)
         *endptr = src + idx_str;
     /*
-    printf ("src        : '%s'\n", src);
-    printf ("*endptr str: '%s'\n", *endptr);
-    printf ("idx_str    : %d\n", idx_str);
+       printf ("src        : '%s'\n", src);
+       printf ("*endptr str: '%s'\n", *endptr);
+       printf ("idx_str    : %d\n", idx_str);
     //*/
 
     // extract line
