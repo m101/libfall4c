@@ -32,10 +32,16 @@ struct data_ops {
     void (*show) (void *data);
 };
 
+#define CALLBACK_COMPARATOR(comparator) ((int (*) (void *, void *)) comparator)
+#define CALLBACK_DESTROY(destroy) ((void (*) (void **)) destroy)
+#define CALLBACK_GET_SIZE(get_size) ((size_t (*) (void *)) get_size)
+#define CALLBACK_SHOW(show) ((void (*) (void *)) show)
+
+struct data_ops *data_ops_new (void);
 int comparator_no_ops (void *data1, void *data2);
 void destroy_no_ops (void **data);
 void destroy_allocated (void **data);
-void get_size_no_ops (void *data);
+size_t get_size_no_ops (void *data);
 void show_no_ops (void *data);
 
 #ifdef __cplusplus

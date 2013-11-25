@@ -108,7 +108,7 @@ void *queue_pop (struct queue_t **p)
 }
 
 // destroy a queue
-void queue_destroy (struct queue_t **queue, void (*fct_destroy)(void **data))
+void queue_destroy (struct queue_t **queue)
 {
     struct queue_element_t *elt, *next;
     // pointers check
@@ -121,8 +121,8 @@ void queue_destroy (struct queue_t **queue, void (*fct_destroy)(void **data))
     elt = (*queue)->front;
     while (elt) {
         next = elt->next;
-        if (fct_destroy)
-            fct_destroy (&(elt->data));
+        if ((*queue)->dops->destroy)
+            (*queue)->dops->destroy (&(elt->data));
         free (elt);
         elt = next;
     }

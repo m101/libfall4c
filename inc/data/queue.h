@@ -25,6 +25,9 @@ extern "C"
 
 #include <stdlib.h>
 
+#include "data_ops.h"
+
+#define queue_set_callback(queue, name, callback) if (queue->dops) queue->dops->name = callback
 #define queue_get_size(queue) (queue ? (queue)->size : -1)
 
 // queue
@@ -36,6 +39,9 @@ struct queue_t
     struct queue_element_t *back;
     // number of elements in the queue
     long size;
+
+    // methods
+    struct data_ops *dops;
 };
 
 // queue element
@@ -52,9 +58,9 @@ struct queue_element_t
 // push data on the queue
 struct queue_t* queue_push (struct queue_t **p, void *data);
 // get last data added to the queue
-void* queue_pop (struct queue_t **p);
+void *queue_pop (struct queue_t **p);
 // destroy a queue
-void queue_destroy (struct queue_t **queue, void (*fct_destroy)(void **data));
+void queue_destroy (struct queue_t **queue);
 
 #ifdef __cplusplus
 }

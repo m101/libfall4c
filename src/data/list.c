@@ -18,6 +18,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include <string.h>
+
 #include "data/data_ops.h"
 #include "data/list.h"
 
@@ -47,7 +49,7 @@ static const struct data_ops list_data_ops = {
 // default constructor for list
 struct list_simple* list_new (void) 
 {
-    struct list_simple *list = calloc(1, sizeof(struct list_simple));
+    struct list_simple *list = calloc (1, sizeof(*list));
 
     list->dops = calloc (1, sizeof(list_data_ops));
     memcpy (list->dops, &list_data_ops, sizeof(list_data_ops));
@@ -126,7 +128,7 @@ int list_count_nodes(struct list_simple *list)
 struct list_simple *list_append_list (struct list_simple **list1, struct list_simple **list2)
 {
     if (!list1 || !list2 || !*list2)
-        return -1;
+        return NULL;
 
 #ifdef DEBUG
     printf ("list_merge(): number of nodes in list1: %d (before)\n", list_count_nodes(*list1));
@@ -211,68 +213,45 @@ int _list_node_destroy (struct list_node **node, void (*destroy_data)(void **))
 int _list_append_node (struct list_simple **list, struct list_node *node)
 {
     void *data;
-    struct list_node *prev, *next;
 
     if (!list || !node)
         return -1;
     if (!*list)
         *list = list_new();
 
+    // avoid duplicate node
     if ((*list)->tail == node)
         return -1;
 
-    // append_node, we only want 1 node (and avoid circular references)
-    prev = node->prev;
-    next = node->next;
-
     // corruption check
-    if (prev && node != prev->next) {
-        fprintf (stderr, "error: Link corruption detected\n");
+    if (node->prev && node != node->prev->next) {
+        fprintf (stderr, "error: _list_append_node(): Link corruption detected\n");
         exit (1);
     }
-    if (next && node != next->prev) {
-        fprintf (stderr, "error: Link corruption detected\n");
+    if (node->next && node != node->next->prev) {
+        fprintf (stderr, "error: _list_append_node(): Link corruption detected\n");
         exit (1);
     }
 
-    /*
-    printf ("=====\n");
-    printf ("node         : %p\n", node);
-    printf ("(*list)->head: %p\n", (*list)->head);
-    printf ("(*list)->tail: %p\n", (*list)->tail);
-    //*/
-
-    if ((*list)->head == NULL) {
-        (*list)->head = node;
-        // printf ("   new head: %p\n", (*list)->head);
-    }
-
-    if ((*list)->tail) {
-        (*list)->tail->next = node;
-        /*
-        printf ("   (*list)->tail->prev: %p\n", (*list)->tail->prev);
-        printf ("   (*list)->tail->next: %p\n", (*list)->tail->next);
-        //*/
-    }
-
+    // unlink node
     if (node->prev)
         node->prev->next = node->next;
     if (node->next)
         node->next->prev = node->prev;
 
-    node->prev = (*list)->tail;
+    // zero node prev and next
     node->next = NULL;
+    node->prev = (*list)->tail;
 
-    // we don't care about correct tail
-    // we care about speed ... so developers just need to correctly use the lib
+    if ((*list)->head == NULL)
+        (*list)->head = node;
+
+    if ((*list)->tail)
+        (*list)->tail->next = node;
+
     // this is append_node and not append list!
     (*list)->tail = node;
     (*list)->size++;
-    /*
-    printf ("   new tail: %p\n", (*list)->tail);
-    printf ("(*list)->size: %d\n", (*list)->size);
-    printf ("=====\n");
-    //*/
 
     return 0;
 }
@@ -300,50 +279,42 @@ int list_append_data (struct list_simple **list, void *data)
 int _list_prepend_node (struct list_simple **list, struct list_node *node)
 {
     void *data;
-    struct list_node *prev, *next;
 
     if (!list || !node)
         return -1;
     if (!*list)
         *list = list_new();
 
+    // avoid duplicate node
     if ((*list)->head == node)
         return -1;
 
-    // prepend node, we only want 1 node (and avoid circular references)
-    prev = node->prev;
-    next = node->next;
-
     // corruption check
-    if (prev && node != prev->next) {
-        fprintf (stderr, "error: Link corruption detected\n");
+    if (node->prev && node != node->prev->next) {
+        fprintf (stderr, "error: _list_append_node(): Link corruption detected\n");
         exit (1);
     }
-    if (next && node != next->prev) {
-        fprintf (stderr, "error: Link corruption detected\n");
+    if (node->next && node != node->next->prev) {
+        fprintf (stderr, "error: _list_append_node(): Link corruption detected\n");
         exit (1);
     }
 
-    /*
-    printf ("=====\n");
-    printf ("node         : %p\n", node);
-    printf ("(*list)->head: %p\n", (*list)->head);
-    printf ("(*list)->tail: %p\n", (*list)->tail);
-    //*/
+    // unlink node
+    if (node->prev)
+        node->prev->next = node->next;
+    if (node->next)
+        node->next->prev = node->prev;
+
+    // zero node prev
+    // node next will be NULL or head
+    node->next = (*list)->head;
+    node->prev = NULL;
 
     if ((*list)->tail == NULL)
         (*list)->tail = node;
 
     if ((*list)->head)
         (*list)->head->prev = node;
-
-    if (node->prev)
-        node->prev->next = node->next;
-    if (node->next)
-        node->next->prev = node->prev;
-
-    node->prev = NULL;
-    node->next = (*list)->head;
 
     // this is prepend_node and not append list!
     (*list)->head = node;
@@ -446,16 +417,27 @@ int _list_remove_node (struct list_simple *list, struct list_node **node)
     if (!list || !node || !*node)
         return -1;
 
+    // unlink node
     if ((*node)->next)
         (*node)->next->prev = (*node)->prev;
     if ((*node)->prev)
         (*node)->prev->next = (*node)->next;
 
+    // if node is head
+    // then new head is the node following the old head
+    if (list->head == *node)
+        list->head = list->head->next;
+    // if node is tail
+    // then new tail is the node preceding the old tail
+    if (list->tail == *node)
+        list->tail = list->tail->prev;
+
     // we remove the actual node
     free(*node);
     *node = NULL;
-    free(node);
     list->size--;
+    if (list->size < 0)
+        list->size = 0;
 
     return 0;
 }
@@ -464,23 +446,28 @@ int _list_remove_node (struct list_simple *list, struct list_node **node)
 int list_remove_data (struct list_simple *list, void *data)
 {
     int rc;
-    struct list_node *iter;
+    struct list_node *iter_cur, *iter_next;
 
     if (!list || !data) {
         fprintf (stderr, "error: list_remove_data(): Bad parameter(s)\n");
         return -1;
     }
 
-    if (!list->dops || !list->dops->comparator) {
+    if (!list->dops) {
         fprintf (stderr, "error: list_remove_data(): list->dops->comparator is NULL\n");
         return -1;
     }
 
-    list_for_each (list, iter, data) {
-        if (!iter)
-            continue;
-        if (list->dops->comparator (iter->data, data) == 0)
-            _list_remove_node (list, &iter);
+    // we traverse the linked list to destroy it
+    for (iter_cur = list_begin(list); iter_cur != NULL; ) {
+        iter_next = iter_cur->next;
+
+        if (list->dops->comparator (iter_cur->data, data) == 0) {
+            _list_remove_node (list, &iter_cur);
+            return 0;
+        }
+
+        iter_cur = iter_next;
     }
 
     return rc;
@@ -585,6 +572,6 @@ void list_show_all (struct list_simple *list)
 
     // we traverse link list and show all node value
     for (node = list->head, i = 0; node != NULL; node = node->next, i++)
-        printf("node %u : %p\n", i, node->data);
+        printf("node %lu : %p\n", i, node->data);
 }
 

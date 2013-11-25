@@ -46,12 +46,12 @@ struct list_simple {
 
 #define list_set_callback(list, name, callback) if (list->dops) list->dops->name = callback
 
-#define list_get_size(list) (list ? (list)->size : -1)
+#define list_get_size(list) (list ? (list)->size : 0)
 #define list_begin(list) (list ? (list)->head : NULL)
 #define list_end(list) (list ? (list)->tail : NULL)
 
-#define list_for_each(list, it, _data)   if (list) for (it = (list)->head, _data = (it ? it->data : NULL); it != NULL; it = it->next, _data = (it ? it->data : NULL))
-#define list_for_each_backward(list, it, _data)   if (list) for (it = (list)->tail, _data = (it ? it->data : NULL); it != NULL; it = it->prev, _data = (it ? it->data : NULL))
+#define list_for_each(list, it, _data)            if (list) for (it = (list)->head; it && (_data = it->data); it = it->next)
+#define list_for_each_backward(list, it, _data)   if (list) for (it = (list)->tail; it && (_data = it->data); it = it->prev)
 
     // default constructor for list
     struct list_simple *list_new (void);
@@ -76,6 +76,10 @@ struct list_simple {
 
     // merge two list in one, no dupes checks, return new list
     struct list_simple *list_append_list (struct list_simple **list1, struct list_simple **list2);
+
+    // node functions
+    // remove current node
+    int _list_remove_node (struct list_simple *list, struct list_node **node);
 
 #ifdef __cplusplus
 }
