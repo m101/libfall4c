@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#include "file.h"
 #include "filemap.h"
 #include "filemap_internal.h"
 #include "string_ext.h"
@@ -31,23 +32,16 @@
 
 static struct filemap_list_t *filemaps = NULL;
 
+struct filemap_t *_filemap_search (struct filemap_list_t *root, FILE *fp, int sz);
+// check if file was loaded in memory
+struct filemap_t *_filemap_exist (FILE *fp, int sz);
+struct filemap_t *_filemap_create_from_fp_ex (FILE *fp, int sz);
+
 // create filemap
 struct filemap_t *filemap_create (char *filename)
 {
-    struct filemap_t *fmap;
+    int sz_file;
     FILE *fp;
-
-    if (!filename) {
-        debug_printf (MESSAGE_ERROR, stderr, "error: filemap_create(): Bad parameters\n");
-        return NULL;
-    }
-
-    // check filemap existence
-    fmap = filemap_exist (filename);
-    if (fmap) {
-        debug_printf (MESSAGE_INFO, stdout, "info : filemap_create_from_fp(): Filemap already exist, borrowing it\n");
-        return fmap;
-    }
 
     fp = fopen (filename, "r");
     if (!fp) {
@@ -55,18 +49,61 @@ struct filemap_t *filemap_create (char *filename)
         return NULL;
     }
 
-    fmap = filemap_create_from_fp (fp);
+    sz_file = file_get_size(fp);
+
+    fclose (fp);
+
+    return filemap_create_ex (filename, sz_file);
+}
+
+// create filemap
+struct filemap_t *filemap_create_ex (char *filename, int sz)
+{
+    struct filemap_t *fmap;
+    FILE *fp;
+
+    if (!filename ||  sz <= 0) {
+        debug_printf (MESSAGE_ERROR, stderr, "error: filemap_create_ex(): Bad parameters\n");
+        return NULL;
+    }
+
+    fp = fopen (filename, "r");
+    if (!fp) {
+        debug_printf (MESSAGE_ERROR, stderr, "error: filemap_create_ex(): Failed opening (r) %s\n", filename);
+        return NULL;
+    }
+
+    fmap = filemap_create_from_fp_ex (fp, sz);
+    fmap->sz_hashed = sz;
 
     fclose (fp);
 
     return fmap;
 }
 
-struct filemap_t *filemap_create_from_fp (FILE *fp) {
+struct filemap_t *filemap_create_from_fp (FILE *fp)
+{
+    return filemap_create_from_fp_ex (fp, file_get_size (fp));
+}
+
+struct filemap_t *filemap_create_from_fp_ex (FILE *fp, int sz)
+{
+    struct filemap_t *filemap;
+
+    // check filemap existence
+    filemap = _filemap_exist (fp, sz);
+    if (filemap) {
+        debug_printf (MESSAGE_INFO, stdout, "info : filemap_create_from_fp_ex(): Filemap already exist, borrowing it\n");
+        return filemap;
+    }
+
+    return _filemap_create_from_fp_ex (fp, sz);
+}
+
+struct filemap_t *_filemap_create_from_fp_ex (FILE *fp, int sz)
+{
     struct filemap_t *filemap;
     size_t foffset, sz_map;
-
-    // TODO: check filemap existence
 
     // add filemap
     filemap = malloc (sizeof(struct filemap_t));
@@ -186,20 +223,12 @@ struct filemap_t *__filemap_search (struct filemap_list_t *root, uint64_t hash)
         __filemap_search (root->next, hash);
 }
 
-struct filemap_t *_filemap_search (struct filemap_list_t *root, char *filename)
+struct filemap_t *_filemap_search (struct filemap_list_t *root, FILE *fp, int sz)
 {
     uint64_t hash;
     struct filemap_t *fmap, *needle;
-    FILE *fp;
 
-    // create filemap
-    fp = fopen (filename, "r");
-    if (!fp) {
-        debug_printf (MESSAGE_ERROR, stderr, "error: filemap_create(): Failed opening (r) %s\n", filename);
-        return NULL;
-    }
-    needle = filemap_create_from_fp (fp);
-    fclose (fp);
+    needle = _filemap_create_from_fp_ex (fp, sz);
 
     // hash and all
 #ifdef _FASTER_FILEMAP_
@@ -214,12 +243,14 @@ struct filemap_t *_filemap_search (struct filemap_list_t *root, char *filename)
 }
 
 // check if file was loaded in memory
-struct filemap_t *filemap_exist (char *filename)
+struct filemap_t *_filemap_exist (FILE *fp, int sz)
 {
     // if list doesn't exist then it isn't loaded
-    if (!filemaps || !filename)
+    if (!filemaps || !fp || sz <= 0) {
+        debug_printf (MESSAGE_ERROR, stderr, "error: _filemap_exist(): Bad parameters\n");
         return NULL;
+    }
 
-    return _filemap_search (filemaps, filename);
+    return _filemap_search (filemaps, fp, sz);
 }
 

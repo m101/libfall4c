@@ -23,16 +23,21 @@ extern "C"
 {
 #endif
 
+#include <stdint.h>
+
+#include <fall4c/string_ext.h>
 #include "tree_common.h"
+
+#define N_BUCKETS 256
 
 #define hashtable_for_each(htable, key, value)
 
 // associative array element
 struct hashtable_node {
+    uint16_t idx_bucket;
     // key
     uint64_t hash_key;
-    int sz_key;
-    char *key;
+    struct string_t *key;
     // value
     int sz_value;
     void *value;
@@ -40,15 +45,16 @@ struct hashtable_node {
 
 // associative array
 struct hashtable_t {
-    struct tree_t *bst;
-    struct tree_t *keys;
-    struct tree_t *values;
+    struct list_simple *keys;
+    struct list_simple *values;
+
+    struct tree_t *buckets[N_BUCKETS];
 };
 
 struct hashtable_t *hashtable_new (void);
 void hashtable_destroy (struct hashtable_t **htable);
 // set a value
-struct hashtable_t* hashtable_set_value (struct hashtable_t **htable, char *key, void *value);
+struct hashtable_t *hashtable_set_value (struct hashtable_t **htable, char *key, void *value);
 // get a value
 void *hashtable_get_value (struct hashtable_t *htable, char *key);
 // get list of keys

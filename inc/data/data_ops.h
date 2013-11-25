@@ -28,6 +28,7 @@ extern "C"
 struct data_ops {
     int (*comparator) (void *data1, void *data2);
     void (*destroy) (void **data);
+    void (*free) (void *data);
     size_t (*get_size) (void *data);
     void (*show) (void *data);
 };
@@ -40,6 +41,7 @@ struct data_ops {
 struct data_ops *data_ops_new (void);
 int comparator_no_ops (void *data1, void *data2);
 void destroy_no_ops (void **data);
+void free_no_ops (void *data);
 void destroy_allocated (void **data);
 size_t get_size_no_ops (void *data);
 void show_no_ops (void *data);

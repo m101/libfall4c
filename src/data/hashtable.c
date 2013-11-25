@@ -35,6 +35,31 @@ static const struct data_ops hashtable_data_ops = {
     .show = show_no_ops
 };
 
+/* @desc    Compute double hashing (FNV + 8 bits ADD)
+*/
+int _hnode_hash (struct hashtable_node *hnode, uint8_t *str, int len)
+{
+    int idx_str;
+    uint16_t checksum;
+    static uint16_t next_idx = 0;
+
+    if (!hnode ||  !str ||  len <= 0) {
+        fprintf (stderr, "error: _hnode_hash(): Bad parameter(s)\n");
+        return -1;
+    }
+
+    checksum = 0;
+    for (idx_str = 0; idx_str < len; idx_str++)
+        checksum += str[idx_str];
+    checksum %= N_BUCKETS;
+    hnode->hash_key = hnode->key->hash;
+    hnode->idx_bucket = (hnode->hash_key + next_idx * checksum) % N_BUCKETS;
+    next_idx = (next_idx + 1) % N_BUCKETS;
+    // hnode->idx_bucket = checksum;
+
+    return 0;
+}
+
 int hashtable_comparator (void *data1, void *data2)
 {
     struct hashtable_node *node1 = data1, *node2 = data2;
@@ -55,22 +80,22 @@ size_t hashtable_elt_size (void *elt)
 
 struct hashtable_t *hashtable_new (void)
 {
-    int rc;
+    int idx_bucket;
     struct hashtable_t *htable;
 
     htable = calloc (1, sizeof(*htable));
     if (!htable)
         return NULL;
-    // htable->bst = tree_new (hashtable_comparator, hashtable_elt_size);
-    htable->bst = tree_new ();
+
+    //
+    for (idx_bucket = 0; idx_bucket < N_BUCKETS; idx_bucket++) {
+        htable->buckets[idx_bucket] = calloc (1, sizeof(*htable->buckets[idx_bucket]));
+        htable->buckets[idx_bucket]->dops = &hashtable_data_ops;
+    }
 
     // values and keys callbacks
-    htable->keys = tree_new();
-    tree_set_callback (htable->keys, comparator, string_cmp);
-    htable->values = tree_new();
-    tree_set_callback (htable->values, comparator, string_cmp);
-
-    htable->bst->dops = &hashtable_data_ops;
+    htable->keys = list_new();
+    htable->values = list_new();
 
     return htable;
 }
@@ -81,12 +106,13 @@ void hashtable_node_destroy_data (void **data)
 
     node = data;
     if (!node || !*node) {
-        fprintf (stderr, "error: dict_destroy_data(): Bad parameter(s)\n");
+        fprintf (stderr, "error: hashtable_node_destroy_data(): Bad parameter(s)\n");
         return;
     }
 
-    free ((*node)->key);
-    free ((*node)->value);
+    // string_destroy (&((*node)->key));
+    string_destroy (&((*node)->key));
+    // free ((*node)->value);
     free (*node);
     *node = NULL;
 }
@@ -98,10 +124,22 @@ void _hashtable_node_free (void *data)
 
 void hashtable_destroy (struct hashtable_t **htable)
 {
+    int idx_bucket;
+
     if (!htable || !*htable)
         return;
 
-    tree_free((*htable)->bst, _hashtable_node_free);
+    // free buckets
+    for (idx_bucket = 0; idx_bucket < N_BUCKETS; idx_bucket++)
+        tree_free ((*htable)->buckets[idx_bucket], _hashtable_node_free);
+
+    // free key list
+    list_destroy (&((*htable)->keys));
+
+    // free values
+    list_destroy (&((*htable)->values));
+
+    // free htable
     free(*htable);
     *htable = NULL;
 }
@@ -125,9 +163,9 @@ struct hashtable_t* hashtable_set_value (struct hashtable_t **htable, char *key,
     if (!elt)
         return NULL;
     // key
-    elt->key = strdup(key);
-    elt->sz_key = strlen (key);
-    elt->hash_key = fnv_hash (key, elt->sz_key);
+    string_set (&s_key, key);
+    elt->key = s_key;
+    _hnode_hash (elt, key, s_key->size);
     // value
     elt->value = value;
     
@@ -138,7 +176,7 @@ struct hashtable_t* hashtable_set_value (struct hashtable_t **htable, char *key,
     // bst_add (&((*htable)->values), value);
 
     // add value in tree
-    bst_add ((*htable)->bst, elt);
+    bst_add ((*htable)->buckets[elt->idx_bucket], elt);
 
     return *htable;
 }
@@ -152,77 +190,25 @@ void *hashtable_get_value (struct hashtable_t *htable, char *key)
     // pointer check
     if (!htable || !key)
         return NULL;
-    if (!htable->bst)
-        return NULL;
-
-    htable->bst->dops = &hashtable_data_ops;
 
     // search element in tree
-    elt.hash_key = fnv_hash (key, strlen(key));
-    helt = bst_search (htable->bst, &elt);
+    _hnode_hash (&elt, key, strlen(key));
+    helt = bst_search (&(htable->buckets[elt.idx_bucket]), &elt);
     if (!helt)
         return NULL;
 
     return helt->value;
 }
 
-void *_hashtable_get_keys (struct tree_t *bst, struct tree_node_t *node, struct list_simple **keys)
-{
-    struct hashtable_node *hnode;
-
-    // key not found
-    if (!bst || !node || !keys)
-        return NULL;
-
-    _hashtable_get_keys (bst, node->left, keys);
-    hnode = node->data;
-    if (hnode)
-        list_append_data (keys, hnode->key);
-    _hashtable_get_keys (bst, node->right, keys);
-}
-
 // get list of keys
 struct list_simple *hashtable_get_keys (struct hashtable_t *htable)
 {
-    struct list_simple *keys;
-
-    if (!htable)
-        return NULL;
-
-    keys = NULL;
-    if (htable->bst)
-        _hashtable_get_keys (htable->bst, htable->bst->root, &keys);
-
-    return keys;
-}
-
-void *_hashtable_get_values (struct tree_t *bst, struct tree_node_t *node, struct list_simple **values)
-{
-    struct hashtable_node *hnode;
-
-    // value not found
-    if (!bst || !node || !values)
-        return NULL;
-
-    _hashtable_get_values (bst, node->left, values);
-    hnode = node->data;
-    if (hnode)
-        list_append_data (values, hnode->value);
-    _hashtable_get_values (bst, node->right, values);
+    return htable->keys;
 }
 
 // get list of values
 struct list_simple *hashtable_get_values (struct hashtable_t *htable)
 {
-    struct list_simple *values;
-
-    if (!htable)
-        return NULL;
-
-    values = NULL;
-    if (htable->bst)
-        _hashtable_get_values (htable->bst, htable->bst->root, &values);
-
-    return values;
+    return htable->values;
 }
 
