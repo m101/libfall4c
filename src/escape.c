@@ -88,29 +88,3 @@ unsigned char *unescape_hex (char *str, size_t sz_str)
     return unescaped;
 }
 
-// hex string to binary digits
-unsigned int hexstr_to_num (unsigned char *str, size_t len)
-{
-    int num;
-    size_t i;
-
-    // check pointers
-    if (!str || !len)
-        return -1;
-
-    //
-    num = 0;
-    for (i = 0; *str && i < len; ++str, ++i) {
-        if (!isdigit(*str))
-            continue;
-        // get decimal digit
-        num |= *str - '0';
-        // get hex digit
-        if (num >= 0xa)
-            num -= 7;
-        num <<= 4;
-    }
-
-    return num;
-}
-

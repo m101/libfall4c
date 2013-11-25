@@ -27,6 +27,7 @@ include_directories("${PROJECT_SOURCE_DIR}/inc")
 add_library(
     fall4c
     SHARED
+    src/convert.c
     src/escape.c
     src/file.c
     src/filemap.c

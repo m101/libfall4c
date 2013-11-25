@@ -26,6 +26,5 @@
 unsigned char* escape_hex (unsigned char *bytes, size_t nbytes);
 // unescape escaped hex
 unsigned char* unescape_hex (char *str, size_t sz_str);
-unsigned int hexstr_to_num (unsigned char *str, size_t len);
 
 #endif
