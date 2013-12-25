@@ -20,6 +20,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+// for mmap
+#include <sys/mman.h>
+
 #include "file.h"
 #include "filemap.h"
 #include "filemap_internal.h"
@@ -109,19 +112,33 @@ struct filemap_t *_filemap_create_from_fp_ex (FILE *fp, int sz)
     filemap = malloc (sizeof(struct filemap_t));
     filemap->fp = fp;
 
-    // map file
     // original offset
     foffset = ftell(fp);
-    fseek (fp, 0, SEEK_END);
     // file size
-    sz_map = ftell(fp);
-    filemap->map = malloc (sz_map);
-    filemap->sz_map = sz_map;
+    sz_map = file_get_size (fp);
+
     // map file
-    fseek (fp, 0, SEEK_SET);
-    fread (filemap->map, filemap->sz_map, 1, fp);
+    // use OS filemap
+    filemap->map = mmap (NULL, sz_map, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_POPULATE, fileno (fp), 0);
+
+    // if OS filemap is successful
+    // then set mmaped flag
+    if (filemap->map != MAP_FAILED)
+        filemap->is_mmaped = 1;
+    // else use custom filemap
+    else {
+        debug_printf (MESSAGE_ERROR, stderr, "error: _filemap_create_from_fp_ex(): Failed OS mapping\n");
+        // set mmap flag to 0
+        filemap->is_mmaped = 0;
+        // map file
+        filemap->map = malloc (sz_map);
+        fseek (fp, 0, SEEK_SET);
+        fread (filemap->map, filemap->sz_map, 1, fp);
+    }
     // restore original file offset
     fseek (fp, foffset, SEEK_SET);
+
+    filemap->sz_map = sz_map;
 
     // hash
 #ifdef _FASTER_FILEMAP_
@@ -147,8 +164,12 @@ void filemap_destroy (struct filemap_t **filemap) {
     filemap_remove_fmap (&filemaps, *filemap);
 
     // free allocated memory for filemap
-    if ((*filemap)->map)
-        free((*filemap)->map);
+    if ((*filemap)->map) {
+        if ((*filemap)->is_mmaped)
+            munmap ((*filemap)->map, (*filemap)->sz_map);
+        else
+            free((*filemap)->map);
+    }
     free(*filemap);
     *filemap = NULL;
 }

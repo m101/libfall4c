@@ -34,6 +34,9 @@ struct filemap_t
     // filemap
     unsigned char *map;
     size_t sz_map;
+    // characteristic
+    // does it use mmap() filemap feature?
+    int is_mmaped;
 };
 
 // create filemap
