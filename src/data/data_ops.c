@@ -17,6 +17,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "data/data_ops.h"
 
@@ -40,7 +41,7 @@ struct data_ops *data_ops_new (void)
 
 int comparator_no_ops (void *data1, void *data2)
 {
-    return data1 - data2;
+    return (uint32_t) data1 - (uint32_t) data2;
 }
 
 void destroy_no_ops (void **data)
