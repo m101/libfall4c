@@ -25,7 +25,7 @@ extern "C"
 
 #include <stdint.h>
 
-#include <fall4c/string_ext.h>
+#include "../string_ext.h"
 #include "tree_common.h"
 
 #define N_BUCKETS 256

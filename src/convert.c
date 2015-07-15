@@ -20,6 +20,8 @@
 
 #include <stdint.h>
 
+#include <ctype.h>
+
 uint8_t *bin_to_ascii (uint8_t *hash, int len)
 {
     int idx_hash;
