@@ -121,7 +121,7 @@ int xrecv(int sockd, void **buffer, size_t *bufsize, unsigned int flags)
 
 /*! @brief Send wrapped
  */
-int xsend (int sockd, void *msg, size_t msglen, int flags)
+int xsend (int sockd, char *msg, size_t msglen, int flags)
 {
   int codeno;
   char *realmsg;
@@ -134,7 +134,7 @@ int xsend (int sockd, void *msg, size_t msglen, int flags)
       
       msg++;
 
-      if ( (unsigned int) ((char *)msg - realmsg) >= msglen )
+      if ( (unsigned int) (msg - realmsg) >= msglen )
 	return -1;
     }
   while ( codeno != 0 || codeno != -1 );
@@ -214,7 +214,7 @@ int data_read_time_out (int sockd, long sec, long usec)
 
 unsigned short ip_checksum (unsigned short *data, size_t size)
 {
-  unsigned long sum;
+  unsigned long sum = 0;
 
   if (!data || !size)
     {

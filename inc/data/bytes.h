@@ -25,7 +25,7 @@
 
 struct bytes {
     uint64_t hash;
-    unsigned char *data;
+    uint8_t *data;
     size_t capacity;
     size_t used;
 };
