@@ -20,8 +20,12 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#include <string.h>
+
 // for mmap
+#if !defined (WIN32) && !defined (_WIN32_)
 #include <sys/mman.h>
+#endif
 
 #include "file.h"
 #include "filemap.h"
@@ -35,10 +39,13 @@
 
 static struct filemap_list_t *filemaps = NULL;
 
-struct filemap_t *_filemap_search (struct filemap_list_t *root, FILE *fp, int sz);
 // check if file was loaded in memory
-struct filemap_t *_filemap_exist (FILE *fp, int sz);
+struct filemap_t *_filemap_search_fp (struct filemap_list_t *root, FILE *fp, int sz);
+struct filemap_t *_filemap_exist_fp (FILE *fp, int sz);
 struct filemap_t *_filemap_create_from_fp_ex (FILE *fp, int sz);
+// for mem
+struct filemap_t *_filemap_search_mem (struct filemap_list_t *root, uint8_t *mem, int sz);
+struct filemap_t *_filemap_exist_mem (uint8_t *mem, int sz);
 
 // create filemap
 struct filemap_t *filemap_create (char *filename)
@@ -94,7 +101,7 @@ struct filemap_t *filemap_create_from_fp_ex (FILE *fp, int sz)
     struct filemap_t *filemap;
 
     // check filemap existence
-    filemap = _filemap_exist (fp, sz);
+    filemap = _filemap_exist_fp (fp, sz);
     if (filemap) {
         debug_printf (MESSAGE_INFO, stdout, "info : filemap_create_from_fp_ex(): Filemap already exist, borrowing it\n");
         return filemap;
@@ -118,6 +125,7 @@ struct filemap_t *_filemap_create_from_fp_ex (FILE *fp, int sz)
     sz_map = file_get_size (fp);
 
     // map file
+#if !defined (WIN32) && !defined (_WIN32_)
     // use OS filemap
     filemap->map = mmap (NULL, sz_map, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_POPULATE, fileno (fp), 0);
 
@@ -128,13 +136,17 @@ struct filemap_t *_filemap_create_from_fp_ex (FILE *fp, int sz)
     // else use custom filemap
     else {
         debug_printf (MESSAGE_ERROR, stderr, "error: _filemap_create_from_fp_ex(): Failed OS mapping\n");
+#endif
         // set mmap flag to 0
         filemap->is_mmaped = 0;
         // map file
         filemap->map = malloc (sz_map);
         fseek (fp, 0, SEEK_SET);
         fread (filemap->map, filemap->sz_map, 1, fp);
+#if !defined (WIN32) && !defined (_WIN32_)
     }
+#endif
+
     // restore original file offset
     fseek (fp, foffset, SEEK_SET);
 
@@ -153,6 +165,43 @@ struct filemap_t *_filemap_create_from_fp_ex (FILE *fp, int sz)
     return filemap;
 }
 
+struct filemap_t *filemap_create_from_memory (uint8_t *bytes, int sz)
+{
+	struct filemap_t *fmap;
+
+	// check filemap existence
+	fmap = _filemap_exist_mem(bytes, sz);
+	if (fmap) {
+		debug_printf(MESSAGE_INFO, stdout, "info : filemap_create_from_memory(): Filemap already exist, borrowing it\n");
+		return fmap;
+	}
+
+	// add filemap
+	fmap = malloc(sizeof(*fmap));
+	fmap->fp = NULL;
+
+	// map file
+	// set mmap flag to 0
+	fmap->is_mmaped = 0;
+	// map file
+	fmap->map = malloc(sz);
+	memcpy(fmap->map, bytes, sz);
+
+	fmap->sz_map = sz;
+
+	// hash
+#ifdef _FASTER_FILEMAP_
+	fmap->hash = fnv_hash(fmap->map, (fmap->sz_map > 1 * MB ? 1 * MB : fmap->sz_map));
+#else
+	fmap->hash = fnv_hash(fmap->map, fmap->sz_map);
+#endif
+
+	// add filemap in binary tree
+	filemap_add_fmap(&filemaps, fmap);
+
+	return fmap;
+}
+
 // destroy filemap
 void filemap_destroy (struct filemap_t **filemap) {
     if (!filemap)
@@ -164,12 +213,16 @@ void filemap_destroy (struct filemap_t **filemap) {
     filemap_remove_fmap (&filemaps, *filemap);
 
     // free allocated memory for filemap
+#if !defined (WIN32) && !defined (_WIN32_)
     if ((*filemap)->map) {
         if ((*filemap)->is_mmaped)
             munmap ((*filemap)->map, (*filemap)->sz_map);
         else
+#endif
             free((*filemap)->map);
+#if !defined (WIN32) && !defined (_WIN32_)
     }
+#endif
     free(*filemap);
     *filemap = NULL;
 }
@@ -244,7 +297,7 @@ struct filemap_t *__filemap_search (struct filemap_list_t *root, uint64_t hash)
         __filemap_search (root->next, hash);
 }
 
-struct filemap_t *_filemap_search (struct filemap_list_t *root, FILE *fp, int sz)
+struct filemap_t *_filemap_search_fp (struct filemap_list_t *root, FILE *fp, int sz)
 {
     uint64_t hash;
     struct filemap_t *fmap, *needle;
@@ -264,14 +317,41 @@ struct filemap_t *_filemap_search (struct filemap_list_t *root, FILE *fp, int sz
 }
 
 // check if file was loaded in memory
-struct filemap_t *_filemap_exist (FILE *fp, int sz)
+struct filemap_t *_filemap_exist_fp (FILE *fp, int sz)
 {
     // if list doesn't exist then it isn't loaded
     if (!filemaps || !fp || sz <= 0) {
-        debug_printf (MESSAGE_ERROR, stderr, "error: _filemap_exist(): Bad parameters\n");
+        debug_printf (MESSAGE_ERROR, stderr, "error: _filemap_exist_fp(): Bad parameters\n");
         return NULL;
     }
 
-    return _filemap_search (filemaps, fp, sz);
+    return _filemap_search_fp (filemaps, fp, sz);
 }
 
+struct filemap_t *_filemap_search_mem (struct filemap_list_t *root, uint8_t *mem, int sz)
+{
+    uint64_t hash;
+    struct filemap_t *fmap;
+
+    // hash and all
+#ifdef _FASTER_FILEMAP_
+    hash = fnv_hash (mem, (sz > 1*MB? 1*MB : sz));
+#else
+    hash = fnv_hash (mem, sz);
+#endif
+    fmap = __filemap_search (root, hash);
+
+    return fmap;
+}
+
+// check if file was loaded in memory
+struct filemap_t *_filemap_exist_mem (uint8_t *mem, int sz)
+{
+    // if list doesn't exist then it isn't loaded
+    if (!filemaps || !mem || sz <= 0) {
+        debug_printf (MESSAGE_ERROR, stderr, "error: _filemap_exist_fp(): Bad parameters\n");
+        return NULL;
+    }
+
+    return _filemap_search_mem (filemaps, mem, sz);
+}

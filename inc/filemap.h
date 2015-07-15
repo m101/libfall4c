@@ -32,7 +32,7 @@ struct filemap_t
 	size_t sz_filename;
     FILE *fp;
     // filemap
-    unsigned char *map;
+    uint8_t *map;
     size_t sz_map;
     // characteristic
     // does it use mmap() filemap feature?
@@ -44,6 +44,7 @@ struct filemap_t *filemap_create (char *filename);
 struct filemap_t *filemap_create_ex (char *filename, int sz);
 struct filemap_t *filemap_create_from_fp (FILE *fp);
 struct filemap_t *filemap_create_from_fp_ex (FILE *fp, int sz);
+struct filemap_t *filemap_create_from_memory (uint8_t *bytes, int sz);
 // destroy filemap
 void filemap_destroy (struct filemap_t **filemap);
 
