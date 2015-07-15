@@ -21,7 +21,10 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#if !defined (WIN32) && !defined (_WIN32_)
 #include <unistd.h>
+#endif
 
 /*! @brief                    Fonction copiant un fichier en mode texte
  *   @param   dest             Fichier de copie
@@ -106,7 +109,7 @@ long fgotol (FILE *stream, long idx_line)
         return -1;
 
     fseek(stream, 0, SEEK_SET);
-
+	c = 0;
     while (idx_line > 0 && c != EOF) {
         c = fgetc(stream);
         if (c == '\n')
@@ -134,7 +137,11 @@ int file_get_size (FILE *fp)
         return -1;
 
     // get file size through stat
-    fd = fileno (fp);
+#if defined (WIN32) || defined (_WIN32_)
+	fd = _fileno(fp);
+#else
+	fd = fileno (fp);
+#endif
     if (fstat (fd, &fst) == 0)
         return fst.st_size;
 
