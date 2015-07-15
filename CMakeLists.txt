@@ -4,8 +4,8 @@ project (libfall4c)
 set (CMAKE_BUILD_TYPE Debug)
 
 ENABLE_TESTING()
-SET (CMAKE_CXX_FLAGS        "-g -O0 -Wall -W -Wshadow -Wunused-variable -Wunused-parameter -Wunused-function -Wunused -Wno-system-headers -Wno-deprecated -Woverloaded-virtual -Wwrite-strings -fprofile-arcs -ftest-coverage")
-SET (CMAKE_C_FLAGS          "-g -O0 -Wall -W -fprofile-arcs -ftest-coverage")
+SET (CMAKE_CXX_FLAGS        "-g -gdwarf-2 -O0 -Wall -W -Wshadow -Wunused-variable -Wunused-parameter -Wunused-function -Wunused -Wno-system-headers -Wno-deprecated -Woverloaded-virtual -Wwrite-strings -fprofile-arcs -ftest-coverage")
+SET (CMAKE_C_FLAGS          "-g -gdwarf-2 -O0 -Wall -W -fprofile-arcs -ftest-coverage")
 
 # The version number.
 set (FALL4C_VERSION_MAJOR 1)
@@ -68,7 +68,7 @@ add_library(
     src/ctype_extended.c
     )
 target_link_libraries (fall4c
-    unac
+    # unac
     m
     gcov
     )
