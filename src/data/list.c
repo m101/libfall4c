@@ -66,7 +66,7 @@ int list_delete (struct list_simple **list)
         return -1;
 
     // we traverse the linked list to destroy it
-    for (node = list_begin(*list); node != NULL; ) {
+    for (node = list_simple_begin(*list); node != NULL; ) {
         next = node->next;
         _list_node_destroy (&node, NULL);
         node = next;
@@ -88,7 +88,7 @@ int list_destroy (struct list_simple **list)
         return -1;
 
     // we traverse the linked list to destroy it
-    for (node = list_begin(*list); node != NULL; ) {
+    for (node = list_simple_begin(*list); node != NULL; ) {
         next = node->next;
         _list_node_destroy(&node, (*list)->dops->destroy);
         node = next;
@@ -117,7 +117,7 @@ int list_count_nodes(struct list_simple *list)
     if (!list)
         return -1;
 
-    for (node = list_begin(list), count = 0; node != NULL; node = node->next, count++);
+    for (node = list_simple_begin(list), count = 0; node != NULL; node = node->next, count++);
 
     return count;
 }
@@ -459,7 +459,7 @@ int list_remove_data (struct list_simple *list, void *data)
     }
 
     // we traverse the linked list to destroy it
-    for (iter_cur = list_begin(list); iter_cur != NULL; ) {
+    for (iter_cur = list_simple_begin(list); iter_cur != NULL; ) {
         iter_next = iter_cur->next;
 
         if (list->dops->comparator (iter_cur->data, data) == 0) {
@@ -520,7 +520,7 @@ void* list_get_data_at_pos (struct list_simple *list, size_t pos)
 
     // we traverse the linked list
     idx_iter = 0;
-    list_for_each (list, iter, data) {
+    list_simple_for_each (list, iter, data) {
         // if we found the specified node
         // then we return the data
         if (idx_iter == pos)

@@ -44,14 +44,14 @@ struct list_simple {
     struct data_ops *dops;
 };
 
-#define list_set_callback(list, name, callback) if (list->dops) list->dops->name = callback
+#define list_simple_set_callback(list, name, callback) if (list->dops) list->dops->name = callback
 
-#define list_get_size(list) (list ? (list)->size : 0)
-#define list_begin(list) (list ? (list)->head : NULL)
-#define list_end(list) (list ? (list)->tail : NULL)
+#define list_simple_get_size(list) (list ? (list)->size : 0)
+#define list_simple_begin(list) (list ? (list)->head : NULL)
+#define list_simple_end(list) (list ? (list)->tail : NULL)
 
-#define list_for_each(list, it, _data)            if (list) for (it = (list)->head; it && (_data = it->data); it = it->next)
-#define list_for_each_backward(list, it, _data)   if (list) for (it = (list)->tail; it && (_data = it->data); it = it->prev)
+#define list_simple_for_each(list, it, _data)            if (list) for (it = (list)->head; it && (_data = it->data); it = it->next)
+#define list_simple_for_each_backward(list, it, _data)   if (list) for (it = (list)->tail; it && (_data = it->data); it = it->prev)
 
     // default constructor for list
     struct list_simple *list_new (void);
